@@ -14,7 +14,7 @@
 
     <x-slot:action>
 
-        <a href="/users">
+        <a href="{{ url('/users') }}">
 
             <x-button color="gray">
 

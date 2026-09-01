@@ -110,42 +110,6 @@
 
                 </x-table-cell>
 
-                {{-- <x-table-cell class="text-center">  
-                    
-                    @if($user->role=='Admin')
-                        
-                        <x-badge color="red">
-
-                            Admin
-
-                        </x-badge>
-                    @elseif($user->role=='Owner')
-
-                        <x-badge color="purple">
-
-                            Owner
-
-                        </x-badge>
-
-                    @elseif($user->role=='Supervisor')
-
-                        <x-badge color="yellow">
-
-                            Supervisor
-
-                        </x-badge>
-
-                    @else
-
-                        <x-badge color="green">
-
-                            Kasir
-
-                        </x-badge>
-
-                    @endif
-
-                </x-table-cell> --}}
                 <x-table-cell class="text-center">  
                     @if($user->role == 'Admin')
                         <x-badge color="red">Admin</x-badge>
@@ -231,7 +195,7 @@
 
                     >
 
-                        <a href="/users/create">
+                        <a href="{{ url('/users/create') }}">
 
                             <x-button>
 

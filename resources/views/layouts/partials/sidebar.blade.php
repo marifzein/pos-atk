@@ -21,7 +21,7 @@
     
     {{-- DASHBOARD --}}
     <div class="relative group mb-1" x-data="{ hovered: false }" @mouseenter="hovered = true" @mouseleave="hovered = false">
-        <a href="/dashboard" class="menu-parent flex items-center gap-3 {{ request()->is('dashboard*') ? 'submenu-active' : '' }}">
+        <a href="{{ url('/dashboard') }}" class="menu-parent flex items-center gap-3 {{ request()->is('dashboard*') ? 'submenu-active' : '' }}">
             <i class="ri-grid-fill text-lg flex-shrink-0"></i>
             <span x-show="sidebarOpen" class="text-base">Dashboard</span>
         </a>
@@ -47,7 +47,7 @@
 
         {{-- Normal Dropdown (Sidebar Buka) --}}
         <div id="menu-transaksi" class="menu-content" x-show="sidebarOpen">
-            <a href="/pesanan-jasa" class="submenu {{ request()->is('pesanan-jasa') ? 'submenu-active':'' }}"><i class="ri-customer-service-2-line text-sm mr-2.5 opacity-90"></i> Pesanan Jasa</a>
+            <a href="{{ url('/pesanan-jasa') }}" class="submenu {{ request()->is('pesanan-jasa') ? 'submenu-active':'' }}"><i class="ri-customer-service-2-line text-sm mr-2.5 opacity-90"></i> Pesanan Jasa</a>
             <a href="/pesanan-barang" class="submenu {{ request()->is('pesanan-barang*') ? 'submenu-active':'' }}"><i class="ri-shopping-bag-3-line text-sm mr-2.5 opacity-90"></i> Pesanan Barang</a>
             <a href="/pesanan-jasa/riwayat" class="submenu {{ request()->is('pesanan-jasa/riwayat*') ? 'submenu-active':'' }}"><i class="ri-history-line text-sm mr-2.5 opacity-90"></i> Riwayat Pesanan</a>
             

@@ -30,9 +30,7 @@
                 <div>
                     <div class="flex justify-between items-center mb-1.5">
                         <label class="block text-[11px] text-slate-400 font-bold uppercase tracking-wider">Pelanggan</label>
-                        <button type="button" @click="$dispatch('open-customer-modal')" class="text-[10px] text-indigo-600 font-semibold hover:underline cursor-pointer">
-                            + Tambah Baru
-                        </button>
+                        <span class="text-[10px] text-indigo-600 font-semibold hover:underline cursor-pointer">+ Tambah Baru</span>
                     </div>
                     <div class="relative" @click.outside="customerResults=[]">
                         <input x-ref="customerInput" type="text" x-model="customerSearch" @keydown.arrow-down.prevent="moveCustomerDown()" @keydown.arrow-up.prevent="moveCustomerUp()" @keydown.enter.prevent="chooseCustomer()" @input="searchCustomer()" placeholder="Cari nama / kode pelanggan..." class="w-full rounded-lg border border-slate-300 px-3 py-2.5 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none text-sm shadow-sm">
@@ -68,7 +66,10 @@
                         <div class="flex justify-between"><span class="text-slate-500">Pilih Item</span><span class="font-mono bg-white px-1.5 py-0.5 border rounded shadow-sm text-[10px]">↑ / ↓</span></div>
                         <div class="flex justify-between"><span class="text-slate-500">Masuk Chart</span><span class="font-mono bg-white px-1.5 py-0.5 border rounded shadow-sm text-[10px]">Enter</span></div>
 
+
+                        {{-- <div class="flex justify-between"><span>F2</span><span class="font-medium text-slate-800">Barcode</span></div> --}}
                         <div class="flex justify-between"><span>F3</span><span class="font-medium text-slate-800">Cek Harga Barang</span></div>
+                        
                         <div class="flex justify-between"><span>F8</span><span class="font-medium text-slate-800">Pelanggan</span></div>
                         <div class="flex justify-between"><span>F10</span><span class="font-medium text-slate-800">Simpan</span></div>
                         <div class="flex justify-between text-rose-600"><span>Ctrl+Del</span><span class="font-semibold">Kosongkan Cart</span></div>
@@ -125,6 +126,8 @@
                             <template x-for="(item, index) in cart" :key="item.id">
                                 <tr class="text-slate-700 text-sm hover:bg-slate-50/50 transition">
                                     <td class="p-3 text-center text-slate-400 font-medium" x-text="index + 1"></td>
+                                    {{-- <td class="p-3 font-semibold text-slate-800" x-text="item.nama_barang"></td> --}}
+                                    
                                     <td class="p-3 font-semibold text-slate-800">
                                         <div class="flex items-center gap-2">
                                             <span x-text="item.nama_barang"></span>
@@ -138,7 +141,9 @@
                                         <input type="number" min="1" x-model.number="item.qty" @change="validateQty(item)" @input="calculateItem(item)" @keydown.enter.prevent="$refs.jasaInput.focus()" class="w-20 border border-slate-300 rounded-md text-center p-1.5 font-bold focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none">
                                     </td>
 
-                                    <!-- HARGA ITEM: JIKA CUSTOM BISA DIEDIT -->
+                                    
+
+                                    <!-- HARGA ITEM: JIKA CUSTOM BISADIEDIT -->
                                     <td class="p-3 text-right">
                                         <template x-if="item.is_custom">
                                             <div class="flex items-center justify-end gap-1">
@@ -158,6 +163,7 @@
                                         </template>
                                     </td>
 
+                                    {{-- <td class="text-right p-3 font-medium text-slate-600" x-text="formatRupiah(item.harga)"></td> --}}
                                     <td class="text-right p-3 font-bold text-slate-900" x-text="formatRupiah(item.qty * item.harga)"></td>
                                     <td class="text-center p-3">
                                         <button @click="removeItem(item.id)" class="text-slate-400 hover:text-rose-600 p-1 rounded-md transition">
@@ -203,6 +209,7 @@
 
     </div>
 
+
     <!-- MODAL CEK HARGA (F3) -->
     <div
         x-show="showPriceModal"
@@ -234,78 +241,6 @@
             </div>
         </div>
     </div>
-
-    <!-- MODAL TAMBAH PELANGGAN BARU -->
-    <div x-data="customerModal" 
-        @open-customer-modal.window="showCustomerModal = true; $nextTick(() => $refs.newCustomerName.focus())" 
-        x-show="showCustomerModal" 
-        class="fixed inset-0 bg-black/50 flex items-center justify-center z-50" 
-        @keydown.escape.window="showCustomerModal = false" 
-        style="display: none;">
-
-        <div class="bg-white rounded-xl p-6 w-full max-w-md shadow-2xl" @click.outside="showCustomerModal = false">
-            <div class="flex justify-between items-center mb-4">
-                <h3 class="font-bold text-xl text-slate-800 flex items-center gap-1">
-                    <i class="ri-user-add-line text-indigo-600"></i> Tambah Pelanggan Baru
-                </h3>
-                <button type="button" @click="showCustomerModal = false" class="text-gray-400 hover:text-gray-600 text-lg">✕</button>
-            </div>
-
-            <div class="space-y-4">
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Nama Lengkap</label>
-                    <input 
-                        x-ref="newCustomerName"
-                        type="text" 
-                        x-model="newCustomer.nama" 
-                        @keydown.enter.prevent="$refs.newCustomerPhone.focus()"
-                        placeholder="Masukkan nama pelanggan..." 
-                        class="w-full border rounded-xl p-3 text-sm focus:border-indigo-500 outline-none"
-                    >
-                </div>
-
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">No. Telepon / HP</label>
-                    <input 
-                        x-ref="newCustomerPhone"
-                        type="text" 
-                        x-model="newCustomer.telepon" 
-                        @keydown.enter.prevent="saveNewCustomer()"
-                        placeholder="Contoh: 081234567xx (Opsional)" 
-                        class="w-full border rounded-xl p-3 text-sm focus:border-indigo-500 outline-none"
-                    >
-                </div>
-
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Alamat</label>
-                    <textarea 
-                        x-ref="newCustomerAlamat"
-                        x-model="newCustomer.alamat" 
-                        rows="2"
-                        placeholder="Masukkan alamat pelanggan... (Opsional)" 
-                        class="w-full border rounded-xl p-3 text-sm focus:border-indigo-500 outline-none"
-                    ></textarea>
-                </div>
-            </div>
-
-            <div class="mt-6 flex justify-end gap-2">
-                <button 
-                    type="button" 
-                    @click="showCustomerModal = false" 
-                    class="px-4 py-2 border rounded-xl text-sm font-medium text-gray-600 hover:bg-gray-50"
-                >
-                    Batal
-                </button>
-                <button 
-                    type="button" 
-                    @click="saveNewCustomer()" 
-                    class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-sm font-medium shadow-sm flex items-center gap-1"
-                >
-                    <i class="ri-save-3-line"></i> Simpan Pelanggan
-                </button>
-            </div>
-        </div>
-    </div>
     
 </div>
 
@@ -319,11 +254,13 @@ function posJasa() {
         catatan: '',
         selectedIndex: 0,
 
-        // Customer State
+       // Customer State
         customerSearch: '',
         customerResults: [],
         customerIndex: -1,
         selectedCustomer: null,
+        allCustomers: window.ALL_CUSTOMERS || [],
+        allProducts: window.ALL_PRODUCTS || [],
 
         // Price Modal State
         showPriceModal: false,
@@ -334,6 +271,14 @@ function posJasa() {
         allCustomers: window.ALL_CUSTOMERS || [],
 
         init() {
+            // // Shortcut Key F2 untuk fokus ke input pencarian jasa
+            // window.addEventListener('keydown', (e) => {
+            //     if (e.key === 'F2') {
+            //         e.preventDefault();
+            //         if (this.$refs.jasaInput) this.$refs.jasaInput.focus();
+            //     }
+            // });
+
             window.addEventListener('customer-added', (e) => {
                 const newCustomer = e.detail;
                 if (window.ALL_CUSTOMERS) window.ALL_CUSTOMERS.push(newCustomer);
@@ -342,6 +287,8 @@ function posJasa() {
             });
 
             window.addEventListener('keydown', this.handleShortcut.bind(this));
+
+
 
             this.$nextTick(() => {
                 if (this.$refs.jasaInput) this.$refs.jasaInput.focus();
@@ -360,6 +307,7 @@ function posJasa() {
                 e.preventDefault();
                 this.showPriceModal = true;
                 setTimeout(() => { this.$refs.priceInput?.focus(); }, 50);
+            
             } else if (e.key === 'F8') {
                 e.preventDefault();
                 this.$refs.customerInput?.focus();
@@ -458,7 +406,7 @@ function posJasa() {
             item.qty = parseInt(item.qty);
             if (isNaN(item.qty) || item.qty < 1) item.qty = 1;
         },
-
+        //validasi harga custom
         validateHarga(item) {
             item.harga = parseInt(item.harga);
             if (isNaN(item.harga) || item.harga < 0) item.harga = 0;
@@ -496,19 +444,15 @@ function posJasa() {
             ).slice(0, 5);
             this.customerIndex = -1;
         },
-
         moveCustomerDown() {
             if(this.customerResults.length && this.customerIndex < this.customerResults.length - 1) this.customerIndex++;
         },
-
         moveCustomerUp() {
             if(this.customerResults.length && this.customerIndex > 0) this.customerIndex--;
         },
-
         chooseCustomer() {
             if(this.customerIndex >= 0) this.selectCustomer(this.customerResults[this.customerIndex]);
         },
-
         selectCustomer(customer) {
             this.selectedCustomer = customer;
             this.customerSearch = customer.nama;
@@ -517,7 +461,6 @@ function posJasa() {
                 if (this.$refs.jasaInput) this.$refs.jasaInput.focus();
             });
         },
-
         clearCustomer() {
             this.selectedCustomer = null;
             this.customerSearch = '';
@@ -569,46 +512,5 @@ function posJasa() {
 
 window.ALL_JASA_PRODUCTS = @json($products);
 window.ALL_CUSTOMERS = @json($customers);
-</script>
-
-<script>
-    document.addEventListener('alpine:init', () => {
-        Alpine.data('customerModal', () => ({
-            showCustomerModal: false,
-            newCustomer: { nama: '', telepon: '', alamat: '' },
-
-            async saveNewCustomer() {
-                if (!this.newCustomer.nama.trim()) {
-                    Swal.fire({ icon: 'warning', title: 'Perhatian', text: 'Nama pelanggan wajib diisi!' });
-                    return;
-                }
-
-                try {
-                    let response = await fetch('/api/customers', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-                        },
-                        body: JSON.stringify(this.newCustomer)
-                    });
-
-                    let result = await response.json();
-
-                    if (result.success) {
-                        window.dispatchEvent(new CustomEvent('customer-added', { detail: result.customer }));
-                        this.newCustomer = { nama: '', telepon: '', alamat: '' };
-                        this.showCustomerModal = false;
-                        Swal.fire({ icon: 'success', title: 'Berhasil!', text: 'Pelanggan berhasil disimpan', timer: 1500, showConfirmButton: false });
-                    } else {
-                        Swal.fire('Error', result.message || 'Gagal menyimpan pelanggan', 'error');
-                    }
-                } catch (error) {
-                    console.error(error);
-                    Swal.fire('Error', 'Terjadi kesalahan sistem', 'error');
-                }
-            }
-        }));
-    });
 </script>
 @endsection

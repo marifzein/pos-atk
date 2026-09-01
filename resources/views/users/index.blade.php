@@ -110,7 +110,7 @@
 
                 </x-table-cell>
 
-                <x-table-cell class="text-center">  
+                {{-- <x-table-cell class="text-center">  
                     
                     @if($user->role=='Admin')
                         
@@ -145,6 +145,23 @@
 
                     @endif
 
+                </x-table-cell> --}}
+                <x-table-cell class="text-center">  
+                    @if($user->role == 'Admin')
+                        <x-badge color="red">Admin</x-badge>
+                    @elseif($user->role == 'Owner')
+                        <x-badge color="purple">Owner</x-badge>
+                    @elseif($user->role == 'Supervisor')
+                        <x-badge color="yellow">Supervisor</x-badge>
+                    @elseif($user->role == 'Kasir')
+                        <x-badge color="green">Kasir</x-badge>
+                    @elseif($user->role == 'Staff Barang')
+                        <x-badge color="blue">Staff Barang</x-badge>
+                    @elseif($user->role == 'Staff Jasa')
+                        <x-badge color="indigo">Staff Jasa</x-badge>
+                    @else
+                        <x-badge color="gray">{{ $user->role }}</x-badge>
+                    @endif
                 </x-table-cell>
 
                 <x-table-cell class="text-center">

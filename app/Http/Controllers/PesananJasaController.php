@@ -175,12 +175,21 @@ class PesananJasaController extends Controller
 
         $order = Order::findOrFail($id);
 
-        if (strtolower($order->status) === 'batal') {
+        // if (strtolower($order->status) === 'batal') {
+        //     return response()->json([
+        //         'success' => false,
+        //         'message' => 'Pesanan ini sudah dibatalkan sebelumnya.'
+        //     ], 400);
+        // }
+
+        // Validasi Strict: Hanya status 'order' yang boleh dibatalkan
+        if (strtolower($order->status) !== 'order') {
             return response()->json([
                 'success' => false,
-                'message' => 'Pesanan ini sudah dibatalkan sebelumnya.'
+                'message' => 'Pesanan tidak dapat dibatalkan karena statusnya sudah ' . strtoupper($order->status) . '.'
             ], 400);
         }
+
 
         DB::beginTransaction();
         try {

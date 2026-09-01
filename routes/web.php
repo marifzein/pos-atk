@@ -66,6 +66,10 @@ Route::middleware(['auth', \App\Http\Middleware\CheckCommissionScheme::class])->
 
     // customer
     Route::resource('customers', CustomerController::class);
+    // Customer API / AJAX
+    Route::post('/api/customers', [CustomerController::class, 'storeApi'])->name('api.customers.store');
+
+
     // supplier
     Route::resource('suppliers', SupplierController::class);
 
@@ -83,6 +87,8 @@ Route::middleware(['auth', \App\Http\Middleware\CheckCommissionScheme::class])->
         Route::get('/kasir', [KasirController::class, 'index'])->name('kasir.index');
         Route::get('/kasir/create', [KasirController::class, 'create'])->name('kasir.create');
         Route::post('/kasir/store', [KasirController::class, 'storeTransaction']);
+
+        Route::get('/kasir/api/orders', [KasirController::class, 'apiOrders'])->name('kasir.api.orders');
     });
 
     // 💡 2. RUTE KHUSUS UNTUK PROSES ISI uang MODAL AWAL kasir (DI LUAR PROTEKSI SHIFT)

@@ -7,116 +7,22 @@
     <title>@yield('title', 'POS ATK')</title>
     <link rel="shortcut icon" href="{{ asset('favicon.ico') }}" type="image/x-icon">
     <link rel="icon" href="{{ asset('favicon.ico') }}" type="image/x-icon">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
+
+    <link rel="stylesheet" href="{{ asset('css/fonts.css') }}">
+
+
+    {{-- <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Figtree:ital,wght@0,300..900;1,300..900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Figtree:ital,wght@0,300..900;1,300..900&display=swap" rel="stylesheet"> --}}
     
     <!-- Remixicon atau FontAwesome untuk Icon -->
-    <link href="https://cdn.jsdelivr.net/npm/remixicon@4.2.0/fonts/remixicon.css" rel="stylesheet"/>
+    {{-- <link href="https://cdn.jsdelivr.net/npm/remixicon@4.2.0/fonts/remixicon.css" rel="stylesheet"/> --}}
+    <link href="{{ asset('css/remixicon/remixicon.css') }}" rel="stylesheet" />
+    <link href="{{ asset('css/sidebar.css') }}" rel="stylesheet" />
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <script defer src="{{ asset('js/alpine.min.js') }}"></script>
     <script src="{{ asset('js/sweetalert2.all.min.js') }}"></script>
-    <style>
-    body { 
-        font-family: 'Figtree', sans-serif !important; 
-        letter-spacing: -0.02em; 
-    }
-    
-    /* Warna Background Terinspirasi Greeweb (Dark Teal Kedalaman Tinggi) */
-    aside { 
-        background: #081a1e; /* Warna gelap khas panel kontrol industri */
-        color: #f1f5f9; 
-        box-shadow: 4px 0 24px rgba(0, 0, 0, 0.15); 
-    }
-    
-    .menu-group { 
-        color: #4a666a; 
-        font-size: 0.725rem; 
-        text-transform: uppercase; 
-        letter-spacing: 0.08em; 
-        font-weight: 700; 
-        padding-left: 24px; 
-        margin-top: 1.5rem; 
-        margin-bottom: 0.5rem; 
-    }
-    
-    .menu-parent { 
-        color: #94a3b8; 
-        border-radius: 10px; 
-        margin: 2px 14px; 
-        padding: 9px 14px; 
-        font-weight: 500; 
-        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); 
-    }
-    
-    .menu-parent:hover { 
-        background: rgba(255, 255, 255, 0.04); 
-        color: #fff; 
-    }
-    
-    .submenu { 
-        display: flex; 
-        align-items: center; 
-        padding: 8px 16px 8px 42px; 
-        margin: 2px 14px; 
-        /*color: #8fa0a4;*/ 
-        /*color: #CBD5E1 ;*/ 
-        color: #94A3B8  ; 
-        font-size: 0.9rem; 
-        font-weight:500;
-        border-radius: 8px; 
-        transition: all 0.2s ease; 
-    }
-    
-    .submenu:hover { 
-        background: rgba(255, 255, 255, 0.02); 
-        color: #11b981; 
-        padding-left: 46px; 
-    }
-    
-    /* 💡 KUNCI FIX: Indikator Aktif Tipe Soft Tint Green ala Greeweb */
-    .submenu-active { 
-        background: rgba(16, 185, 129, 0.12) !important; /* Hijau super soft transparan */
-        color: #34d399 !important; /* Teks Mint Green lembut tapi kontras */
-        font-weight: 600; 
-    }
-    
-    .menu-content { 
-        overflow: hidden; 
-        max-height: 0; 
-        opacity: 0; 
-        transition: max-height 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.2s ease; 
-    }
-    
-    .menu-content.open { 
-        max-height: 1000px; 
-        opacity: 1; 
-    }
-    
-    .rotate { 
-        transform: rotate(90deg); 
-        color: #34d399 !important; 
-    }
-    
-    .sidebar-footer { 
-        border-top: 1px solid rgba(255, 255, 255, 0.04); 
-        background: rgba(0, 0, 0, 0.15); 
-    }
-
-    /* Mengubah warna latar belakang option saat di-hover/pilih di browser modern */
-    select option:hover,
-    select option:focus,
-    select option:active,
-    select option:checked {
-        background-color: #10b981 !important; /* Warna Hijau Emerald */
-        color: white !important;
-    }
-    
-
-    /* 💡 KUNCI FIX: Pembasmi Scrollbar Menjengkelkan */
-    .no-scrollbar::-webkit-scrollbar { display: none; }
-    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-</style>
+   
 </head>
 <body class="bg-slate-50 text-slate-900 antialiased" x-data="{ sidebarOpen: true }">
     <div class="flex h-screen overflow-hidden">

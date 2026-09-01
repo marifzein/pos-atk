@@ -149,7 +149,7 @@
             <i class="ri-file-text-line"></i> Detail
         </a>
 
-        @if(strtolower($order->status) !== 'batal')
+        @if(strtolower($order->status) == 'order')
             <!-- Tombol Batal -->
             <button type="button" @click="openModal('{{ $order->id }}', '{{ $order->no_pesanan }}')" class="inline-flex items-center px-2.5 py-1.5 bg-red-600 hover:bg-red-700 text-white text-xs font-medium rounded-md shadow-sm transition">
                                     <i class="ri-close-circle-line mr-1"></i> Batal

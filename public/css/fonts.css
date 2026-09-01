@@ -1,0 +1,29 @@
+/* Font Tegak (Normal) */
+@font-face {
+    font-family: "Figtree";
+    src:
+        url("../fonts/Figtree-VariableFont_wght.ttf")
+            format("truetype-variations"),
+        url("../fonts/Figtree-VariableFont_wght.ttf") format("truetype");
+    font-weight: 300 900;
+    font-style: normal;
+    font-display: swap;
+}
+
+/* Font Miring (Italic) */
+@font-face {
+    font-family: "Figtree";
+    src:
+        url("../fonts/Figtree-Italic-VariableFont_wght.ttf")
+            format("truetype-variations"),
+        url("../fonts/Figtree-Italic-VariableFont_wght.ttf") format("truetype");
+    font-weight: 300 900;
+    font-style: italic;
+    font-display: swap;
+}
+
+/* Set font default untuk seluruh halaman */
+body {
+    font-family: "Figtree", sans-serif !important;
+    letter-spacing: -0.02em;
+}

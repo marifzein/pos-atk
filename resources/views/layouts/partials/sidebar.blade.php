@@ -85,7 +85,7 @@
 
         <div id="menu-master" class="menu-content" x-show="sidebarOpen">
             <a href="{{ route('products.index') }}" class="submenu {{ request()->is('products*') ? 'submenu-active':'' }}"><i class="ri-box-3-line mr-2.5 text-sm mr-2.5 opacity-90"></i> Produk</a>
-            <a href="{{ url('/import-produk') }}" class="submenu {{ request()->is('import-produk*') ? 'submenu-active':'' }}"><i class="ri-file-excel-line mr-2.5 text-sm opacity-90"></i> Import Produk</a>
+            {{-- <a href="{{ url('/import-produk') }}" class="submenu {{ request()->is('import-produk*') ? 'submenu-active':'' }}"><i class="ri-file-excel-line mr-2.5 text-sm opacity-90"></i> Import Produk</a> --}}
             {{-- <a href="/kategori" class="submenu {{ request()->is('kategori*') ? 'submenu-active':'' }}"><i class="ri-price-tag-3-line mr-2.5 text-sm opacity-90"></i> Kategori</a> --}}
             <a href="{{ route('suppliers.index') }}" class="submenu {{ request()->is('supplier*') ? 'submenu-active':'' }}"><i class="ri-truck-line mr-2.5 text-sm opacity-90"></i> Supplier</a>
            
@@ -100,7 +100,7 @@
             
 
             <a href="{{ route('products.index') }}" class="flex items-center gap-3 px-4 py-2 text-sm text-slate-400 hover:bg-emerald-500/10 hover:text-emerald-400 transition"><i class="ri-box-3-line opacity-90"></i> Produk</a>
-            <a href="{{ url('/import-produk') }}" class="flex items-center gap-3 px-4 py-2 text-sm text-slate-400 hover:bg-emerald-500/10 hover:text-emerald-400 transition"><i class="ri-file-excel-line opacity-90"></i> Import Produk</a>
+            {{-- <a href="{{ url('/import-produk') }}" class="flex items-center gap-3 px-4 py-2 text-sm text-slate-400 hover:bg-emerald-500/10 hover:text-emerald-400 transition"><i class="ri-file-excel-line opacity-90"></i> Import Produk</a> --}}
             
             <a href="{{ url('/supplier') }}" class="flex items-center gap-3 px-4 py-2 text-sm text-slate-400 hover:bg-emerald-500/10 hover:text-emerald-400 transition"><i class="ri-truck-line opacity-90"></i> Supplier</a>
             <a href="{{ url('/customer') }}" class="flex items-center gap-3 px-4 py-2 text-sm text-slate-400 hover:bg-emerald-500/10 hover:text-emerald-400 transition"><i class="ri-user-shared-line opacity-90"></i> Customer</a>

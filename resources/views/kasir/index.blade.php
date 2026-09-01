@@ -4,7 +4,21 @@
 
 @section('content')
 
+{{-- gridjs bos --}}
+{{-- <link href="https://unpkg.com/gridjs/dist/theme/mermaid.min.css" rel="stylesheet" />
+<script src="https://unpkg.com/gridjs/dist/gridjs.umd.js"></script> --}}
 
+<link href="{{ asset('css/gridjs/mermaid.min.css') }}" rel="stylesheet" />
+<script src="{{ asset('js/gridjs/gridjs.umd.js') }}"></script>
+
+<style>
+    .gridjs-wrapper { border-radius: 0.5rem; border: none !important; box-shadow: none !important; }
+    .gridjs-head { background-color: #f8fafc; }
+    th.gridjs-th { background-color: #f8fafc !important; color: #475569 !important; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; padding: 12px 16px !important; }
+    td.gridjs-td { padding: 12px 16px !important; border-bottom: 1px solid #f1f5f9 !important; font-size: 0.875rem; }
+    .gridjs-footer { border-top: 1px solid #f1f5f9 !important; background-color: transparent !important; padding: 12px 0 0 0 !important; }
+    .gridjs-pagination .gridjs-pages button.gridjs-currentPage { background-color: #4f46e5 !important; color: white !important; border-color: #4f46e5 !important; }
+</style>
 
 
 
@@ -16,95 +30,90 @@
 
 <!-- Container Card Utama -->
 <div class="bg-white rounded-xl shadow-sm border border-slate-200/80 p-5">
-    
-    <!-- Filter & Pencarian -->
-    <div class="mb-5 flex flex-col sm:flex-row items-center justify-between gap-3">
-        <form method="GET" action="{{ route('kasir.index') }}" class="w-full sm:w-80 relative">
-            <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">
-                <i class="ri-search-line"></i>
-            </span>
-            <input type="text" name="search" value="{{ $search ?? '' }}" 
-                   placeholder="Cari No. WO / Pelanggan..." 
-                   class="w-full text-sm border border-slate-300 rounded-lg pl-9 pr-3 py-2 focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 outline-none">
-        </form>
-    </div>
-
-    <!-- Tabel Data WO -->
-    <div class="overflow-x-auto border border-slate-100 rounded-lg">
-       <!-- Tabel Data WO -->
-        <x-table>
-            <x-table-header>
-                <tr>
-                    <x-table-head class="p-3 text-left font-bold">No WO</x-table-head>
-                    <x-table-head class="p-3 text-left font-bold">Tanggal</x-table-head>
-                    <x-table-head class="p-3 text-left font-bold">Operator</x-table-head>
-                    <x-table-head class="p-3 text-left font-bold">Pelanggan</x-table-head>
-                    <x-table-head class="p-3 text-center font-bold">Status</x-table-head>
-                    <x-table-head class="p-3 text-right font-bold">Total</x-table-head>
-                    <x-table-head class="p-3 text-center font-bold">Aksi</x-table-head>
-                </tr>
-            </x-table-header>
-
-            <tbody>
-                @forelse($orders as $order)
-                    <tr class="hover:bg-slate-50/50 transition">
-                        <td class="p-3 font-semibold text-slate-800 font-mono text-sm">
-                            {{ $order->no_pesanan }}
-                        </td>
-
-                        <td class="p-3 text-slate-500 ">
-                            {{ $order->created_at ? $order->created_at->format('Y-m-d H:i:s') : '-' }}
-                        </td>
-
-                        <td class="p-3 text-slate-700 font-medium text-sm">
-                            {{ $order->operator->name ?? 'Admin' }}
-                        </td>
-
-                        <td class="p-3 text-slate-700 text-sm">
-                            @if($order->customer)
-                                <span class="font-semibold text-indigo-900">{{ $order->customer->nama }}</span>
-                            @else
-                                <span class="text-slate-400 italic">{{ $order->customer_name_manual ?? 'Umum (Non-Member)' }}</span>
-                            @endif
-                        </td>
-
-                        <td class="p-3 text-center">
-                            <x-badge color="yellow">ORDER</x-badge>
-                        </td>
-
-                        <td class="p-3 text-right font-bold text-slate-900 font-mono">
-                            Rp {{ number_format($order->orderItems?->sum('subtotal') ?? $order->items?->sum('subtotal') ?? 0, 0, ',', '.') }}
-                        </td>
-
-                        <td class="p-3 text-center">
-                            <a href="{{ route('kasir.create', ['order_id' => $order->id]) }}" 
-                               class="inline-flex items-center justify-center gap-1 bg-indigo-600 hover:bg-indigo-700 text-white font-medium  px-2.5 py-1 rounded-md transition shadow-sm">
-                                <i class="ri-money-dollar-box-line"></i> Bayar / Process
-                            </a>
-                        </td>
-                    </tr>
-                @empty
-                    <tr>
-                        <td colspan="7">
-                            <x-empty-state 
-                                icon="ri-shopping-cart-line" 
-                                title="Belum ada pesanan" 
-                                description="Tidak ada Work Order (WO) yang siap dibayar saat ini." 
-                            />
-                        </td>
-                    </tr>
-                @endforelse
-            </tbody>
-        </x-table>
-
-        <div class="mt-6">
-            {{ $orders->links() }}
-        </div>
-    </div>
-
-    <!-- Pagination -->
-    <div class="mt-4">
-        {{ $orders->links() }}
-    </div>
+    <div id="gridjs-table"></div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    new gridjs.Grid({
+        columns: [
+            { 
+                name: 'No WO',
+                formatter: (cell) => gridjs.html(`<span class="font-bold text-slate-800 font-mono text-base">${cell}</span>`)
+            },
+            { name: 'Tanggal' },
+            { name: 'Operator' },
+            { 
+                name: 'Pelanggan',
+                formatter: (cell) => gridjs.html(`<span class="font-semibold text-slate-700">${cell}</span>`)
+            },
+            { 
+                name: 'Status',
+                attributes: { class: 'text-center' },
+                formatter: () => gridjs.html(`<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-800">ORDER</span>`)
+            },
+            { 
+                name: 'Total',
+                attributes: { class: 'text-right' },
+                formatter: (cell) => gridjs.html(`<span class="font-bold text-slate-900 font-mono">${cell}</span>`)
+            },
+            { 
+                name: 'Aksi',
+                sort: false,
+                attributes: { class: 'text-center' },
+                formatter: (url) => gridjs.html(`
+                    <a href="${url}" class="inline-flex items-center justify-center gap-1 bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1.5 rounded-lg transition shadow-xs text-xs font-semibold">
+                        <i class="ri-money-dollar-box-line"></i> Bayar
+                    </a>
+                `)
+            }
+        ],
+        server: {
+            url: '{{ route("kasir.api.orders") }}',
+            then: data => data.data,
+            total: data => data.total
+        },
+        search: {
+            server: {
+                url: (prev, keyword) => `${prev}?search=${encodeURIComponent(keyword)}`
+            }
+        },
+        sort: {
+            multiColumn: false,
+            server: {
+                url: (prev, columns) => {
+                    if (!columns.length) return prev;
+                    const col = columns[0];
+                    const dir = col.direction === 1 ? 'asc' : 'desc';
+                    const delimiter = prev.includes('?') ? '&' : '?';
+                    return `${prev}${delimiter}sort=${dir}`;
+                }
+            }
+        },
+        pagination: {
+            limit: 10,
+            server: {
+                url: (prev, page, limit) => {
+                    const delimiter = prev.includes('?') ? '&' : '?';
+                    return `${prev}${delimiter}page=${page + 1}&limit=${limit}`;
+                }
+            }
+        },
+        language: {
+            'search': {
+                'placeholder': '🔍 Cari No. WO / Pelanggan...'
+            },
+            'pagination': {
+                'previous': 'Sebelumnya',
+                'next': 'Selanjutnya',
+                'showing': 'Menampilkan',
+                'results': () => 'Data',
+                'of': 'dari',
+                'to': 'sampai'
+            },
+            'noRecordsFound': 'Tidak ada Work Order (WO) yang siap dibayar saat ini.'
+        }
+    }).render(document.getElementById("gridjs-table"));
+});
+</script>
 @endsection

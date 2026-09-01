@@ -4,15 +4,7 @@
 
 @section('content')
 
-    <!-- HEADER TITLE & TOMBOL KEMBALI -->
-    {{-- <div class="flex justify-between items-center mb-4">
-        <h2 class="text-2xl font-bold flex items-center gap-2">
-            <i class="ri-shopping-cart-2-line text-indigo-600"></i> POS ( Point Of Sales )
-        </h2>
-        <a href="{{ route('kasir.index') }}" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-medium text-sm flex items-center gap-2 transition">
-            <i class="ri-arrow-left-line"></i> Kembali
-        </a>
-    </div> --}}
+    
 
     <x-page-header title="POS/Kasir" subtitle="Buat dan Cetak Nota">
     <x-slot:action>
@@ -369,52 +361,14 @@
         </div>
 
         <!-- MODAL TAMBAH PELANGGAN BARU -->
-        <div
-            x-data="{ 
-                showCustomerModal: false,
-                newCustomer: { nama: '', telepon: '', alamat: '' },
-                async saveNewCustomer() {
-                    if (!this.newCustomer.nama.trim()) {
-                        Swal.fire({ icon: 'warning', title: 'Perhatian', text: 'Nama pelanggan wajib diisi!' });
-                        return;
-                    }
-                    try {
-                        let response = await fetch('/api/customers', {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                                'X-CSRF-TOKEN': document.querySelector('meta[name=&quot;csrf-token&quot;]').content
-                            },
-                            body: JSON.stringify(this.newCustomer)
-                        });
-                        let result = await response.json();
-                        if (result.success) {
-                            window.dispatchEvent(new CustomEvent('customer-added', { detail: result.customer }));
-                            this.newCustomer = { nama: '', telepon: '', alamat: '' };
-                            this.showCustomerModal = false;
-                            
-                            Swal.fire({
-                                icon: 'success',
-                                title: 'Berhasil!',
-                                text: 'Pelanggan berhasil disimpan',
-                                timer: 1500,
-                                showConfirmButton: false
-                            });
-                        } else {
-                            Swal.fire({ icon: 'error', title: 'Gagal', text: 'Gagal menyimpan pelanggan' });
-                        }
-                    } catch (error) {
-                        console.error(error);
-                        Swal.fire({ icon: 'error', title: 'Error', text: 'Terjadi kesalahan sistem' });
-                    }
-                }
-            }"
-            @open-customer-modal.window="showCustomerModal = true; $nextTick(() => $refs.newCustomerName.focus())"
-            x-show="showCustomerModal"
-            x-cloak
-            class="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
-            @keydown.escape.window="showCustomerModal = false;"
-        >
+        
+        <div x-data="customerModal" 
+            @open-customer-modal.window="showCustomerModal = true; $nextTick(() => $refs.newCustomerName.focus())" 
+            x-show="showCustomerModal" 
+            class="fixed inset-0 bg-black/50 flex items-center justify-center z-50" 
+            @keydown.escape.window="showCustomerModal = false" 
+            style="display: none;">
+
             <div class="bg-white rounded-xl p-6 w-full max-w-md shadow-2xl" @click.outside="showCustomerModal = false">
                 <div class="flex justify-between items-center mb-4">
                     <h3 class="font-bold text-xl text-slate-800 flex items-center gap-1">
@@ -909,4 +863,46 @@ function posKasir() {
 window.ALL_PRODUCTS = @json($products);
 window.ALL_CUSTOMERS = @json($customers);
 </script>
+
+<script>
+    document.addEventListener('alpine:init', () => {
+        Alpine.data('customerModal', () => ({
+            showCustomerModal: false,
+            newCustomer: { nama: '', telepon: '', alamat: '' },
+
+            async saveNewCustomer() {
+                if (!this.newCustomer.nama.trim()) {
+                    Swal.fire({ icon: 'warning', title: 'Perhatian', text: 'Nama pelanggan wajib diisi!' });
+                    return;
+                }
+
+                try {
+                    let response = await fetch('/api/customers', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                        },
+                        body: JSON.stringify(this.newCustomer)
+                    });
+
+                    let result = await response.json();
+
+                    if (result.success) {
+                        window.dispatchEvent(new CustomEvent('customer-added', { detail: result.customer }));
+                        this.newCustomer = { nama: '', telepon: '', alamat: '' };
+                        this.showCustomerModal = false;
+                        Swal.fire({ icon: 'success', title: 'Berhasil!', text: 'Pelanggan berhasil disimpan', timer: 1500, showConfirmButton: false });
+                    } else {
+                        Swal.fire('Error', result.message || 'Gagal menyimpan pelanggan', 'error');
+                    }
+                } catch (error) {
+                    console.error(error);
+                    Swal.fire('Error', 'Terjadi kesalahan sistem', 'error');
+                }
+            }
+        }));
+    });
+</script>
+
 @endsection

@@ -104,11 +104,11 @@ class ShiftController extends Controller
 
         // Hitung total penjualan cash (cash - kembalian)
         $totalCashSales = Transaction::where('shift_id', $activeShift->id)
-                                    ->where('status', 'SOLD')
+                                    ->where('status', 'LUNAS')
                                     ->sum('cash'); 
                                      
         $totalKembalian = Transaction::where('shift_id', $activeShift->id)
-                                    ->where('status', 'SOLD')
+                                    ->where('status', 'LUNAS')
                                     ->sum('kembalian');
                                      
         $netCashSales = $totalCashSales - $totalKembalian;
@@ -136,10 +136,10 @@ class ShiftController extends Controller
         }
 
         $totalCashSales = Transaction::where('shift_id', $activeShift->id)
-                                    ->where('status', 'SOLD')
+                                    ->where('status', 'LUNAS')
                                     ->sum('cash');
         $totalKembalian = Transaction::where('shift_id', $activeShift->id)
-                                    ->where('status', 'SOLD')
+                                    ->where('status', 'LUNAS')
                                     ->sum('kembalian');
 
         $netCashSales = $totalCashSales - $totalKembalian;
@@ -184,7 +184,7 @@ class ShiftController extends Controller
 
         // Agregasi Non-Cash (Card & Voucher) serta Total Omzet dari tabel transactions
         $summary = \App\Models\Transaction::where('shift_id', $shift->id)
-            ->where('status', 'SOLD')
+            ->where('status', 'LUNAS')
             ->selectRaw('SUM(card) as total_card, SUM(voucher) as total_voucher, SUM(grand_total) as total_grand, COUNT(id) as count_trx')
             ->first();
 
@@ -192,7 +192,7 @@ class ShiftController extends Controller
         $totalQtySold = \Illuminate\Support\Facades\DB::table('transaction_details')
             ->join('transactions', 'transaction_details.transaction_id', '=', 'transactions.id')
             ->where('transactions.shift_id', $shift->id)
-            ->where('transactions.status', 'SOLD')
+            ->where('transactions.status', 'LUNAS')
             ->sum('transaction_details.qty');
 
         return view('laporan.shift.show', compact('shift', 'summary', 'totalQtySold'));

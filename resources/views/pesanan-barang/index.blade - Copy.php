@@ -48,7 +48,6 @@
                     </template>
                 </div>
 
-                <!-- INFO SHORTCUT SAMAKAN DENGAN PESANAN JASA -->
                 <div class="bg-amber-50/50 border border-amber-200 rounded-xl p-4">
                     <label class="block text-[11px] text-amber-800 font-bold uppercase tracking-wider mb-2 flex items-center gap-1">
                         <i class="ri-keyboard-line"></i> Shortcut Keyboard
@@ -57,10 +56,6 @@
                         <div class="flex justify-between"><span class="text-slate-500">Cari Barang</span><span class="font-mono bg-white px-1.5 py-0.5 border rounded shadow-sm text-[10px]">F2</span></div>
                         <div class="flex justify-between"><span class="text-slate-500">Pilih Item</span><span class="font-mono bg-white px-1.5 py-0.5 border rounded shadow-sm text-[10px]">↑ / ↓</span></div>
                         <div class="flex justify-between"><span class="text-slate-500">Masuk Chart</span><span class="font-mono bg-white px-1.5 py-0.5 border rounded shadow-sm text-[10px]">Enter</span></div>
-                        <div class="flex justify-between"><span>F3</span><span class="font-medium text-slate-800">Cek Harga Barang</span></div>
-                        <div class="flex justify-between"><span>F8</span><span class="font-medium text-slate-800">Pelanggan</span></div>
-                        <div class="flex justify-between"><span>F10</span><span class="font-medium text-slate-800">Simpan</span></div>
-                        <div class="flex justify-between text-rose-600"><span>Ctrl+Del</span><span class="font-semibold">Kosongkan Cart</span></div>
                     </div>
                 </div>
 
@@ -162,7 +157,7 @@
                         </div>
 
                         <button @click="saveTransaction()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-3.5 rounded-lg font-bold transition flex justify-center items-center shadow-md shadow-indigo-100 text-sm tracking-wide">
-                            <i class="ri-save-3-line mr-2 text-lg"></i> F10 Simpan Pesanan Barang
+                            <i class="ri-save-3-line mr-2 text-lg"></i> Simpan Pesanan Barang
                         </button>
                     </div>
                 </div>
@@ -171,42 +166,6 @@
         </div>
 
     </div>
-
-    <!-- MODAL CEK HARGA (F3) BARANG -->
-    <div
-        x-show="showPriceModal"
-        x-cloak
-        class="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
-        @keydown.escape.window="closePriceModal()"
-    >
-        <div class="bg-white rounded-xl p-6 w-full max-w-xl shadow-2xl">
-            <div class="flex justify-between mb-4 items-center">
-                <h3 class="font-bold text-xl text-slate-800">Cek Harga Barang</h3>
-                <button @click="closePriceModal()" class="text-gray-400 hover:text-gray-600 text-lg">✕</button>
-            </div>
-
-            <input
-                x-ref="priceInput"
-                x-model="priceSearch"
-                @input="searchPrice()"
-                placeholder="Scan Barcode / Nama Barang"
-                class="w-full border rounded-lg p-3 outline-none focus:border-indigo-500"
-            >
-
-            <div class="mt-4 max-h-80 overflow-y-auto divide-y divide-slate-100">
-                <template x-for="item in priceResults" :key="item.id">
-                    <div class="py-3 flex justify-between items-center">
-                        <div>
-                            <div class="font-semibold text-slate-800" x-text="item.name || item.nama_barang"></div>
-                            <div class="text-xs text-slate-400" x-text="'Kode/Barcode: ' + (item.barcode || item.id)"></div>
-                        </div>
-                        <div class="text-indigo-600 font-bold" x-text="'Harga : Rp ' + Number(item.price || item.harga).toLocaleString('id-ID')"></div>
-                    </div>
-                </template>
-            </div>
-        </div>
-    </div>
-
 </div>
 
 <script>
@@ -224,95 +183,20 @@ function posBarang() {
         selectedCustomer: null,
         customerIndex: -1,
 
-        showPriceModal: false,
-        priceSearch: '',
-        priceResults: [],
-
         allProducts: window.ALL_BARANG_PRODUCTS || [],
         allCustomers: window.ALL_CUSTOMERS || [],
 
         init() {
-            window.addEventListener('customer-added', (e) => {
-                const newCustomer = e.detail;
-                if (window.ALL_CUSTOMERS) window.ALL_CUSTOMERS.push(newCustomer);
-                if (this.allCustomers) this.allCustomers.push(newCustomer);
-                this.selectCustomer(newCustomer);
+            window.addEventListener('keydown', (e) => {
+                if (e.key === 'F2') {
+                    e.preventDefault();
+                    if (this.$refs.barangInput) this.$refs.barangInput.focus();
+                }
             });
-
-            window.addEventListener('keydown', this.handleShortcut.bind(this));
-
             this.$nextTick(() => {
                 if (this.$refs.barangInput) this.$refs.barangInput.focus();
             });
             this.recalculate();
-        },
-
-        handleShortcut(e) {
-            if (typeof Swal !== 'undefined' && Swal.isVisible()) return;
-
-            if (e.key === 'F2') {
-                e.preventDefault();
-                this.$refs.barangInput?.focus();
-                this.$refs.barangInput?.select();
-            } else if (e.key === 'F3') {
-                e.preventDefault();
-                this.showPriceModal = true;
-                setTimeout(() => { this.$refs.priceInput?.focus(); }, 50);
-            } else if (e.key === 'F8') {
-                e.preventDefault();
-                this.$refs.customerInput?.focus();
-                this.$refs.customerInput?.select();
-            } else if (e.key === 'F10') {
-                e.preventDefault();
-                this.saveTransaction();
-            } else if (e.ctrlKey && e.key === 'Delete') {
-                e.preventDefault();
-                this.clearCart();
-            }
-        },
-
-        closePriceModal() {
-            this.showPriceModal = false;
-            this.priceSearch = '';
-            this.priceResults = [];
-            setTimeout(() => {
-                this.$refs.barangInput?.focus();
-            }, 50);
-        },
-
-        searchPrice() {
-            let q = this.priceSearch.toLowerCase().trim();
-            if (q.length < 1) {
-                this.priceResults = [];
-                return;
-            }
-            this.priceResults = this.allProducts.filter(item => 
-                item.type === 'barang' && (
-                    (item.name || '').toLowerCase().includes(q) ||
-                    (item.barcode || '').toLowerCase().includes(q)
-                )
-            ).slice(0, 10);
-        },
-
-        async clearCart() {
-            const result = await Swal.fire({
-                icon: 'warning',
-                title: 'Kosongkan Cart?',
-                text: 'Semua item pesanan barang akan dihapus',
-                showCancelButton: true,
-                confirmButtonText: 'Ya',
-                cancelButtonText: 'Batal',
-                returnFocus: false
-            });
-
-            if (result.isConfirmed) {
-                this.cart = [];
-                this.catatan = '';
-                this.$nextTick(() => {
-                    this.recalculate();
-                    this.$refs.barangInput?.focus();
-                });
-            }
         },
 
         searchBarang() {
@@ -321,6 +205,7 @@ function posBarang() {
                 this.barangItems = [];
                 return;
             }
+            // Strict Filter: Hanya tipe 'barang'
             this.barangItems = this.allProducts.filter(item => 
                 item.type === 'barang' && (
                     (item.name || '').toLowerCase().includes(q) ||
@@ -376,6 +261,7 @@ function posBarang() {
             return 'Rp ' + Number(val || 0).toLocaleString('id-ID');
         },
 
+        // CUSTOMER CONTROLS
         searchCustomer() {
             let keyword = this.customerSearch.toLowerCase().trim();
             if (keyword.length < 2) {

@@ -3,9 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Log in - FlowPOS</title>
+    <title>Log in - TataKas</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css">
+    {{-- <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css"> --}}
+    <link href="{{ asset('css/remixicon/remixicon.css') }}" rel="stylesheet" />
 </head>
 <body class="bg-[#0b0c10] min-h-screen flex items-center justify-center p-4 font-sans">
 

@@ -120,21 +120,17 @@ class UserController extends Controller
         }
         
         $request->validate([
-
-            'name'=>'required',
-            'email'=>'required|email|unique:users,email,'.$user->id,
-            'role'=>'required',
-            'is_active'=>'required',
-            'password' => 'nullable|min:6|confirmed',
-
+            'name'      => 'required',
+            'email'     => 'nullable|email|unique:users,email,' . $user->id,
+            'role'      => 'required',
+            'is_active' => 'nullable', // BISA BOLEH KOSONG KARENA PAKAI CHECKBOX
+            'password'  => 'nullable|min:6|confirmed',
         ]);
 
         $data = [
 
             'name'      => $request->name,
-
             'email'     => $request->email,
-
             'role'      => $request->role,
             // Jika checkbox dicentang, nilainya "1" (true). Jika tidak dikirim, berarti false.
             'is_active' => $request->has('is_active') ? true : false,

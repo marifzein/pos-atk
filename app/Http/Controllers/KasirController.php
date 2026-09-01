@@ -20,23 +20,25 @@ class KasirController extends Controller
      */
     public function index(Request $request)
     {
-        $search = $request->input('search');
+        // $search = $request->input('search');
 
-        $orders = Order::with(['customer', 'operator', 'items'])
-            ->where('status', 'order')
-            ->when($search, function ($query, $search) {
-                $query->where(function ($q) use ($search) {
-                    $q->where('no_pesanan', 'like', "%{$search}%")
-                      ->orWhere('customer_name_manual', 'like', "%{$search}%")
-                      ->orWhereHas('customer', function ($c) use ($search) {
-                          $c->where('nama', 'like', "%{$search}%");
-                      });
-                });
-            })
-            ->orderBy('id', 'desc')
-            ->paginate(10);
+        // $orders = Order::with(['customer', 'operator', 'items'])
+        //     ->where('status', 'order')
+        //     ->when($search, function ($query, $search) {
+        //         $query->where(function ($q) use ($search) {
+        //             $q->where('no_pesanan', 'like', "%{$search}%")
+        //               ->orWhere('customer_name_manual', 'like', "%{$search}%")
+        //               ->orWhereHas('customer', function ($c) use ($search) {
+        //                   $c->where('nama', 'like', "%{$search}%");
+        //               });
+        //         });
+        //     })
+        //     ->orderBy('id', 'desc')
+        //     ->paginate(10);
 
-        return view('kasir.index', compact('orders', 'search'));
+        // return view('kasir.index', compact('orders', 'search'));
+
+        return view('kasir.index');
     }
 
     /**
@@ -125,7 +127,7 @@ class KasirController extends Controller
     }
 
     public function storeTransaction(Request $request)
-    {
+    {   
         $request->validate([
             'cart' => 'required|array|min:1',
             'grand_total' => 'required|numeric',
@@ -273,5 +275,55 @@ class KasirController extends Controller
         $transactions = $query->latest()->paginate(10)->withQueryString();
 
         return view('kasir.history', compact('transactions'));
+    }
+
+
+    // Endpoint JSON khusus Server-Side Grid.js
+    public function apiOrders(Request $request)
+    {
+        $search = $request->input('search');
+        $limit  = $request->input('limit', 10);
+        $page   = $request->input('page', 1);
+
+        $query = Order::with(['customer', 'operator', 'items', 'orderItems'])
+            ->where('status', 'order')
+            ->when($search, function ($q) use ($search) {
+                $q->where(function ($sub) use ($search) {
+                    $sub->where('no_pesanan', 'like', "%{$search}%")
+                        ->orWhere('customer_name_manual', 'like', "%{$search}%")
+                        ->orWhereHas('customer', function ($c) use ($search) {
+                            $c->where('nama', 'like', "%{$search}%");
+                        });
+                });
+            });
+
+        // Sorting dinamis
+        if ($request->has('sort')) {
+            $sortDir = $request->input('sort'); // 'asc' atau 'desc'
+            $query->orderBy('id', $sortDir);
+        } else {
+            $query->orderBy('id', 'desc');
+        }
+
+        $paginator = $query->paginate($limit, ['*'], 'page', $page);
+
+        // Format response sesuai JSON yang dibutuhkan Grid.js server-side
+        return response()->json([
+            'data' => collect($paginator->items())->map(function ($order) {
+                $total = $order->orderItems?->sum('subtotal') ?? $order->items?->sum('subtotal') ?? 0;
+                $pelanggan = $order->customer->nama ?? $order->customer_name_manual ?? 'Umum (Non-Member)';
+                
+                return [
+                    $order->no_pesanan,
+                    $order->created_at ? $order->created_at->format('Y-m-d H:i:s') : '-',
+                    $order->operator->name ?? 'Admin',
+                    $pelanggan,
+                    'ORDER',
+                    'Rp ' . number_format($total, 0, ',', '.'),
+                    route('kasir.create', ['order_id' => $order->id])
+                ];
+            }),
+            'total' => $paginator->total()
+        ]);
     }
 }

@@ -14,10 +14,35 @@
 </x-page-header>
 
 <x-card>
-    <form method="POST" action="{{ route('products.store') }}" x-data="{ 
-            productType: @js(old('type', 'barang')),
-            isCustom: @js((bool) old('is_custom_price', false))
-        }" >
+    <form 
+            method="POST" 
+            action="{{ route('products.store') }}" 
+            x-data="{ 
+                productType: @js(old('type', 'barang')),
+                isCustom: @js((bool) old('is_custom_price', false)),
+                purchasePrice: @js((float) old('purchase_price', 0)),
+                price: @js((float) old('price', 0)),
+                
+                handleSubmit(e) {
+                    if (this.productType === 'barang') {
+                        if (parseFloat(this.purchasePrice) <= 0 || parseFloat(this.price) <= 0) {
+                            if (typeof Swal !== 'undefined') {
+                                Swal.fire({
+                                    icon: 'warning',
+                                    title: 'Validasi Harga',
+                                    text: 'Untuk tipe Produk Barang, Harga Beli dan Harga Jual harus lebih besar dari 0!'
+                                });
+                            } else {
+                                alert('Untuk tipe Produk Barang, Harga Beli dan Harga Jual harus lebih besar dari 0!');
+                            }
+                            return;
+                        }
+                    }
+                    e.target.submit();
+                }
+            }"
+            @submit.prevent="handleSubmit($event)"
+        >
         @csrf
         
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -115,8 +140,27 @@
                 @endforeach
             </x-select-custom>
 
-            <x-input label="Harga Beli (Rp)" name="purchase_price" type="number" icon="ri-money-dollar-circle-line" required :value="old('purchase_price', 0)" />
-            <x-input label="Harga Jual (Rp) " name="price" type="number" icon="ri-price-tag-3-line" required :value="old('price', 0)" />
+            {{-- <x-input label="Harga Beli (Rp)" name="purchase_price" type="number" icon="ri-money-dollar-circle-line" required :value="old('purchase_price', 0)" />
+            <x-input label="Harga Jual (Rp) " name="price" type="number" icon="ri-price-tag-3-line" required :value="old('price', 0)" /> --}}
+
+            <x-input 
+                label="Harga Beli (Rp)" 
+                name="purchase_price" 
+                type="number" 
+                icon="ri-money-dollar-circle-line" 
+                required 
+                x-model="purchasePrice"
+            />
+
+            <x-input 
+                label="Harga Jual (Rp)" 
+                name="price" 
+                type="number" 
+                icon="ri-price-tag-3-line" 
+                required 
+                x-model="price"
+            />
+
             <x-input label="Stok Awal " name="stock" type="number" icon="ri-stack-line" required :value="old('stock', 0)" />
             <x-input label="Minimal Stok " name="min_stock" type="number" icon="ri-alert-line" required :value="old('min_stock', 0)" />
             

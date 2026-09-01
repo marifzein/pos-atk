@@ -5,7 +5,7 @@
     : 'layouts.app'
 )
 
-@section('title','Detail Transaksi')
+@section('title','Detail Nota')
 
 @section('content')
 
@@ -14,7 +14,7 @@
     <!-- Tombol Navigasi Header -->
     
     <div class="flex gap-2 mb-4 justify-end items-center">
-    <a href="/transactions">
+    <a href="/kasir/history">
          <x-button color="secondary" class="w-full sm:w-auto justify-center">
             <i class="ri-arrow-left-circle-line"></i> Kembali
         </x-button>
@@ -32,7 +32,7 @@
     <div class="bg-white rounded-2xl shadow-sm p-4 sm:p-6 border border-slate-100">
 
         <h1 class="text-xl sm:text-2xl font-bold text-slate-800 mb-4 sm:mb-6">
-            Detail Transaksi
+            Detail Nota
         </h1>
 
         <!-- Info Transaksi & Pelanggan -->
@@ -159,7 +159,7 @@
                 </div>
 
                 <div class="flex justify-between text-slate-600">
-                    <span>Bayar</span>
+                    <span>Bayar/Cash</span>
                     <span class="font-medium text-slate-800">Rp {{ number_format($transaction->cash,0,',','.') }}</span>
                 </div>
                 <div class="flex justify-between text-slate-600">

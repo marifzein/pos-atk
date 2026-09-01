@@ -5,7 +5,7 @@
     : 'layouts.app'
 )
 
-@section('title','Riwayat Transaksi')
+@section('title','Riwayat Nota')
 @section('page_subtitle', 'Data penjualan kasir')
 
 @section('content')
@@ -13,7 +13,7 @@
 <div class="max-w-7xl mx-auto p-2 sm:p-6">
     <div class="flex justify-between items-center mb-4">
         <h1 class="text-2xl font-bold mb-2 hidden md:block text-slate-800">
-            Riwayat Transaksi
+            Riwayat Nota
         </h1>
     </div>
 
@@ -138,6 +138,27 @@
                                 </span>
                             @endif
                         </td>
+
+                        {{-- <td class="p-3 text-center">
+                            <div class="flex items-center justify-center gap-1.5">
+                                <!-- Tombol Detail -->
+                                <a href="{{ route('kasir.show', $order->id) }}" 
+                                class="inline-flex items-center justify-center gap-1 bg-emerald-600 hover:bg-emerald-700 text-white font-medium text-xs px-2.5 py-1 rounded-md transition shadow-sm">
+                                    <i class="ri-file-text-line"></i> Detail
+                                </a>
+
+                                @if(strtolower($trx->status) === 'order')
+                                    <!-- Tombol Batal (Hanya muncul jika status ORDER) -->
+                                    <button type="button" @click="openModal('{{ $order->id }}', '{{ $order->no_pesanan }}')" class="inline-flex items-center px-2.5 py-1.5 bg-red-600 hover:bg-red-700 text-white text-xs font-medium rounded-md shadow-sm transition">
+                                        <i class="ri-close-circle-line mr-1"></i> Batal
+                                    </button>
+                                @else
+                                    <!-- Spacer Transparan untuk Alignment Sejajar -->
+                                    <span class="w-[62px] inline-block pointer-events-none opacity-0" aria-hidden="true"></span>
+                                @endif
+                            </div>
+                        </td> --}}
+
                         <td class="p-3.5 text-right font-bold text-slate-800 font-mono">
                             Rp {{ number_format($trx->grand_total, 0, ',', '.') }}
                         </td>

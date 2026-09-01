@@ -60,8 +60,11 @@
                         <span class="w-24 text-slate-500 font-medium shrink-0">Status:</span>
                         @if(strtolower($order->status) === 'batal')
                             <span class="bg-red-100 text-red-700 px-2.5 py-0.5 rounded text-xs font-semibold">Batal</span>
+                        @elseif(strtolower($order->status) === 'lunas')
+                            <span class="bg-green-100 text-green-700 px-2.5 py-0.5 rounded text-xs font-semibold">LUNAS</span>
                         @else
-                            <span class="bg-green-100 text-green-700 px-2.5 py-0.5 rounded text-xs font-semibold">SOLD</span>
+                            <span class="bg-blue-100 text-green-700 px-2.5 py-0.5 rounded text-xs font-semibold">
+                                {{  $order-> status}}</span>    
                         @endif
                     </div>
                 </div>

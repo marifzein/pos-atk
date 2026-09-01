@@ -118,9 +118,9 @@
                         <td class="p-3 border border-gray-200 text-center">
                             {{ $reportData->firstItem() + $index }}
                         </td>
-                        <td class="p-3 border border-gray-200 font-mono text-xs">{{ $row->kode_barang }}</td>
-                        <td class="p-3 border border-gray-200 font-medium text-gray-900">{{ $row->nama_barang }}</td>
-                        <td class="p-3 border border-gray-200 text-center font-bold text-slate-800">{{ number_format($row->stok, 0, ',', '.') }}</td>
+                        <td class="p-3 border border-gray-200 font-mono text-xs">{{ $row->sku }}</td>
+                        <td class="p-3 border border-gray-200 font-medium text-gray-900">{{ $row->name }}</td>
+                        <td class="p-3 border border-gray-200 text-center font-bold text-slate-800">{{ number_format($row->stock, 0, ',', '.') }}</td>
                         <td class="p-3 border border-gray-200 text-right">Rp {{ number_format($row->hpp_average, 0, ',', '.') }}</td>
                         <td class="p-3 border border-gray-200 text-right">Rp {{ number_format($row->harga_jual, 0, ',', '.') }}</td>
                         <td class="p-3 border border-gray-200 text-right bg-indigo-50/50 font-semibold text-indigo-700">Rp {{ number_format($row->total_nilai_aset, 0, ',', '.') }}</td>

@@ -29,6 +29,7 @@ class ClientModuleSeeder extends Seeder
             'LaporanPenjualanKasirController',
             'LaporanPenjualanPelangganController',
             'ShiftController',
+            'StockValuationController',
 
         ];
 

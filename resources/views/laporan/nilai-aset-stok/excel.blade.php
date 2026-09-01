@@ -24,9 +24,9 @@
             @foreach($reportData as $index => $row)
             <tr>
                 <td>{{ $index + 1 }}</td>
-                <td>'{{ $row->kode_barang }}</td> <!-- Tanda kutip tunggal mencegah Excel memotong zero-leading barcode -->
-                <td>{{ $row->nama_barang }}</td>
-                <td align="center">{{ $row->stok }}</td>
+                <td>'{{ $row->sku }}</td> <!-- Tanda kutip tunggal mencegah Excel memotong zero-leading barcode -->
+                <td>{{ $row->name }}</td>
+                <td align="center">{{ $row->stock }}</td>
                 <td align="right">{{ $row->hpp_average }}</td>
                 <td align="right">{{ $row->harga_jual }}</td>
                 <td align="right" style="background-color: #eef2ff;">{{ $row->total_nilai_aset }}</td>

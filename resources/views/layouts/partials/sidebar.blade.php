@@ -162,7 +162,7 @@
             <a href="{{ url('/laporan/laba-rugi-kotor') }}" class="submenu {{ request()->is('laporan/laba-rugi-kotor*') ? 'submenu-active':'' }}"><i class="ri-line-chart-line mr-2.5 text-sm opacity-90"></i> Laba rugi kotor</a>
             <a href="{{ url('/laporan/penjualan-produk') }}" class="submenu {{ request()->is('laporan/penjualan-produk*') ? 'submenu-active':'' }}"><i class="ri-focus-3-line mr-2.5 text-sm opacity-90"></i> Penjualan per produk</a>
             <a href="{{ url('/laporan/penjualan-pelanggan') }}" class="submenu {{ request()->is('laporan/penjualan-pelanggan*') ? 'submenu-active':'' }}"><i class="ri-team-line mr-2.5 text-sm opacity-90"></i> Penjualan per pelanggan</a>
-            <a href="{{ url('/laporan/nilai-asset-stock') }}" class="submenu {{ request()->is('laporan/nilai-asset-stock*') ? 'submenu-active':'' }}"><i class="ri-coins-line mr-2.5 text-sm opacity-90"></i> Nilai Asset Stock</a>
+            <a href="{{ url('/laporan/nilai-aset-stok') }}" class="submenu {{ request()->is('laporan/nilai-aset-stok*') ? 'submenu-active':'' }}"><i class="ri-coins-line mr-2.5 text-sm opacity-90"></i> Nilai Asset Stock</a>
         </div>
 
         <div x-show="!sidebarOpen && hovered" x-transition:enter="transition ease-out duration-150" class="absolute left-24 top-0 bg-[#0b2428] border border-emerald-900/40 rounded-xl shadow-2xl z-50 w-56 overflow-hidden py-1.5 pointer-events-auto">
@@ -172,7 +172,7 @@
             <a href="{{ url('/laporan/laba-rugi-kotor') }}" class="flex items-center gap-3 px-4 py-2 text-sm text-slate-400 hover:bg-emerald-500/10 hover:text-emerald-400 transition"><i class="ri-line-chart-line opacity-90"></i> Laba rugi kotor</a>
             <a href="{{ url('/laporan/penjualan-produk') }}" class="flex items-center gap-3 px-4 py-2 text-sm text-slate-400 hover:bg-emerald-500/10 hover:text-emerald-400 transition"><i class="ri-focus-3-line opacity-90"></i> Penjualan per produk</a>
             <a href="{{ url('/laporan/penjualan-pelanggan') }}" class="flex items-center gap-3 px-4 py-2 text-sm text-slate-400 hover:bg-emerald-500/10 hover:text-emerald-400 transition"><i class="ri-team-line opacity-90"></i> Penjualan per pelanggan</a>
-            <a href="{{ url('/laporan/nilai-asset-stock') }}" class="flex items-center gap-3 px-4 py-2 text-sm text-slate-400 hover:bg-emerald-500/10 hover:text-emerald-400 transition"><i class="ri-coins-line opacity-90"></i> Nilai Asset Stock</a>
+            <a href="{{ url('/laporan/nilai-aset-stok') }}" class="flex items-center gap-3 px-4 py-2 text-sm text-slate-400 hover:bg-emerald-500/10 hover:text-emerald-400 transition"><i class="ri-coins-line opacity-90"></i> Nilai Asset Stock</a>
         </div>
     </div>
 

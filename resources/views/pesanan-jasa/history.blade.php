@@ -1,13 +1,13 @@
 @extends('layouts.app')
 
-@section('title', 'Riwayat Pesanan Jasa')
+@section('title', 'Riwayat Pesanan')
 
 @section('content')
 
 {{-- Bungkus seluruh konten utama dalam 1 wrapper Alpine.js --}}
 <div x-data="historyJasa()">
 
-<x-page-header title="Riwayat Pesanan Jasa ( Work Order)" subtitle="Daftar riwayat transaksi layanan jasa">
+<x-page-header title="Riwayat Pesanan ( Work Order)" subtitle="Daftar riwayat transaksi">
     <x-slot:action>
         <a href="{{ route('pesanan-jasa.index') }}">
             <x-button color="primary">
@@ -173,7 +173,7 @@
                         <x-empty-state 
                             icon="ri-history-line" 
                             title="Belum ada riwayat pesanan" 
-                            description="Riwayat pesanan layanan jasa akan muncul di sini." 
+                            description="Riwayat pesanan akan muncul di sini." 
                         />
                     </td>
                 </tr>
@@ -192,7 +192,7 @@
     <div class="bg-white rounded-2xl shadow-xl w-full max-w-md p-6 border border-slate-100" @click.outside="showModal = false">
         
         <div class="flex justify-between items-center mb-4">
-            <h3 class="text-lg font-bold text-slate-800">Pembatalan Pesanan Jasa</h3>
+            <h3 class="text-lg font-bold text-slate-800">Pembatalan Pesanan</h3>
             <button type="button" @click="showModal = false" class="text-slate-400 hover:text-slate-600">
                 <i class="ri-close-line text-xl"></i>
             </button>

@@ -17,6 +17,7 @@ use App\Http\Controllers\LaporanLabaRugiController;
 use App\Http\Controllers\LaporanPenjualanProdukController;
 use App\Http\Controllers\LaporanPenjualanKasirController;
 use App\Http\Controllers\LaporanPenjualanPelangganController;
+use App\Http\Controllers\Laporan\StockValuationController;
 use App\Http\Controllers\ShiftController;
 
 
@@ -126,11 +127,13 @@ Route::middleware(['auth', \App\Http\Middleware\CheckCommissionScheme::class])->
         
 
         // Laporan Rugi Laba Kotor
-        Route::get('/laporan/laba-rugi', [LaporanLabaRugiController::class, 'index'])->name('laporan.laba-rugi');
+        Route::get('/laporan/laba-rugi-kotor', [LaporanLabaRugiController::class, 'index'])->name('laporan.laba-rugi');
         Route::get('/laporan/laba-rugi/excel', [LaporanLabaRugiController::class, 'exportExcel'])->name('laporan.laba-rugi.excel');
         Route::get('/laporan/laba-rugi/pdf', [LaporanLabaRugiController::class, 'exportPdf'])->name('laporan.laba-rugi.pdf');
 
-
+        // Laporan nilai asset
+        Route::get('/laporan/nilai-aset-stok', [StockValuationController::class, 'index'])->name('laporan.nilai-aset');
+        
     /*
     |--------------------------------------------------------------------------
     | 4. GRUP TEKNIS DEVELOPER (Murni Hanya Admin IT)

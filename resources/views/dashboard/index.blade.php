@@ -4,7 +4,7 @@
 
 @section('content')
 <div class="mb-8">
-    <h2 class="text-2xl font-bold text-slate-800">Dashboard TataKas</h2>
+    <h2 class="text-2xl font-bold text-slate-800">Dashboard</h2>
     <p class="text-slate-500 mt-1">Ringkasan aktivitas hari ini</p>
 </div>
 

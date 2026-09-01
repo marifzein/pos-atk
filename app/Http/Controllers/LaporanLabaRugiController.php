@@ -24,7 +24,7 @@ class LaporanLabaRugiController extends Controller
                 DB::raw('SUM(transaction_details.subtotal) - SUM(transaction_details.qty * transaction_details.harga_beli) as laba_kotor') // 👈 FIX
             )
             // ->whereRaw('transactions.status != ?', ['Batal'])// 👈 HANYA TRANSAKSI YANG TIDAK BATAL
-            ->where('transactions.status', 'SOLD')
+            ->where('transactions.status', 'LUNAS')
             ->whereBetween(DB::raw('DATE(transactions.created_at)'), [$dari_tanggal, $sampai_tanggal])
             ->groupBy(DB::raw('DATE(transactions.created_at)'))
             ->orderBy('tanggal', 'asc')
@@ -41,7 +41,7 @@ class LaporanLabaRugiController extends Controller
                 DB::raw('SUM(transaction_details.subtotal) - SUM(transaction_details.qty * transaction_details.harga_beli) as laba_kotor') // 👈 FIX
             )
             // ->whereRaw('transactions.status != ?', ['Batal'])// 👈 HANYA TRANSAKSI YANG TIDAK BATAL
-            ->where('transactions.status', 'SOLD')
+            ->where('transactions.status', 'LUNAS')
             ->whereBetween(DB::raw('DATE(transactions.created_at)'), [$dari_tanggal, $sampai_tanggal])
             ->first();
 
@@ -64,7 +64,7 @@ class LaporanLabaRugiController extends Controller
                 DB::raw('SUM(transaction_details.subtotal) - SUM(transaction_details.qty * transaction_details.harga_beli) as laba_kotor') // 👈 FIX
             )
             // ->whereRaw('transactions.status != ?', ['Batal'])// 👈 HANYA TRANSAKSI YANG TIDAK BATAL
-            ->where('transactions.status', 'SOLD')
+            ->where('transactions.status', 'LUNAS')
             ->whereBetween(DB::raw('DATE(transactions.created_at)'), [$dari_tanggal, $sampai_tanggal])
             ->groupBy(DB::raw('DATE(transactions.created_at)'))
             ->orderBy('tanggal', 'asc')
@@ -79,7 +79,7 @@ class LaporanLabaRugiController extends Controller
                 DB::raw('SUM(transaction_details.subtotal) - SUM(transaction_details.qty * transaction_details.harga_beli) as laba_kotor') // 👈 FIX
             )
             // ->whereRaw('transactions.status != ?', ['Batal'])// 👈 HANYA TRANSAKSI YANG TIDAK BATAL
-            ->where('transactions.status', 'SOLD')
+            ->where('transactions.status', 'LUNAS')
             ->whereBetween(DB::raw('DATE(transactions.created_at)'), [$dari_tanggal, $sampai_tanggal])
             ->first();
 
@@ -109,7 +109,7 @@ class LaporanLabaRugiController extends Controller
                 DB::raw('SUM(transaction_details.subtotal) - SUM(transaction_details.qty * transaction_details.harga_beli) as laba_kotor') // 👈 FIX
             )
             // ->whereRaw('transactions.status != ?', ['Batal'])// 👈 HANYA TRANSAKSI YANG TIDAK BATAL
-            ->where('transactions.status', 'SOLD')
+            ->where('transactions.status', 'LUNAS')
             ->whereBetween(DB::raw('DATE(transactions.created_at)'), [$dari_tanggal, $sampai_tanggal])
             ->groupBy(DB::raw('DATE(transactions.created_at)'))
             ->orderBy('tanggal', 'asc')
@@ -124,7 +124,7 @@ class LaporanLabaRugiController extends Controller
                 DB::raw('SUM(transaction_details.subtotal) - SUM(transaction_details.qty * transaction_details.harga_beli) as laba_kotor') // 👈 FIX
             )
             // ->whereRaw('transactions.status != ?', ['Batal'])// 👈 HANYA TRANSAKSI YANG TIDAK BATAL
-            ->where('transactions.status', 'SOLD')
+            ->where('transactions.status', 'LUNAS')
             ->whereBetween(DB::raw('DATE(transactions.created_at)'), [$dari_tanggal, $sampai_tanggal])
             ->first();
 

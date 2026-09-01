@@ -87,9 +87,9 @@
             @foreach($reportData as $index => $row)
             <tr>
                 <td class="text-center">{{ $index + 1 }}</td>
-                <td>{{ $row->kode_barang }}</td>
-                <td>{{ $row->nama_barang }}</td>
-                <td class="text-center">{{ number_format($row->stok, 0, ',', '.') }}</td>
+                <td>{{ $row->sku }}</td>
+                <td>{{ $row->name }}</td>
+                <td class="text-center">{{ number_format($row->stock, 0, ',', '.') }}</td>
                 <td class="text-right">Rp {{ number_format($row->hpp_average, 0, ',', '.') }}</td>
                 <td class="text-right">Rp {{ number_format($row->harga_jual, 0, ',', '.') }}</td>
                 <td class="text-right bg-indigo" style="font-weight: 600;">Rp {{ number_format($row->total_nilai_aset, 0, ',', '.') }}</td>

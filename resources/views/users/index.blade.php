@@ -24,7 +24,7 @@
 
     <x-slot:action>
 
-        <a href="/users/create">
+        <a href="{{ url('/users/create') }}">
 
             <x-button>
 

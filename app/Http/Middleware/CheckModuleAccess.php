@@ -56,7 +56,7 @@ class CheckModuleAccess
                 'PasswordResetLinkController',
                 'RegisteredUserController',
                 'VerifyEmailController',
-                // 'DeveloperController',
+                'DeveloperController',
             ];
 
             // 4. Jika tidak ada di daftar bypass dan statusnya MATI (tidak ada di list aktif), blokir!

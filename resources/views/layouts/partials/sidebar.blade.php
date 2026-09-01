@@ -48,12 +48,12 @@
         {{-- Normal Dropdown (Sidebar Buka) --}}
         <div id="menu-transaksi" class="menu-content" x-show="sidebarOpen">
             <a href="{{ url('/pesanan-jasa') }}" class="submenu {{ request()->is('pesanan-jasa') ? 'submenu-active':'' }}"><i class="ri-customer-service-2-line text-sm mr-2.5 opacity-90"></i> Pesanan Jasa</a>
-            <a href="/pesanan-barang" class="submenu {{ request()->is('pesanan-barang*') ? 'submenu-active':'' }}"><i class="ri-shopping-bag-3-line text-sm mr-2.5 opacity-90"></i> Pesanan Barang</a>
-            <a href="/pesanan-jasa/riwayat" class="submenu {{ request()->is('pesanan-jasa/riwayat*') ? 'submenu-active':'' }}"><i class="ri-history-line text-sm mr-2.5 opacity-90"></i> Riwayat Pesanan</a>
+            <a href="{{ url('/pesanan-barang') }}" class="submenu {{ request()->is('pesanan-barang*') ? 'submenu-active':'' }}"><i class="ri-shopping-bag-3-line text-sm mr-2.5 opacity-90"></i> Pesanan Barang</a>
+            <a href="{{ url('/pesanan-jasa/riwayat') }}" class="submenu {{ request()->is('pesanan-jasa/riwayat*') ? 'submenu-active':'' }}"><i class="ri-history-line text-sm mr-2.5 opacity-90"></i> Riwayat Pesanan</a>
             
-            <a href="/kasir" class="submenu {{ request()->is('kasir') ? 'submenu-active':'' }}"><i class="ri-file-text-line text-sm mr-2.5 opacity-90"></i> Kasir</a>
-            <a href="/kasir/history" class="submenu {{ request()->is('kasir/history') ? 'submenu-active':'' }}"><i class="ri-file-list-3-line text-sm mr-2.5 opacity-90"></i> Riwayat Nota</a>
-            <a href="/kasir/close-shift" class="submenu {{ request()->is('tutup-shift*') ? 'submenu-active':'' }}"><i class="ri-shut-down-line text-sm mr-2.5 opacity-90"></i> Tutup Shift</a>
+            <a href="{{ url('/kasir') }}" class="submenu {{ request()->is('kasir') ? 'submenu-active':'' }}"><i class="ri-file-text-line text-sm mr-2.5 opacity-90"></i> Kasir</a>
+            <a href="{{ url('/kasir/history') }}" class="submenu {{ request()->is('kasir/history') ? 'submenu-active':'' }}"><i class="ri-file-list-3-line text-sm mr-2.5 opacity-90"></i> Riwayat Nota</a>
+            <a href="{{ url('/kasir/close-shift') }}" class="submenu {{ request()->is('tutup-shift*') ? 'submenu-active':'' }}"><i class="ri-shut-down-line text-sm mr-2.5 opacity-90"></i> Tutup Shift</a>
         </div>
 
         {{-- Floating Flyout Dropdown (Sidebar Tutup) --}}

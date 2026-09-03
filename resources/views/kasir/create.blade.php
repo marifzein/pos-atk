@@ -694,8 +694,8 @@ function posKasir() {
                 this.priceResults = [];
                 return;
             }
-            // fetch(`/api/products/search?q=${encodeURIComponent(q)}`)
-            fetch("{{ url(`/api/products/search?q=${encodeURIComponent(q)}`) }}")
+            
+            fetch("{{ url('/api/products/search') }}?q=" + encodeURIComponent(q))
                 .then(r => r.json())
                 .then(data => { this.priceResults = data; });
         },

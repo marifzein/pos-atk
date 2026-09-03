@@ -55,7 +55,7 @@ class LaporanPenjualanKasirController extends Controller
                 DB::raw('SUM((transactions.cash - transactions.kembalian) + transactions.card + transactions.voucher) as total_grand')
             )
             ->whereBetween(DB::raw('DATE(transactions.created_at)'), [$dari_tanggal, $sampai_tanggal])
-            ->where('transactions.status', '=', 'LUNAS'); // 👈 FILTER EXCLUDE BATAL;
+            ->where('transactions.status', '=', 'LUNAS'); 
 
             // Filter nama kasir jika diisi
         if (!empty($kasir)) {
@@ -65,10 +65,10 @@ class LaporanPenjualanKasirController extends Controller
 
         // 🔑 PROTEKSI MULTI-ROLE:
         // Jika yang login memiliki role 'kasir', batasi hanya melihat datanya sendiri.
-        // Silakan sesuaikan string 'kasir' dengan value role yang ada di DB Anda.
+        
         if (strtolower(Auth::user()->role) === 'kasir') {
-            $query->where('transactions.user_id', Auth::id());
-            $totalsQuery->where('transactions.user_id', Auth::id());
+            $query->where('transactions.cashier_id', Auth::id());
+            $totalsQuery->where('transactions.cashier_id', Auth::id());
         }
 
         // Eksekusi data setelah filter role diterapkan

@@ -14,23 +14,31 @@ class ClientModuleSeeder extends Seeder
     {
         // Daftar semua Controller dari folder app/Http/Controllers
         $controllers = [
+            'CoaController',
             'CustomerController',
+            'DailyResetStockController',
             'DeveloperController',
             'KasirController',
-            'PesananJasaController',
-            'PesananBarangController',
-            'ProductController',
-            'ProfileController',
-            'ShiftController',
-            'SupplierController',
-            'UserController',
             'LaporanLabaRugiController',
-            'LaporanPenjualanProdukController',
             'LaporanPenjualanKasirController',
             'LaporanPenjualanPelangganController',
+            'LaporanPenjualanProdukController',
+            'PembatalanController',
+            'PenerimaanBarangController',
+            'PesananBarangController',
+            'PesananJasaController',
+            'ProductController',
+            'ProfileController',
+            'PurchaseOrderController',
+            'ReturBarangController',
+            'SettingController',
             'ShiftController',
+            'StockAdjustmentController',
+            'StockCardController',
+            'StockOpnameController',
             'StockValuationController',
-
+            'SupplierController',
+            'UserController',
         ];
 
         // Looping untuk memasukkan atau mengupdate data ke database

@@ -34,4 +34,18 @@ class Product extends Model
     {
         return $this->hasMany(OrderItem::class);
     }
+
+     public function stockMovements()
+    {
+        return $this->hasMany(
+            StockMovement::class
+        );
+    }
+
+     public function stockOpnameDetails()
+    {
+        return $this->hasMany(
+            StockOpnameDetail::class
+        );
+    }
 }

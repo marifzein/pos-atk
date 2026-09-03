@@ -168,8 +168,33 @@ class KasirController extends Controller
                     'subtotal'   => $item['qty'] * $item['harga'],
                 ]);
 
+                // Ambil data produk untuk mendapatkan stok sebelum dipotong
+                $product = Product::findOrFail($item['id']);
+
+                if (strtolower($product->type) === 'barang') {
+                    $stockBefore = (int) $product->stock;
+                    $qty = (int) $item['qty'];
+                    $stockAfter = $stockBefore - $qty;
+
+                    // Potong stok produk
+                    $product->update(['stock' => $stockAfter]);
+
+                    // Insert ke riwayat pergerakan stok (stock_movements)
+                    DB::table('stock_movements')->insert([
+                        'product_id'   => $product->id,
+                        'type'         => 'PENJUALAN', // Atau 'SALE' sesuai konvensi app kamu
+                        'qty'          => -$qty,       // Nilai minus menandakan barang keluar
+                        'stock_before' => $stockBefore,
+                        'stock_after'  => $stockAfter,
+                        'reference_no' => $noNota,
+                        'notes'        => 'Penjualan Kasir (Nota: ' . $noNota . ')',
+                        'created_at'   => now(),
+                        'updated_at'   => now(),
+                    ]);
+                }
+
                 // Potong stok produk
-                Product::where('id', $item['id'])->decrement('stock', $item['qty']);
+                // Product::where('id', $item['id'])->decrement('stock', $item['qty']);
             }
 
             // 4. Update status WO jika transaksi berasal dari Work Order
@@ -251,6 +276,11 @@ class KasirController extends Controller
     public function history(Request $request)
     {
         $query = Transaction::with(['cashier', 'customer']);
+
+        // 🔒 JIKA USER LOGIN ADALAH KASIR, HANYA TAMPILKAN NOTA BUATANNYA SENDIRI
+        if (auth()->user()->role === 'Kasir') {
+            $query->where('cashier_id', auth()->id());
+        }
 
         // Filter berdasarkan No. Nota
         if ($request->filled('search')) {

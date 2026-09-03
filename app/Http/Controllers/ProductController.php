@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Product;
 use App\Models\Supplier;
+use App\Models\StockMovement;
 use Illuminate\Http\Request;
 use App\Helpers\DocumentNumber;
 
@@ -55,6 +56,69 @@ class ProductController extends Controller
         return response()->json($products);
     }
 
+    public function search_barang(Request $request)
+    {
+        $q = trim($request->q);
+
+        if (!$q) {
+            return response()->json([]);
+        }
+
+        $products = Product::query()
+        ->where(function ($query) use ($q) {
+            $query->where('products.name', 'like', "%{$q}%")
+                  ->orWhere('products.sku', 'like', "%{$q}%")
+                  ->orWhere('products.barcode', 'like', "%{$q}%");
+        })
+        ->where('products.type', 'barang')    // Filter hanya tipe barang
+        ->where('products.is_active', 1) // Filter hanya produk aktif
+        ->limit(10)
+        ->get([
+            'products.id',
+            'products.sku',
+            'products.barcode',
+            'products.name',
+            'products.purchase_price',
+            'products.price',
+            'products.satuan',
+            'products.type',
+            'products.stock'
+            ]);
+
+        return response()->json($products);
+    }
+
+    public function search_jasa(Request $request)
+    {
+        $q = trim($request->q);
+
+        if (!$q) {
+            return response()->json([]);
+        }
+
+        $products = Product::query()
+        ->where(function ($query) use ($q) {
+            $query->where('products.name', 'like', "%{$q}%")
+                  ->orWhere('products.sku', 'like', "%{$q}%")
+                  ->orWhere('products.barcode', 'like', "%{$q}%");
+        })
+        ->where('products.type', 'jasa')    // Filter hanya tipe barang
+        ->where('products.is_active', 1) // Filter hanya produk aktif
+        ->limit(10)
+        ->get([
+            'products.id',
+            'products.sku',
+            'products.barcode',
+            'products.name',
+            'products.purchase_price',
+            'products.price',
+            'products.satuan',
+            'products.type',
+            'products.stock'
+            ]);
+
+        return response()->json($products);
+    }
 
     public function create()
     {
@@ -91,22 +155,35 @@ class ProductController extends Controller
         $isCustomPrice = ($request->type === 'jasa' && $request->has('is_custom_price')) ? 1 : 0;
 
 
-        Product::create([
+        $product=Product::create([
             'barcode' => $request->barcode,
             'sku' => $sku,
             'name' => $request->name,
-            'brand' => $request->brand,
+            // 'brand' => $request->brand,
             'type' => $request->type,
             'is_custom_price' => $isCustomPrice,
             'supplier_id' => $request->supplier_id,
             'satuan' => $request->satuan,
             'purchase_price' => $request->purchase_price,
             'price' => $request->price,
-            'stock' => $request->stock,
-            'min_stock' => $request->min_stock,
+            'stock' => ($request->type === 'jasa') ? 0 : $request->stock, // Paksa 0 jika Jasa
+            'min_stock' => ($request->type === 'jasa') ? 0 : $request->min_stock,
             'is_active' => $request->has('is_active') ? 1 : 0,
             'catatan' => $request->catatan,
         ]);
+
+        // insert kartu stok , status "opening" 
+        if ($product->type === 'barang' ) {
+            StockMovement::create([
+                'product_id'   => $product->id,
+                'type'         => 'OPENING',
+                'qty'          => $product->stock,      // Bisa 0, 10, dst.
+                'stock_before' => 0,
+                'stock_after'  => $product->stock,      // Nilai stok setelah opening
+                'reference_no' => 'OPENING',
+                'notes'        => 'Stok awal produk'
+            ]);
+        }
 
         return redirect()->route('products.index')->with('success', 'Produk berhasil ditambahkan.');
     }

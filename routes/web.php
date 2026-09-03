@@ -20,6 +20,15 @@ use App\Http\Controllers\LaporanPenjualanPelangganController;
 use App\Http\Controllers\Laporan\StockValuationController;
 use App\Http\Controllers\ShiftController;
 
+use App\Http\Controllers\PurchaseOrderController;
+use App\Http\Controllers\PenerimaanBarangController;
+use App\Http\Controllers\StockOpnameController;
+use App\Http\Controllers\DailyResetStockController;
+use App\Http\Controllers\ReturBarangController;
+use App\Http\Controllers\StockAdjustmentController;
+use App\Http\Controllers\StockCardController;
+
+
 
 
 Route::get('/', function () {
@@ -62,7 +71,54 @@ Route::middleware(['auth', \App\Http\Middleware\CheckCommissionScheme::class])->
     Route::post('/pesanan-barang/{id}/batal', [PesananBarangController::class, 'cancelOrder'])->name('pesanan-barang.cancel');
 
     
-    
+
+    // INVENTORY
+        // Purchase Order (PO) & Cetak PDF
+        Route::resource('purchasing', PurchaseOrderController::class)->except(['destroy']);
+        Route::get('purchasing/{purchasing}/print-pdf', [PurchaseOrderController::class, 'printPdf'])->name('purchasing.print-pdf');
+
+        // Kartu Stok
+        Route::get('stock-cards', [StockCardController::class, 'index'])->name('stock-cards.index');
+        Route::get('stock-cards/{product}', [StockCardController::class, 'show'])->name('stock-cards.show');
+
+
+        // Penerimaan Barang
+        Route::get('/penerimaan-barang', [PenerimaanBarangController::class, 'index'])->name('penerimaan.index');
+        Route::get('/penerimaan-barang/create', [PenerimaanBarangController::class, 'create'])->name('penerimaan.create');
+        Route::post('/penerimaan-barang', [PenerimaanBarangController::class, 'store'])->name('penerimaan.store');
+        Route::get('/api/penerimaan/search-products', [PenerimaanBarangController::class, 'searchProducts']);
+        Route::get('/penerimaan-barang/{id}', [PenerimaanBarangController::class, 'show'])->name('penerimaan.show');
+        Route::get('/penerimaan-barang/{id}/print', [PenerimaanBarangController::class, 'print'])->name('penerimaan.print');
+
+        // Stok Opname
+        Route::get('/stock-opname', [StockOpnameController::class, 'index']);
+        Route::post('/stock-opname/start', [StockOpnameController::class, 'start']);
+        Route::get('/stock-opname/{stockOpname}', [StockOpnameController::class, 'show']);
+        Route::post('/stock-opname/{stockOpname}', [StockOpnameController::class, 'store']);
+        Route::post('/stock-opname/{stockOpname}/finish', [StockOpnameController::class, 'finish']);
+        Route::get('/stock-opname/{stockOpname}/print', [StockOpnameController::class, 'print'])->name('stock-opname.print');
+
+         // Retur Barang
+        Route::get('/api/retur/search-products', [ReturBarangController::class, 'searchProducts'])->name('api.retur.search-products');
+        Route::resource('retur', ReturBarangController::class)->only(['index', 'create', 'store', 'show']);
+        Route::get('/retur/{id}/print', [ReturBarangController::class, 'print'])->name('retur.print');
+
+        
+        // Fitur Reset Stok Harian Resto (Langsung Posted) Stck opname harian otomatis reset 0
+        Route::prefix('inventory/daily-reset')->name('daily-reset.')->group(function () {
+            Route::get('/', [DailyResetStockController::class, 'index'])->name('index');
+            Route::post('/', [DailyResetStockController::class, 'store'])->name('store');
+        }); 
+
+
+        // Penyesuaian Stok (Stock Adjustment)
+        Route::resource('stock-adjustments', StockAdjustmentController::class)->except(['show', 'destroy']);
+        Route::post('/stock-adjustments/{stockAdjustment}/post', [StockAdjustmentController::class, 'post'])->name('stock-adjustments.post');
+        Route::get('/stock-adjustments/{stockAdjustment}/print-pdf', 
+        [StockAdjustmentController::class, 'printPdf'])->name('stock-adjustments.print-pdf');
+
+        
+
 
 
     // customer
@@ -77,6 +133,8 @@ Route::middleware(['auth', \App\Http\Middleware\CheckCommissionScheme::class])->
     // product
     Route::resource('products', ProductController::class);
     Route::get('api/products/search', [ProductController::class, 'search']);
+    Route::get('api/products/search-barang', [ProductController::class, 'search_barang']);
+    Route::get('api/products/search_jasa', [ProductController::class, 'search_jasa']);
     
 
     //users

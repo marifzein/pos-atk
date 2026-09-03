@@ -41,5 +41,10 @@ class AppServiceProvider extends ServiceProvider
         Gate::define('akses-pos', function ($user) {
             return in_array($user->role, ['Owner', 'Admin', 'Supervisor', 'Kasir']);
         });
+
+        // 4. MENU pesanan (Operator, Supervisor, Admin, Owner bisa buka)
+        Gate::define('akses-pesanan', function ($user) {
+            return in_array($user->role, ['Owner', 'Admin', 'Supervisor', 'Staff Barang','Staff Jasa']);
+        });
     }
 }

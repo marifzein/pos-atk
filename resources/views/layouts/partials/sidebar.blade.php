@@ -25,9 +25,7 @@
             <i class="ri-grid-fill text-lg flex-shrink-0"></i>
             <span x-show="sidebarOpen" class="text-base">Dashboard</span>
         </a>
-        {{-- <div x-show="!sidebarOpen && hovered" x-transition class="absolute left-24 top-1/2 -translate-y-1/2 bg-[#0b2428] border border-slate-800 text-emerald-400 text-xs rounded-lg py-2 px-3 shadow-xl z-50 whitespace-nowrap font-semibold pointer-events-auto">
-            Dashboard
-        </div> --}}
+        
     </div>
 
     {{-- ==================== TRANSAKSI ==================== --}}
@@ -47,25 +45,34 @@
 
         {{-- Normal Dropdown (Sidebar Buka) --}}
         <div id="menu-transaksi" class="menu-content" x-show="sidebarOpen">
+            @can('akses-pesanan')
             <a href="{{ url('/pesanan-jasa') }}" class="submenu {{ request()->is('pesanan-jasa') ? 'submenu-active':'' }}"><i class="ri-customer-service-2-line text-sm mr-2.5 opacity-90"></i> Pesanan Jasa</a>
             <a href="{{ url('/pesanan-barang') }}" class="submenu {{ request()->is('pesanan-barang*') ? 'submenu-active':'' }}"><i class="ri-shopping-bag-3-line text-sm mr-2.5 opacity-90"></i> Pesanan Barang</a>
             <a href="{{ url('/pesanan-jasa/riwayat') }}" class="submenu {{ request()->is('pesanan-jasa/riwayat*') ? 'submenu-active':'' }}"><i class="ri-history-line text-sm mr-2.5 opacity-90"></i> Riwayat Pesanan</a>
+            @endcan
             
+             @can('akses-pos')
             <a href="{{ url('/kasir') }}" class="submenu {{ request()->is('kasir') ? 'submenu-active':'' }}"><i class="ri-file-text-line text-sm mr-2.5 opacity-90"></i> Kasir</a>
             <a href="{{ url('/kasir/history') }}" class="submenu {{ request()->is('kasir/history') ? 'submenu-active':'' }}"><i class="ri-file-list-3-line text-sm mr-2.5 opacity-90"></i> Riwayat Nota</a>
             <a href="{{ url('/kasir/close-shift') }}" class="submenu {{ request()->is('tutup-shift*') ? 'submenu-active':'' }}"><i class="ri-shut-down-line text-sm mr-2.5 opacity-90"></i> Tutup Shift</a>
+            @endcan
         </div>
 
         {{-- Floating Flyout Dropdown (Sidebar Tutup) --}}
         <div x-show="!sidebarOpen && hovered" x-transition:enter="transition ease-out duration-150" class="absolute left-24 top-0 bg-[#0b2428] border border-emerald-900/40 rounded-xl shadow-2xl z-50 w-56 overflow-hidden py-1.5 pointer-events-auto">
             <div class="px-4 py-2 text-sm font-bold uppercase tracking-wider text-slate-400 border-b border-slate-800/60 mb-1 select-none">Transaksi</div>
+            @can('akses-pesanan')
             <a href="{{ url('/pesanan-jasa') }}" class="flex items-center gap-3 px-4 py-2 text-sm text-slate-400 hover:bg-emerald-500/10 hover:text-emerald-400 transition"><i class="ri-customer-service-2-line opacity-90"></i> Pesanan Jasa</a>
             <a href="{{ url('/pesanan-barang') }}" class="flex items-center gap-3 px-4 py-2 text-sm text-slate-400 hover:bg-emerald-500/10 hover:text-emerald-400 transition"><i class="ri-shopping-bag-3-line opacity-90"></i> Pesanan Barang</a>
             <a href="{{ url('/pesanan-jasa/riwayat') }}" class="flex items-center gap-3 px-4 py-2 text-sm text-slate-400 hover:bg-emerald-500/10 hover:text-emerald-400 transition"><i class="ri-history-line opacity-90"></i> Riwayat Pesanan</a>
             <a href="{{ url('/pembatalan-pesanan') }}" class="flex items-center gap-3 px-4 py-2 text-sm text-slate-400 hover:bg-emerald-500/10 hover:text-emerald-400 transition"><i class="ri-close-circle-line opacity-90"></i> Pembatalan Pesanan</a>
+            @endcan
+
+            @can('akses-pos')
             <a href="{{ url('/kasir') }} " class="flex items-center gap-3 px-4 py-2 text-sm text-slate-400 hover:bg-emerald-500/10 hover:text-emerald-400 transition"><i class="ri-file-text-line opacity-90"></i> Nota</a>
             <a href="{{ url('/kasir/history') }}" class="flex items-center gap-3 px-4 py-2 text-sm text-slate-400 hover:bg-emerald-500/10 hover:text-emerald-400 transition"><i class="ri-file-list-3-line opacity-90"></i> Riwayat Nota</a>
             <a href="{{ url('/tutup-shift') }}" class="flex items-center gap-3 px-4 py-2 text-sm text-slate-400 hover:bg-emerald-500/10 hover:text-emerald-400 transition"><i class="ri-shut-down-line opacity-90"></i> Tutup Shift</a>
+            @endcan
         </div>
     </div>
 
@@ -84,27 +91,34 @@
         </button>
 
         <div id="menu-master" class="menu-content" x-show="sidebarOpen">
+            @can('akses-spv-keatas')
             <a href="{{ route('products.index') }}" class="submenu {{ request()->is('products*') ? 'submenu-active':'' }}"><i class="ri-box-3-line mr-2.5 text-sm mr-2.5 opacity-90"></i> Produk</a>
             {{-- <a href="{{ url('/import-produk') }}" class="submenu {{ request()->is('import-produk*') ? 'submenu-active':'' }}"><i class="ri-file-excel-line mr-2.5 text-sm opacity-90"></i> Import Produk</a> --}}
             {{-- <a href="/kategori" class="submenu {{ request()->is('kategori*') ? 'submenu-active':'' }}"><i class="ri-price-tag-3-line mr-2.5 text-sm opacity-90"></i> Kategori</a> --}}
             <a href="{{ route('suppliers.index') }}" class="submenu {{ request()->is('supplier*') ? 'submenu-active':'' }}"><i class="ri-truck-line mr-2.5 text-sm opacity-90"></i> Supplier</a>
-           
+            <a href="{{ route('users.index') }}" class="submenu {{ request()->is('user*') ? 'submenu-active':'' }}"><i class="ri-user-fill mr-2.5 text-sm opacity-90"></i> User</a>
+            @endcan
+
             <a href="{{ route('customers.index') }}" class="submenu {{ request()->is('customer*') ? 'submenu-active':'' }}"><i class="ri-user-shared-line mr-2.5 text-sm opacity-90"></i> Customer</a>
 
-            <a href="{{ route('users.index') }}" class="submenu {{ request()->is('user*') ? 'submenu-active':'' }}"><i class="ri-user-fill mr-2.5 text-sm opacity-90"></i> User</a>
+            
         </div>
 
         <div x-show="!sidebarOpen && hovered" x-transition:enter="transition ease-out duration-150" class="absolute left-24 top-0 bg-[#0b2428] border border-emerald-900/40 rounded-xl shadow-2xl z-50 w-56 overflow-hidden py-1.5 pointer-events-auto">
             <div class="px-4 py-2 text-xs font-bold uppercase tracking-wider text-slate-400 border-b border-slate-800/60 mb-1 select-none">Master</div>
 
             
-
+            @can('akses-spv-keatas')
             <a href="{{ route('products.index') }}" class="flex items-center gap-3 px-4 py-2 text-sm text-slate-400 hover:bg-emerald-500/10 hover:text-emerald-400 transition"><i class="ri-box-3-line opacity-90"></i> Produk</a>
             {{-- <a href="{{ url('/import-produk') }}" class="flex items-center gap-3 px-4 py-2 text-sm text-slate-400 hover:bg-emerald-500/10 hover:text-emerald-400 transition"><i class="ri-file-excel-line opacity-90"></i> Import Produk</a> --}}
             
             <a href="{{ url('/supplier') }}" class="flex items-center gap-3 px-4 py-2 text-sm text-slate-400 hover:bg-emerald-500/10 hover:text-emerald-400 transition"><i class="ri-truck-line opacity-90"></i> Supplier</a>
-            <a href="{{ url('/customer') }}" class="flex items-center gap-3 px-4 py-2 text-sm text-slate-400 hover:bg-emerald-500/10 hover:text-emerald-400 transition"><i class="ri-user-shared-line opacity-90"></i> Customer</a>
+
             <a href="{{ url('/user') }}" class="flex items-center gap-3 px-4 py-2 text-sm text-slate-400 hover:bg-emerald-500/10 hover:text-emerald-400 transition"><i class="ri-user-fill opacity-90"></i> User</a>
+
+            @endcan
+            <a href="{{ url('/customer') }}" class="flex items-center gap-3 px-4 py-2 text-sm text-slate-400 hover:bg-emerald-500/10 hover:text-emerald-400 transition"><i class="ri-user-shared-line opacity-90"></i> Customer</a>
+            
         </div>
     </div>
 
@@ -123,22 +137,39 @@
         </button>
 
         <div id="menu-inventory" class="menu-content" x-show="sidebarOpen">
-            <a href="{{ url('/po') }}" class="submenu {{ request()->is('po*') ? 'submenu-active':'' }}"><i class="ri-file-list-line mr-2.5 text-sm opacity-90"></i> PO</a>
+            @can('akses-spv-keatas')
+            <a href="{{ url('/purchasing') }}" class="submenu {{ request()->is('purchasing*') ? 'submenu-active':'' }}"><i class="ri-file-list-line mr-2.5 text-sm opacity-90"></i> PO</a>
             <a href="{{ url('/penerimaan-barang') }}" class="submenu {{ request()->is('penerimaan-barang*') ? 'submenu-active':'' }}"><i class="ri-inbox-archive-line mr-2.5 text-sm opacity-90"></i> Penerimaan Barang</a>
-            <a href="{{ url('/kartu-stok') }}" class="submenu {{ request()->is('kartu-stok*') ? 'submenu-active':'' }}"><i class="ri-article-line mr-2.5 text-sm opacity-90"></i> Kartu Stok</a>
+            @endcan
+
+            @can('akses-pos')
+            <a href="{{ url('/stock-cards') }}" class="submenu {{ request()->is('stock-cards*') ? 'submenu-active':'' }}"><i class="ri-article-line mr-2.5 text-sm opacity-90"></i> Kartu Stok</a>
+            @endcan
+
+            @can('akses-spv-keatas')
             <a href="{{ url('/retur-barang') }}" class="submenu {{ request()->is('retur-barang*') ? 'submenu-active':'' }}"><i class="ri-arrow-go-back-line mr-2.5 text-sm opacity-90"></i> Retur Barang</a>
-            <a href="{{ url('/stok-opname') }}" class="submenu {{ request()->is('stok-opname*') ? 'submenu-active':'' }}"><i class="ri-archive-line mr-2.5 text-sm opacity-90"></i> Stok Opname</a>
+            <a href="{{ url('/stock-opname') }}" class="submenu {{ request()->is('stok-opname*') ? 'submenu-active':'' }}"><i class="ri-archive-line mr-2.5 text-sm opacity-90"></i> Stok Opname</a>
             <a href="{{ url('/penyesuaian-stok') }}" class="submenu {{ request()->is('penyesuaian-stok*') ? 'submenu-active':'' }}"><i class="ri-equalizer-line mr-2.5 text-sm opacity-90"></i> Penyesuaian Stok</a>
+            @endcan
         </div>
 
         <div x-show="!sidebarOpen && hovered" x-transition:enter="transition ease-out duration-150" class="absolute left-24 top-0 bg-[#0b2428] border border-emerald-900/40 rounded-xl shadow-2xl z-50 w-56 overflow-hidden py-1.5 pointer-events-auto">
             <div class="px-4 py-2 text-xs font-bold uppercase tracking-wider text-slate-400 border-b border-slate-800/60 mb-1 select-none">Inventory</div>
+            
+            @can('akses-spv-keatas')
             <a href="{{ url('/po') }}" class="flex items-center gap-3 px-4 py-2 text-sm text-slate-400 hover:bg-emerald-500/10 hover:text-emerald-400 transition"><i class="ri-file-list-line opacity-90"></i> PO</a>
             <a href="{{ url('/penerimaan-barang') }}" class="flex items-center gap-3 px-4 py-2 text-sm text-slate-400 hover:bg-emerald-500/10 hover:text-emerald-400 transition"><i class="ri-inbox-archive-line opacity-90"></i> Penerimaan Barang</a>
+            @endcan
+
+            @can('akses-pos')
             <a href="{{ url('/kartu-stok') }}" class="flex items-center gap-3 px-4 py-2 text-sm text-slate-400 hover:bg-emerald-500/10 hover:text-emerald-400 transition"><i class="ri-article-line opacity-90"></i> Kartu Stok</a>
+            @endcan
+
+            @can('akses-spv-keatas')
             <a href="{{ url('/retur-barang') }}" class="flex items-center gap-3 px-4 py-2 text-sm text-slate-400 hover:bg-emerald-500/10 hover:text-emerald-400 transition"><i class="ri-arrow-go-back-line opacity-90"></i> Retur Barang</a>
             <a href="{{ url('/stok-opname') }}" class="flex items-center gap-3 px-4 py-2 text-sm text-slate-400 hover:bg-emerald-500/10 hover:text-emerald-400 transition"><i class="ri-archive-line opacity-90"></i> Stok Opname</a>
             <a href="{{ url('/penyesuaian-stok') }}" class="flex items-center gap-3 px-4 py-2 text-sm text-slate-400 hover:bg-emerald-500/10 hover:text-emerald-400 transition"><i class="ri-equalizer-line opacity-90"></i> Penyesuaian Stok</a>
+            @endcan
         </div>
     </div>
 
@@ -157,27 +188,48 @@
         </button>
 
         <div id="menu-laporan" class="menu-content" x-show="sidebarOpen">
+            @can('akses-pos')
             <a href="{{ url('/laporan/penjualan-kasir') }}" class="submenu {{ request()->is('laporan/penjualan-kasir*') ? 'submenu-active':'' }}"><i class="ri-user-star-line mr-2.5 text-sm opacity-90"></i> Penjualan Kasir</a>
+            @endcan
+
+            @can('akses-owner-admin')
             <a href="{{ url('/laporan/shift') }}" class="submenu {{ request()->is('laporan/shift*') ? 'submenu-active':'' }}"><i class="ri-time-line mr-2.5 text-sm opacity-90"></i> Laporan Shift</a>
             <a href="{{ url('/laporan/laba-rugi-kotor') }}" class="submenu {{ request()->is('laporan/laba-rugi-kotor*') ? 'submenu-active':'' }}"><i class="ri-line-chart-line mr-2.5 text-sm opacity-90"></i> Laba rugi kotor</a>
+            @endcan
+
+            @can('akses-spv-keatas')
             <a href="{{ url('/laporan/penjualan-produk') }}" class="submenu {{ request()->is('laporan/penjualan-produk*') ? 'submenu-active':'' }}"><i class="ri-focus-3-line mr-2.5 text-sm opacity-90"></i> Penjualan per produk</a>
             <a href="{{ url('/laporan/penjualan-pelanggan') }}" class="submenu {{ request()->is('laporan/penjualan-pelanggan*') ? 'submenu-active':'' }}"><i class="ri-team-line mr-2.5 text-sm opacity-90"></i> Penjualan per pelanggan</a>
             <a href="{{ url('/laporan/nilai-aset-stok') }}" class="submenu {{ request()->is('laporan/nilai-aset-stok*') ? 'submenu-active':'' }}"><i class="ri-coins-line mr-2.5 text-sm opacity-90"></i> Nilai Asset Stock</a>
+            @endcan
         </div>
 
         <div x-show="!sidebarOpen && hovered" x-transition:enter="transition ease-out duration-150" class="absolute left-24 top-0 bg-[#0b2428] border border-emerald-900/40 rounded-xl shadow-2xl z-50 w-56 overflow-hidden py-1.5 pointer-events-auto">
             <div class="px-4 py-2 text-xs font-bold uppercase tracking-wider text-slate-400 border-b border-slate-800/60 mb-1 select-none">Laporan</div>
+            
+            @can('akses-pos')
             <a href="{{ url('/laporan/penjualan-kasir') }}" class="flex items-center gap-3 px-4 py-2 text-sm text-slate-400 hover:bg-emerald-500/10 hover:text-emerald-400 transition"><i class="ri-user-star-line opacity-90"></i> Penjualan Kasir</a>
+            @endcan
+
+            @can('akses-owner-admin')
             <a href="{{ url('/laporan/shift') }}" class="flex items-center gap-3 px-4 py-2 text-sm text-slate-400 hover:bg-emerald-500/10 hover:text-emerald-400 transition"><i class="ri-time-line opacity-90"></i> Laporan Shift</a>
             <a href="{{ url('/laporan/laba-rugi-kotor') }}" class="flex items-center gap-3 px-4 py-2 text-sm text-slate-400 hover:bg-emerald-500/10 hover:text-emerald-400 transition"><i class="ri-line-chart-line opacity-90"></i> Laba rugi kotor</a>
             <a href="{{ url('/laporan/penjualan-produk') }}" class="flex items-center gap-3 px-4 py-2 text-sm text-slate-400 hover:bg-emerald-500/10 hover:text-emerald-400 transition"><i class="ri-focus-3-line opacity-90"></i> Penjualan per produk</a>
+            @endcan
+
+            @can('akses-spv-keatas')
             <a href="{{ url('/laporan/penjualan-pelanggan') }}" class="flex items-center gap-3 px-4 py-2 text-sm text-slate-400 hover:bg-emerald-500/10 hover:text-emerald-400 transition"><i class="ri-team-line opacity-90"></i> Penjualan per pelanggan</a>
+            @endcan
+
+            @can('akses-owner-admin')
             <a href="{{ url('/laporan/nilai-aset-stok') }}" class="flex items-center gap-3 px-4 py-2 text-sm text-slate-400 hover:bg-emerald-500/10 hover:text-emerald-400 transition"><i class="ri-coins-line opacity-90"></i> Nilai Asset Stock</a>
+            @endcan
         </div>
     </div>
 
     {{-- ==================== AKUNTING ==================== --}}
     {{-- <div x-show="sidebarOpen" class="menu-group">Akunting</div> --}}
+    @can('akses-owner-admin')
     <div class="relative group mb-1" x-data="{ hovered: false }" @mouseenter="hovered = true" @mouseleave="hovered = false">
         <button type="button" @click="if (sidebarOpen) { toggleMenu('akunting') }" 
         data-menu-name="akunting"
@@ -208,6 +260,7 @@
             <a href="{{ url('/laporan-rugi-laba') }}" class="flex items-center gap-3 px-4 py-2 text-sm text-slate-400 hover:bg-emerald-500/10 hover:text-emerald-400 transition"><i class="ri-advertisement-line opacity-90"></i> Laporan Rugi Laba</a>
         </div>
     </div>
+    @endcan
 
     {{-- ==================== SYSTEM ==================== --}}
     {{-- <div x-show="sidebarOpen" class="menu-group">System</div> --}}
@@ -235,7 +288,10 @@
                     <i class="ri-code-s-slash-line mr-2.5 text-sm opacity-90"></i> Developer
                 </a>
             @endcan
+
+            @can('akses-spv-keatas')
             <a href="{{ url('/backup-data') }}" class="submenu {{ request()->is('backup-data*') ? 'submenu-active':'' }}"><i class="ri-database-line mr-2.5 text-sm opacity-90"></i> Backup Data</a>
+            @endcan
         </div>
 
         <div x-show="!sidebarOpen && hovered" x-transition:enter="transition ease-out duration-150" class="absolute left-24 top-0 bg-[#0b2428] border border-emerald-900/40 rounded-xl shadow-2xl z-50 w-56 overflow-hidden py-1.5 pointer-events-auto">
@@ -253,8 +309,10 @@
                     <i class="ri-code-s-slash-line text-base opacity-60 group-hover:opacity-100"></i> Developer
                 </a>
             @endcan
-
+            
+            @can('akses-spv-keatas')
             <a href="{{ url('/backup-data') }}" class="flex items-center gap-3 px-4 py-2 text-sm text-slate-400 hover:bg-emerald-500/10 hover:text-emerald-400 transition"><i class="ri-database-line opacity-90"></i> Backup Data</a>
+            @endcan
         </div>
     </div>
 </nav>

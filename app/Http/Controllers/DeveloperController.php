@@ -33,32 +33,32 @@ class DeveloperController extends Controller
     {
         DB::statement('SET FOREIGN_KEY_CHECKS=0');
 
-        // DB::table('penerimaan_barang')->truncate();
-        // DB::table('penerimaan_barang_items')->truncate();
+        DB::table('penerimaan_barang')->truncate();
+        DB::table('penerimaan_barang_items')->truncate();
 
-        // DB::table('purchase_order_items')->truncate();
-        // DB::table('purchase_orders')->truncate();
+        DB::table('purchase_order_items')->truncate();
+        DB::table('purchase_orders')->truncate();
 
-        // DB::table('retur_barang_items')->truncate();
-        // DB::table('retur_barang')->truncate();
+        DB::table('retur_barang_items')->truncate();
+        DB::table('retur_barang')->truncate();
 
-        // DB::table('shifts')->truncate();
+        DB::table('shifts')->truncate();
         
-        // DB::table('stock_adjustments')->truncate();
-        // DB::table('stock_adjustment_details')->truncate();
+        DB::table('stock_adjustments')->truncate();
+        DB::table('stock_adjustment_details')->truncate();
         
-        // DB::table('stock_movements')->truncate();
+        DB::table('stock_movements')->truncate();
         
-        // DB::table('stock_opname_details')->truncate();
-        // DB::table('stock_opnames')->truncate();
+        DB::table('stock_opname_details')->truncate();
+        DB::table('stock_opnames')->truncate();
 
-        // DB::table('transaction_details')->truncate();
-        // DB::table('transactions')->truncate();               
+        DB::table('transaction_details')->truncate();
+        DB::table('transactions')->truncate();               
 
-        // DB::table('stock_opname_details')->truncate();
-        // DB::table('stock_opnames')->truncate();
+        DB::table('stock_opname_details')->truncate();
+        DB::table('stock_opnames')->truncate();
 
-        // DB::table('pembatalan_penjualans')->truncate();
+        DB::table('pembatalan_penjualans')->truncate();
         
         DB::table('orders')->truncate();
         DB::table('order_items')->truncate();

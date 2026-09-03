@@ -9,7 +9,7 @@
         <div class="bg-white rounded-xl shadow p-6 border-l-4 border-indigo-600">
             <div class="text-sm font-medium text-gray-500 uppercase tracking-wider">Total Modal Aset Toko (HPP)</div>
             <div class="mt-2 text-3xl font-bold text-gray-900">Rp {{ number_format($totalAsetToko->grand_total_aset ?? 0, 0, ',', '.') }}</div>
-            <p class="text-xs text-gray-400 mt-1">*Nilai real uang modal yang tertanam di dalam barang di rak.</p>
+            <p class="text-xs text-gray-400 mt-1">*Nilai real uang modal dalam bentuk barang.</p>
         </div>
         <div class="bg-white rounded-xl shadow p-6 border-l-4 border-emerald-600">
             <div class="text-sm font-medium text-gray-500 uppercase tracking-wider">Potensi Nilai Jual (Omset)</div>

@@ -20,8 +20,8 @@
             x-data="{ 
                 productType: @js(old('type', 'barang')),
                 isCustom: @js((bool) old('is_custom_price', false)),
-                purchasePrice: @js((float) old('purchase_price', 0)),
-                price: @js((float) old('price', 0)),
+                purchasePrice: @js((float) old('purchase_price', '')),
+                price: @js((float) old('price', '')),
                 
                 handleSubmit(e) {
                     if (this.productType === 'barang') {
@@ -150,6 +150,7 @@
                 icon="ri-money-dollar-circle-line" 
                 required 
                 x-model="purchasePrice"
+                @focus="$event.target.select()"
             />
 
             <x-input 
@@ -159,6 +160,7 @@
                 icon="ri-price-tag-3-line" 
                 required 
                 x-model="price"
+                @focus="$event.target.select()"
             />
 
             <x-input label="Stok Awal " name="stock" type="number" icon="ri-stack-line" required :value="old('stock', 0)" />
@@ -166,7 +168,7 @@
             
             <x-textarea label="Catatan Keterangan" name="catatan" rows="3" placeholder="Keterangan tambahan item...">{{ old('catatan') }}</x-textarea>
             
-            <div class="flex items-center mt-8">
+            <div class="flex items-center">
                 <x-checkbox 
                     label="Produk Aktif / Dijual" 
                     name="is_active" 

@@ -14,6 +14,7 @@ class ClientModuleSeeder extends Seeder
     {
         // Daftar semua Controller dari folder app/Http/Controllers
         $controllers = [
+            'DashboardController',
             'CoaController',
             'CustomerController',
             'DailyResetStockController',

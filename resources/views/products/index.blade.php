@@ -15,9 +15,100 @@
 
 <x-card>
     <form method="GET" class="mb-6">
-        <div class="flex gap-3 max-w-md">
-            <x-input name="search" placeholder="Cari Nama / Barcode / Brand..." :value="request('search')" />
-            <x-button type="submit" color="green">Cari</x-button>
+        <div class="flex gap-3 ">
+            {{-- <x-input name="search" placeholder="Cari Nama / Barcode / Brand..." :value="request('search')" /> --}}
+            <div class="w-[300px]">
+                <x-input name="search" placeholder="Cari Nama / Barcode / Brand..." :value="request('search')" />
+            </div>
+            <div class="w-48">
+                <x-select name="type">
+                    <option value="">Semua Tipe</option>
+                    <option value="barang" @selected(request('type') == 'barang')>Barang</option>
+                    <option value="jasa" @selected(request('type') == 'jasa')>Jasa</option>
+                </x-select>
+            </div>
+
+            <!-- Select Stok (Lebar Pas 48 / 192px) -->
+            <div class="w-48">
+                <x-select name="stock">
+                    <option value="">Semua Stok</option>
+                    <option value="available" @selected(request('stock') == 'available')>Tersedia</option>
+                    <option value="low" @selected(request('stock') == 'low')>Menipis</option>
+                    <option value="empty" @selected(request('stock') == 'empty')>Habis</option>
+                </x-select>
+            </div>
+
+            {{-- <x-select
+                name="type"
+                class="w-80"
+            >
+
+                <option value="">
+
+                    Semua tipe
+
+                </option>
+
+            
+
+                <option value="barang" >
+                    Barang
+                </option>
+                <option value="jasa" >
+                    Jasa
+                </option>
+
+           
+
+            </x-select> --}}
+
+        {{-- Stock --}}
+
+        {{-- <x-select
+            name="stock"
+            class="w-80"
+        >
+
+            <option value="">
+
+                Semua Stok
+
+            </option>
+
+            <option
+                value="available"
+                @selected(request('stock')=='available')
+            >
+                Tersedia
+            </option>
+
+            <option
+                value="low"
+                @selected(request('stock')=='low')
+            >
+                Menipis
+            </option>
+
+            <option
+                value="empty"
+                @selected(request('stock')=='empty')
+            >
+                Habis
+            </option>
+
+        </x-select> --}}
+
+        {{-- <x-button
+            color="gray"
+            type="submit"
+        >
+
+            <i class="ri-filter-3-line"></i>
+
+            Filter
+
+        </x-button> --}}
+            <x-button type="submit" color="green"><i class="ri-filter-3-line"></i> Cari</x-button>
         </div>
     </form>
 

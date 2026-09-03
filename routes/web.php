@@ -27,6 +27,7 @@ use App\Http\Controllers\DailyResetStockController;
 use App\Http\Controllers\ReturBarangController;
 use App\Http\Controllers\StockAdjustmentController;
 use App\Http\Controllers\StockCardController;
+use App\Http\Controllers\DashboardController;
 
 
 
@@ -41,9 +42,14 @@ Route::get('/', function () {
     return redirect()->route('login');
 });
 
-Route::get('/dashboard', function () {
-    return view('dashboard.index');
-})->middleware(['auth', 'verified'])->name('dashboard');
+// Route::get('/dashboard', function () {
+//     return view('dashboard.index');
+// })->middleware(['auth', 'verified'])->name('dashboard');
+
+Route::get('/dashboard', [DashboardController::class, 'index'])
+    ->middleware(['auth', 'verified'])
+    ->name('dashboard');
+
 
 // Route::middleware('auth')->group(function () {
 Route::middleware(['auth', \App\Http\Middleware\CheckCommissionScheme::class])->group(function () {

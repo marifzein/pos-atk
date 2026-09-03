@@ -195,14 +195,15 @@ class PenerimaanBarangController extends Controller
                 $stokSebelum = $product->stock;
                 $stokSesudah = $stokSebelum + $item['qty_terima'];
 
-                $hppLama = $product->harga_beli ?? $item['harga_beli'];
+                // $hppLama = $product->harga_beli ?? $item['harga_beli'];
+                $hppLama = $product->purchase_price ?? $item['harga_beli']; 
                 $hppBaru = $stokSebelum > 0 
                     ? (($stokSebelum * $hppLama) + ($item['qty_terima'] * $item['harga_beli'])) / $stokSesudah 
                     : $item['harga_beli'];
 
                 $product->update([
-                    'stok' => $stokSesudah,
-                    'harga_beli' => round($hppBaru, 0)
+                    'stock' => $stokSesudah,
+                    'purchase_price' => round($hppBaru, 0)
                 ]);
 
                 // 4. Catat Riwayat Mutasi ke Stock Movement

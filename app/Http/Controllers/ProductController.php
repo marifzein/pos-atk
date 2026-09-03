@@ -11,20 +11,47 @@ use App\Helpers\DocumentNumber;
 class ProductController extends Controller
 {
     public function index(Request $request)
-    {
-        $query = Product::with('supplier');
+{
+    $query = Product::with('supplier');
 
-        if ($request->has('search') && $request->search != '') {
-            $query->where('name', 'like', '%' . $request->search . '%')
-                  ->orWhere('barcode', 'like', '%' . $request->search . '%')
-                  ->orWhere('sku', 'like', '%' . $request->search . '%')
-                  ->orWhere('brand', 'like', '%' . $request->search . '%');
-        }
-
-        $products = $query->latest()->paginate(10)->withQueryString();
-
-        return view('products.index', compact('products'));
+    // 1. Filter Pencarian Teks (Nama, Barcode, SKU, Brand)
+    if ($request->filled('search')) {
+        $search = $request->search;
+        $query->where(function ($q) use ($search) {
+            $q->where('name', 'like', "%{$search}%")
+              ->orWhere('barcode', 'like', "%{$search}%")
+              ->orWhere('sku', 'like', "%{$search}%")
+              ->orWhere('brand', 'like', "%{$search}%");
+        });
     }
+
+    // 2. Filter Tipe (Barang / Jasa)
+    if ($request->filled('type')) {
+        $query->where('type', $request->type);
+    }
+
+    // 3. Filter Kondisi Stok (Hanya Berlaku untuk Tipe Barang)
+    if ($request->filled('stock')) {
+        if ($request->stock === 'available') {
+            // Stok di atas batas minimum
+            $query->where('type', 'barang')
+                  ->whereColumn('stock', '>', 'min_stock');
+        } elseif ($request->stock === 'low') {
+            // Stok menipis (antara > 0 dan <= min_stock)
+            $query->where('type', 'barang')
+                  ->where('stock', '>', 0)
+                  ->whereColumn('stock', '<=', 'min_stock');
+        } elseif ($request->stock === 'empty') {
+            // Stok habis total (0)
+            $query->where('type', 'barang')
+                  ->where('stock', '<=', 0);
+        }
+    }
+
+    $products = $query->latest()->paginate(10)->withQueryString();
+
+    return view('products.index', compact('products'));
+}
     // pencarian ploduk2 
     public function search(Request $request)
     {

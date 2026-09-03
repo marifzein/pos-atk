@@ -543,7 +543,8 @@ function posJasa() {
 
             if (!confirmSubmit.isConfirmed) return;
 
-            let response = await fetch('/api/pesanan-jasa', {
+            // let response = await fetch('/api/pesanan-jasa', {
+            let response = await fetch("{{ url('/api/pesanan-jasa') }}" , {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -584,7 +585,10 @@ window.ALL_CUSTOMERS = @json($customers);
                 }
 
                 try {
-                    let response = await fetch('/api/customers', {
+                    // let response = await fetch('/api/customers', {
+                    // fetch("{{ url('/api/pesanan-jasa') }}" , {
+
+                    let response = await fetch("{{ url('/api/customers') }}" , {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',

@@ -14,7 +14,8 @@
     <!-- Tombol Navigasi Header -->
     
     <div class="flex gap-2 mb-4 justify-end items-center">
-    <a href="/kasir/history">
+    {{-- <a href="/kasir/history"> --}}
+    <a href="{{ url('/kasir/history') }}">
          <x-button color="secondary" class="w-full sm:w-auto justify-center">
             <i class="ri-arrow-left-circle-line"></i> Kembali
         </x-button>

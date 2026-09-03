@@ -168,7 +168,8 @@
                     )
                         <span class="text-xs text-slate-400 italic">n/a</span>
                     @else
-                    <a href="/users/{{ $user->id }}/edit">
+                    {{-- <a href="/users/{{ $user->id }}/edit"> --}}
+                        <a href="{{ url('/users/' . $user->id . '/edit') }}">Edit User</a>
 
                         <x-button color="green" size="sm">
                             <i class="ri-edit-line"></i>

@@ -175,7 +175,7 @@ function historyBarang() {
             if (!this.alasan || !this.password) return;
             this.loading = true;
             try {
-                let response = await fetch(`/pesanan-barang/${this.selectedOrderId}/batal`, {
+                let response = await fetch( "{{ url(`/pesanan-barang/${this.selectedOrderId}/batal` ) }}" , {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',

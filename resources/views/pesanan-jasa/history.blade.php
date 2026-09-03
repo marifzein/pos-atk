@@ -255,7 +255,7 @@ function historyJasa() {
             this.loading = true;
 
             try {
-                let response = await fetch(`/pesanan-jasa/${this.selectedOrderId}/batal`, {
+                let response = await fetch( "{{ url(`/pesanan-jasa/${this.selectedOrderId}/batal` ) }}", {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',

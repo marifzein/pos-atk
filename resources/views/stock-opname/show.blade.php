@@ -299,7 +299,8 @@
                     return;
                 }
 
-                let r = await fetch('/api/products/search?q=' + encodeURIComponent(this.keyword));
+                let r = await fetch("{{ url('/api/products/search') }}?q=" + encodeURIComponent(this.keyword));
+                
                 this.results = await r.json();
                 this.selectedIndex = -1;
 

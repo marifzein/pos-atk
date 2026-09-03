@@ -430,7 +430,7 @@ function posBarang() {
 
             if (!confirmSubmit.isConfirmed) return;
 
-            let response = await fetch('/api/pesanan-barang', {
+            let response = await fetch( "{{ url('/api/pesanan-barang' ) }}", {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

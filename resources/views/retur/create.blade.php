@@ -134,7 +134,7 @@
         if (q.length < 2) { result.innerHTML = ''; result.classList.add('hidden'); return; }
 
         timer = setTimeout(() => {
-            fetch(`/api/retur/search-products?q=${encodeURIComponent(q)}&supplier_id=${supplierId}`)
+            fetch( "{{ url( `/api/retur/search-products?q=${encodeURIComponent(q)}&supplier_id=${supplierId}` ) }}")
             .then(r => r.json())
             .then(data => {
                 if (data.length === 0) {

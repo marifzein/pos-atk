@@ -192,7 +192,7 @@ search.addEventListener('keyup', function(e) {
     }
 
     timer = setTimeout(() => {
-        fetch(`/api/products/search?q=${encodeURIComponent(q)}`)
+        fetch( "{{ url(`/api/products/search?q=${encodeURIComponent(q)}` ) }}")
         .then(r => r.json())
         .then(data => {
             if (data.length === 0) {

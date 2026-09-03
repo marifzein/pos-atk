@@ -695,7 +695,7 @@ function posKasir() {
                 return;
             }
             // fetch(`/api/products/search?q=${encodeURIComponent(q)}`)
-            fetch(`/api/products/search?q=${encodeURIComponent(q)}`)
+            fetch("{{ url(`/api/products/search?q=${encodeURIComponent(q)}`) }}")
                 .then(r => r.json())
                 .then(data => { this.priceResults = data; });
         },
@@ -818,7 +818,7 @@ function posKasir() {
             if (!konfirmasiCetak.isConfirmed) return;
 
             try {
-                let response = await fetch('/kasir/store', {
+                let response = await fetch( "{{ url('/kasir/store') }}" , {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -877,7 +877,7 @@ window.ALL_CUSTOMERS = @json($customers);
                 }
 
                 try {
-                    let response = await fetch('/api/customers', {
+                    let response = await fetch( "{{ url('/api/customers' ) }}" , {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',

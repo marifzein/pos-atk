@@ -842,13 +842,11 @@ function posKasir() {
                 let result = await response.json();
 
                 if (result.success) {
-                    window.open('/kasir/' + result.transaction_id + '/print', '_blank');
+                    
+                    window.open("{{ url('/kasir') }}/" + result.transaction_id + "/print", '_blank');
                     window.location.href = "{{ route('kasir.index') }}"; 
                     Swal.fire({ title: 'Berhasil!', text: result.no_nota, icon: 'success', timer: 1500, showConfirmButton: false });
-                    // setTimeout(() => { location.reload(); }, 1500);
-                    // setTimeout(() => { 
-                        
-                    // }, 1500);
+                    
                 } else {
                     await Swal.fire({ icon: 'error', title: 'Gagal', text: result.message, returnFocus: false });
                 }

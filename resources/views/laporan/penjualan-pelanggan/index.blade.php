@@ -8,7 +8,8 @@
         <h1 class="text-2xl font-bold mb-6">Laporan Penjualan Per Pelanggan</h1>
 
         <!-- Form Filter Tanggal -->
-        <form method="GET" action="{{ route('laporan.penjualan-pelanggan') }}" class="flex flex-wrap gap-4 items-end mb-6">
+        {{-- <form method="GET" action="{{ route('laporan.penjualan-pelanggan') }}" class="flex flex-wrap gap-4 items-end mb-6"> --}}
+        <form method="GET" action="{{ url('/laporan/penjualan-pelanggan') }}" class="flex flex-wrap gap-4 items-end mb-6">
             <input type="hidden" name="sort_by" value="{{ $sortBy }}">
             <input type="hidden" name="sort_dir" value="{{ $sortDir }}">
             
@@ -70,11 +71,11 @@
             <thead>
                 <tr class="bg-slate-100 border-b border-gray-200 text-gray-700 text-sm select-none">
                     <th class="p-3 text-left border border-gray-200 w-12">No</th>
-                    <th class="p-0 border border-gray-200 hover:bg-slate-200 transition">
+                    {{-- <th class="p-0 border border-gray-200 hover:bg-slate-200 transition">
                         <a href="{{ $getSortLink('kode_pelanggan') }}" class="block p-3 text-left w-full h-full font-bold">
                             Kode Pelanggan<span class="text-blue-600 text-xs">{{ $renderArrow('kode_pelanggan') }}</span>
                         </a>
-                    </th>
+                    </th> --}}
                     <th class="p-0 border border-gray-200 hover:bg-slate-200 transition">
                         <a href="{{ $getSortLink('nama_pelanggan') }}" class="block p-3 text-left w-full h-full font-bold">
                             Nama Pelanggan<span class="text-blue-600 text-xs">{{ $renderArrow('nama_pelanggan') }}</span>
@@ -98,9 +99,9 @@
                         <td class="p-3 border border-gray-200 text-center">
                             {{ $reportData->firstItem() + $index }}
                         </td>
-                        <td class="p-3 border border-gray-200 font-mono text-gray-500">{{ $row->kode_pelanggan ?? '-' }}</td>
+                        {{-- <td class="p-3 border border-gray-200 font-mono text-gray-500">{{ $row->kode_pelanggan ?? '-' }}</td> --}}
                         <td class="p-3 border border-gray-200 font-medium text-gray-900">{{ $row->nama_pelanggan }}</td>
-                        <td class="p-3 border border-gray-200 text-center font-semibold">{{ $row->total_transaksi }}x</td>
+                        <td class="p-3 border border-gray-200 text-center font-semibold">{{ $row->total_transaksi }}</td>
                         <td class="p-3 border border-gray-200 text-right font-bold text-emerald-600">Rp {{ number_format($row->total_belanja, 0, ',', '.') }}</td>
                     </tr>
                 @empty
@@ -113,9 +114,9 @@
             @if($reportData->count() > 0)
             <tfoot class="bg-slate-50 font-bold text-sm text-gray-800">
                 <tr>
-                    <td colspan="3" class="p-3 border border-gray-200 text-right">TOTAL KESELURUHAN (SEMUA HALAMAN):</td>
+                    <td colspan="2" class="p-3 border border-gray-200 text-right">TOTAL KESELURUHAN (SEMUA HALAMAN):</td>
                     <td class="p-3 border border-gray-200 text-center text-blue-600 text-base">
-                        {{ $totals->grand_qty_transaksi ?? 0 }}x
+                        {{ $totals->grand_qty_transaksi ?? 0 }}
                     </td>
                     <td class="p-3 border border-gray-200 text-right text-emerald-600 text-base">
                         Rp {{ number_format($totals->grand_omset ?? 0, 0, ',', '.') }}

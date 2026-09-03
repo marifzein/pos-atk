@@ -39,7 +39,7 @@
             label="Supplier"
             name="supplier_nama"
             readonly
-            :value="$po->supplier->nama"
+            :value="$po->supplier->name"
             icon="ri-truck-line"
         />
     </div>
@@ -74,9 +74,9 @@
             </x-table-header>
 
             <tbody>
-                @foreach($po->items as $item)
+                @foreach($po->purchaseOrderItems as $item)
                     <tr>
-                        <x-table-cell>{{ $item->product->nama_barang }}</x-table-cell>
+                        <x-table-cell>{{ $item->product->name }}</x-table-cell>
                         <x-table-cell class="text-center">{{ $item->qty }}</x-table-cell>
                         <x-table-cell class="text-right">Rp {{ number_format($item->price, 0, ',', '.') }}</x-table-cell>
                         <x-table-cell class="text-right">Rp {{ number_format($item->subtotal, 0, ',', '.') }}</x-table-cell>

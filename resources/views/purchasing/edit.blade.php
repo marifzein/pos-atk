@@ -352,7 +352,7 @@
             }
 
             timer = setTimeout(() => {
-                fetch(`{{ url('/api/products/search') }}?q=${encodeURIComponent(q)}`)
+                fetch(`{{ url('/api/products/search-barang') }}?q=${encodeURIComponent(q)}`)
                 .then(r => r.json())
                 .then(data => {
                     if (data.length === 0) {
@@ -365,10 +365,10 @@
                         <div class="border-b p-3 hover:bg-indigo-50 cursor-pointer product-row" 
                             id="product-row-${index}" 
                             data-id="${item.id}" 
-                            data-name="${item.nama_barang}" 
-                            data-price="${item.harga}">
-                            <div class="font-semibold">${item.nama_barang}</div>
-                            <div class="text-sm text-slate-500">${item.kode_barang}</div>
+                            data-name="${item.name}" 
+                            data-price="${item.purchase_price}">
+                            <div class="font-semibold">${item.name}</div>
+                            <div class="text-sm text-slate-500">${item.sku}</div>
                         </div>`;
                     });
                     result.innerHTML = html; 
@@ -376,7 +376,7 @@
 
                     document.querySelectorAll('.product-row').forEach(row => {
                         row.onclick = function() { 
-                            addToCart(this.dataset.id, this.dataset.name, parseFloat(this.dataset.price)); 
+                            addToCart(this.dataset.id, this.dataset.name, parseFloat(this.dataset.purchase_price)); 
                         }
                     });
                 });

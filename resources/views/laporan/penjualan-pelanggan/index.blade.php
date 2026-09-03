@@ -8,7 +8,7 @@
         <h1 class="text-2xl font-bold mb-6">Laporan Penjualan Per Pelanggan</h1>
 
         <!-- Form Filter Tanggal -->
-        <form method="GET" action="/laporan/penjualan-pelanggan" class="flex flex-wrap gap-4 items-end mb-6">
+        <form method="GET" action="{{ route('laporan.penjualan-pelanggan') }}" class="flex flex-wrap gap-4 items-end mb-6">
             <input type="hidden" name="sort_by" value="{{ $sortBy }}">
             <input type="hidden" name="sort_dir" value="{{ $sortDir }}">
             

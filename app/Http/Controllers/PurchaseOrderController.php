@@ -378,7 +378,7 @@ class PurchaseOrderController extends Controller
     public function show(PurchaseOrder $purchasing)
     {
         // Load relasi supplier dan item produk
-        $purchasing->load(['supplier', 'items.product']);
+        $purchasing->load(['supplier', 'purchaseOrderItems.product']);
 
         return view('purchasing.show', [
             'po' => $purchasing

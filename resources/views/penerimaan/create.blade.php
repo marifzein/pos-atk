@@ -236,7 +236,7 @@ search.addEventListener('keyup', function(e) {
     if (q.length < 2) { result.innerHTML = ''; result.classList.add('hidden'); selectedIndex = -1; return; }
 
     timer = setTimeout(() => {
-        fetch( "{{ url(`/api/penerimaan/search-products?q=${encodeURIComponent(q)}` ) }}" )
+        fetch("{{ url('/api/penerimaan/search-products') }}?q=" + encodeURIComponent(q))
         .then(r => r.json())
         .then(data => {
             if (data.length === 0) {

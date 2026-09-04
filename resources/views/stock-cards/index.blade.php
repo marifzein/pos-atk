@@ -243,7 +243,7 @@
                         <div class="flex justify-center gap-2">
 
                             <a
-                                href="/stock-cards/{{ $product->id }}"
+                                href=" {{ url( '/stock-cards/') }} {{ $product->id }}"
                             >
 
                                 <x-button

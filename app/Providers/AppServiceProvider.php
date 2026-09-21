@@ -4,7 +4,8 @@ namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\Gate;
-use Illuminate\Support\Facades\URL;     
+use Illuminate\Support\Facades\URL;
+use Illuminate\Http\Request;     
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -23,7 +24,7 @@ class AppServiceProvider extends ServiceProvider
     {
         // Paksa semua URL asset & route memakai HTTPS jika diakses via Cloudflare
         //  Paksa HTTPS untuk semua panggil asset & URL
-        URL::forceScheme('https');
+        // URL::forceScheme('https');
 
         // 1. MENU DEVELOPER & BACKUP DB: Hanya murni Admin IT saja
         Gate::define('akses-developer', function ($user) {
@@ -48,6 +49,12 @@ class AppServiceProvider extends ServiceProvider
         // 4. MENU pesanan (Operator, Supervisor, Admin, Owner bisa buka)
         Gate::define('akses-pesanan', function ($user) {
             return in_array($user->role, ['Owner', 'Admin', 'Supervisor', 'Staff Barang','Staff Jasa']);
+        });
+
+        // Tambahkan Macro kustom untuk pengecekan Mobile di Request
+        Request::macro('isMobile', function () {
+            $userAgent = $this->userAgent();
+            return (bool) preg_match('/(android|bb\d+|meego).+mobile|blackberry|iemobile|iphone|ipod|opera mini|mobi/i', $userAgent);
         });
     }
 }

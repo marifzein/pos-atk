@@ -15,7 +15,7 @@ use Illuminate\Support\Facades\Hash;
 
 class PesananJasaController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         $user = Auth::user();
 
@@ -42,6 +42,11 @@ class PesananJasaController extends Controller
         // 2. PROTEKSI STRICT: Hanya load produk yang tipenya 'jasa'
         $products = Product::where('type', 'jasa')->where('is_active', 1)->get();
         $customers = Customer::where('status', 1)->get();
+
+        // Otomatis pilih view berdasarkan jenis perangkat
+        if ($request->isMobile()) {
+            return view('pesanan-jasa.mobile-index', compact('nomorWO', 'products', 'customers'));
+        }
 
         return view('pesanan-jasa.index', compact('nomorWO', 'products', 'customers'));
     }
@@ -184,6 +189,10 @@ class PesananJasaController extends Controller
         $orders = $query->paginate(10)->withQueryString();
         $customers = Customer::where('status', 1)->get();
 
+        if ($request->isMobile()) {
+            return view('pesanan-jasa.mobile-history', compact('orders', 'customers', 'sortBy', 'sortDir'));
+        }
+
         return view('pesanan-jasa.history', compact('orders', 'customers', 'sortBy', 'sortDir'));
     }
 
@@ -191,6 +200,10 @@ class PesananJasaController extends Controller
     {
         $order->load(['branch','operator', 'customer', 'orderItems.product', 'pembatalan.user']);
 
+        if ($request->isMobile()) {
+            return view('pesanan-jasa.mobile-show', compact('order'));
+        }
+    
         return view('pesanan-jasa.show', compact('order'));
     }
 

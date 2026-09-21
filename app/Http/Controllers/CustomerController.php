@@ -23,14 +23,22 @@ class CustomerController extends Controller
         ->latest()
         ->paginate(10);
 
+        if ($request->isMobile()) {
+            return view('customers.mobile-index', compact('customers', 'search'));
+        }    
+
         return view('customers.index', compact('customers', 'search'));
     }
 
     /**
      * Show the form for creating a new resource.
      */
-    public function create()
+    public function create(Request $request)
     {
+        if ($request->isMobile()) {
+            return view('customers.mobile-create');
+        }
+
         return view('customers.create');
     }
 
@@ -69,16 +77,23 @@ class CustomerController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(Customer $customer)
+    public function show(Customer $customer,Request $request)
     {
         //
+        if ($request->isMobile()) {
+            return view('customers.mobile-show', compact('customer'));
+        }
+        return view('customers.show', compact('customer'));
     }
 
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(Customer $customer)
+    public function edit(Customer $customer,Request $request)
     {
+        if ($request->isMobile()) {
+            return view('customers.mobile-edit', compact('customer'));
+        }
         return view('customers.edit', compact('customer'));
     }
 
@@ -111,11 +126,11 @@ class CustomerController extends Controller
      */
     public function destroy(Customer $customer)
     {
-        $customer->delete();
+        // $customer->delete();
 
-        return redirect()
-            ->route('customers.index')
-            ->with('success', 'Pelanggan berhasil dihapus.');
+        // return redirect()
+        //     ->route('customers.index')
+        //     ->with('success', 'Pelanggan berhasil dihapus.');
     }
 
     /**

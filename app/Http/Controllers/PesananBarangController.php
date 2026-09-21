@@ -15,7 +15,7 @@ use Illuminate\Support\Facades\Hash;
 
 class PesananBarangController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         $user = Auth::user();
 
@@ -34,6 +34,10 @@ class PesananBarangController extends Controller
         // Load produk tipe barang
         $products = Product::where('type', 'barang')->where('is_active', 1)->get();
         $customers = Customer::where('status', 1)->get();
+
+        if ($request->isMobile()) {
+            return view('pesanan-barang.mobile-index', compact('nomorWO', 'products', 'customers'));
+        }
 
         return view('pesanan-barang.index', compact('nomorWO', 'products', 'customers'));
     }
@@ -166,12 +170,20 @@ class PesananBarangController extends Controller
         $orders = $query->paginate(10)->withQueryString();
         $customers = Customer::where('status', 1)->get();
 
+        if ($request->isMobile()) {
+            return view('pesanan-barang.mobile-history', compact('orders', 'customers', 'sortBy', 'sortDir'));
+        }
+
         return view('pesanan-barang.history', compact('orders', 'customers', 'sortBy', 'sortDir'));
     }
 
-    public function show(Order $order)
+    public function show(Order $order , Request $request)
     {
         $order->load(['branch', 'operator', 'customer', 'orderItems.product']);
+
+        if ($request->isMobile()) {
+            return view('pesanan-barang.mobile-show', compact('order'));
+        }
 
         return view('pesanan-barang.show', compact('order'));
     }

@@ -110,7 +110,7 @@
                     </div>
 
                     <div class="flex items-center gap-1.5">
-                        <a href="{{ route('pesanan-barang.show', $order->id) }}" class="bg-emerald-600 text-white font-bold text-xs px-3 py-1.5 rounded-xl transition active:scale-95 flex items-center gap-1 shadow-2xs">
+                        <a href="{{ route('pesanan-jasa.show', $order->id) }}" class="bg-emerald-600 text-white font-bold text-xs px-3 py-1.5 rounded-xl transition active:scale-95 flex items-center gap-1 shadow-2xs">
                             <i class="ri-file-text-line"></i> Detail
                         </a>
 

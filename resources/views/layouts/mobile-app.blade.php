@@ -82,7 +82,7 @@
                         </a>
 
                         <!-- 3. Riwayat Pesanan -->
-                        <a href="{{ route('pesanan-barang.history') }}" 
+                        <a href="{{ route('pesanan-jasa.history') }}" 
                            class="flex items-center gap-3 px-3 py-2.5 {{ Request::is('pesanan-barang/history*') || Request::is('pesanan-jasa/riwayat*') ? 'bg-indigo-600 text-white font-bold' : 'hover:bg-slate-800 text-slate-300 font-semibold' }} text-xs rounded-xl transition">
                             <i class="ri-history-line text-base"></i> 
                             <span>Riwayat Pesanan</span>

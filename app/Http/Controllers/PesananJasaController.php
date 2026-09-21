@@ -196,7 +196,7 @@ class PesananJasaController extends Controller
         return view('pesanan-jasa.history', compact('orders', 'customers', 'sortBy', 'sortDir'));
     }
 
-    public function show(Order $order)
+    public function show(Order $order , Request $request)
     {
         $order->load(['branch','operator', 'customer', 'orderItems.product', 'pembatalan.user']);
 

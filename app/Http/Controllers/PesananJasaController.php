@@ -17,8 +17,27 @@ class PesananJasaController extends Controller
 {
     public function index()
     {
-       // 1. Generate No Pesanan Jasa Otomatis via Helper
-        $nomorWO = DocumentNumber::generate('orders', 'no_pesanan', 'WO');
+        $user = Auth::user();
+
+        // Strict Check: User wajib punya branch_id
+        if (!$user || !$user->branch_id) {
+            return redirect()->back()->with('error', 'Maaf, cabang tidak terdeteksi. Silahkan login ulang.');
+        }
+
+       // Generate No Pesanan Jasa Otomatis via Helper (Format: WO-KODECABANG-YYYYMMDD-0001)
+        // $nomorWO = DocumentNumber::generate('orders', 'no_pesanan', 'WO');
+        // 1. Strict Check
+        if (!$user || !$user->branch_id) {
+            return redirect()->back()->with('error', 'Maaf, cabang tidak terdeteksi. Silahkan login ulang.');
+        }
+
+        try {
+            // Generate No WO otomatis via Helper
+            $nomorWO = DocumentNumber::generate('orders', 'no_pesanan', 'WO');
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', $e->getMessage());
+        }
+
 
         // 2. PROTEKSI STRICT: Hanya load produk yang tipenya 'jasa'
         $products = Product::where('type', 'jasa')->where('is_active', 1)->get();
@@ -33,16 +52,24 @@ class PesananJasaController extends Controller
             'cart' => 'required|array|min:1',
             'cart.*.id' => 'required|exists:products,id',
             'cart.*.qty' => 'required|integer|min:1',
+            'cart.*.harga' => 'required|numeric|min:0',
         ]);
+
+        $user = Auth::user();
+
+        // STRICT CHECK: Tolak simpan jika tidak ada branch_id
+        if (!$user || !$user->branch_id) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Maaf, cabang tidak terdeteksi. Silahkan login ulang.'
+            ], 422);
+        }
+
 
         DB::beginTransaction();
         try {
-            // Re-generate No Pesanan untuk menghindari race condition
-            // $dateCode = now()->format('Ymd');
-            // $lastOrder = Order::where('no_pesanan', 'like', "JS-{$dateCode}-%")->latest()->first();
-            // $nextNumber = $lastOrder ? str_pad(intval(substr($lastOrder->no_pesanan, -5)) + 1, 5, '0', STR_PAD_LEFT) : '00001';
-            // $noNota = "JS-{$dateCode}-{$nextNumber}";
-
+            
+            $branchId = $user->branch_id;   
             $no_pesanan = DocumentNumber::generate('orders', 'no_pesanan', 'WO');
 
             // Cari customer berdasarkan kode_pelanggan jika dikirim
@@ -53,8 +80,9 @@ class PesananJasaController extends Controller
 
             // Simpan Data Master Order
             $order = new Order();
+            $order->branch_id = $branchId;
             $order->no_pesanan = $no_pesanan;
-            $order->operator_id = Auth::id() ?? 1; // Fallback ke ID 1 jika auth belum diset
+            $order->operator_id = $user->id; 
             $order->customer_id = $customer ? $customer->id : null;
             $order->customer_name_manual = $customer ? $customer->nama : 'Umum';
             $order->status = 'order'; 
@@ -102,11 +130,23 @@ class PesananJasaController extends Controller
     {
         $user = Auth::user();
 
-        // 1. Inisialisasi Query Master Order
-        $query = Order::with(['operator', 'customer', 'items']);
+        // Query Master Order (Otomatis terfilter per cabang jika Trait BelongsToBranch dipasang di Order)
+        $query = Order::with(['operator', 'customer', 'items', 'branch']);
+
+        // Filter Cabang
+        $selectedBranchId = $request->branch_id;
+        if (!in_array(strtolower($user->role ?? ''), ['owner', 'admin']) && $user->branch_id) {
+            $selectedBranchId = $user->branch_id;
+        }
+
+        if ($selectedBranchId) {
+            $query->where('branch_id', $selectedBranchId);
+        }
+
+
 
         // 2. Filter Berdasarkan Role: Operator hanya bisa lihat transaksinya sendiri
-        if ($user && in_array($user->role, ['operator', 'kasir'])) {
+        if ($user && in_array($user->role, ['Staff Barang', 'Staff Jasa'])) {
             $query->where('operator_id', $user->id);
         }
 
@@ -149,7 +189,7 @@ class PesananJasaController extends Controller
 
     public function show(Order $order)
     {
-        $order->load(['operator', 'customer', 'orderItems.product']);
+        $order->load(['branch','operator', 'customer', 'orderItems.product', 'pembatalan.user']);
 
         return view('pesanan-jasa.show', compact('order'));
     }
@@ -175,12 +215,7 @@ class PesananJasaController extends Controller
 
         $order = Order::findOrFail($id);
 
-        // if (strtolower($order->status) === 'batal') {
-        //     return response()->json([
-        //         'success' => false,
-        //         'message' => 'Pesanan ini sudah dibatalkan sebelumnya.'
-        //     ], 400);
-        // }
+        
 
         // Validasi Strict: Hanya status 'order' yang boleh dibatalkan
         if (strtolower($order->status) !== 'order') {
@@ -190,7 +225,8 @@ class PesananJasaController extends Controller
             ], 400);
         }
 
-
+        $user = Auth::user();
+        
         DB::beginTransaction();
         try {
             // Update status order
@@ -199,6 +235,7 @@ class PesananJasaController extends Controller
 
             // Simpan record pembatalan
             PembatalanOrder::create([
+                'branch_id' => $order->branch_id ?? $user->branch_id,
                 'order_id' => $order->id,
                 'user_id' => Auth::id(),
                 'alasan' => $request->alasan,

@@ -5,13 +5,11 @@
     {{-- Logo / Brand Area --}}
     <div class="px-6 h-20 flex items-center border-b border-slate-800/30 bg-[#051316]/40 flex-shrink-0 select-none">
         <div class="flex items-center gap-3">
-            {{-- <div class="w-9 h-9 rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center flex-shrink-0 border border-emerald-500/30">
-                <i class="ri-pulse-line text-lg"></i>
-            </div> --}}
+            
             <div x-show="sidebarOpen" class="overflow-hidden whitespace-nowrap">    
-                {{-- <h1 class="font-bold text-xl tracking-wide text-green-500 leading-none mb-1">FlowPOS</h1>    --}}
+                
                 <img src="{{ asset('images/tatakas.png') }}" alt="TATAKAS Logo" class="h-5 object-contain">
-                <p class=" text-green-200 ">Busur Group</p>
+                <p class=" text-green-200 ">Cahaya Busur Group</p>
             </div>
         </div>
     </div>
@@ -78,6 +76,7 @@
 
     {{-- ==================== MASTER ==================== --}}
     {{-- <div x-show="sidebarOpen" class="menu-group">Master</div> --}}
+    
     <div class="relative group mb-1" x-data="{ hovered: false }" @mouseenter="hovered = true" @mouseleave="hovered = false">
         <button type="button" @click="if (sidebarOpen) { toggleMenu('master') }" 
         data-menu-name="master"
@@ -95,6 +94,7 @@
             <a href="{{ route('products.index') }}" class="submenu {{ request()->is('products*') ? 'submenu-active':'' }}"><i class="ri-box-3-line mr-2.5 text-sm mr-2.5 opacity-90"></i> Produk</a>
             {{-- <a href="{{ url('/import-produk') }}" class="submenu {{ request()->is('import-produk*') ? 'submenu-active':'' }}"><i class="ri-file-excel-line mr-2.5 text-sm opacity-90"></i> Import Produk</a> --}}
             {{-- <a href="/kategori" class="submenu {{ request()->is('kategori*') ? 'submenu-active':'' }}"><i class="ri-price-tag-3-line mr-2.5 text-sm opacity-90"></i> Kategori</a> --}}
+            
             <a href="{{ route('suppliers.index') }}" class="submenu {{ request()->is('supplier*') ? 'submenu-active':'' }}"><i class="ri-truck-line mr-2.5 text-sm opacity-90"></i> Supplier</a>
             <a href="{{ route('users.index') }}" class="submenu {{ request()->is('user*') ? 'submenu-active':'' }}"><i class="ri-user-fill mr-2.5 text-sm opacity-90"></i> User</a>
             @endcan
@@ -281,6 +281,9 @@
                 <a href="{{ route('setting.index') }}" class="submenu {{ request()->is('system/setting*') ? 'submenu-active':'' }}">
                     <i class="ri-settings-4-line mr-2.5 text-sm opacity-90"></i> Pengaturan Toko
                 </a>
+                
+                <a href="{{ route('branches.index') }}" class="submenu {{ request()->is('branch*') ? 'submenu-active':'' }}"><i class="ri-store-3-line mr-2.5 text-sm opacity-90"></i> Cabang</a>
+
                 <a href="{{ route('developer.modules.index') }}" class="submenu {{ request()->is('developer/modules*') ? 'submenu-active':'' }}">
                     <i class="ri-shield-keyhole-line mr-2.5 text-sm opacity-90"></i> Akses Modul Client
                 </a>
@@ -302,6 +305,7 @@
                 <a href="{{ route('setting.index') }}" class="flex items-center gap-3 px-5 py-2 text-sm text-slate-400 hover:bg-[#123A61] hover:text-white group">
                     <i class="ri-settings-4-line text-base opacity-60 group-hover:opacity-100"></i> Pengaturan Toko
                 </a>
+                <a href="{{ route('branches.index') }}" class="flex items-center gap-3 px-4 py-2 text-sm text-slate-400 hover:bg-emerald-500/10 hover:text-emerald-400 transition"><i class="ri-store-3-line opacity-90"></i> Cabang</a>
                 <a href="{{ route('developer.modules.index') }}" class="flex items-center gap-3 px-5 py-2 text-sm text-slate-400 hover:bg-[#123A61] hover:text-white group">
                     <i class="ri-shield-keyhole-line text-base opacity-60 group-hover:opacity-100"></i> Akses Modul Client
                 </a>

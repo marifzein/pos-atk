@@ -1,359 +1,150 @@
-{{-- @extends('layouts.app') --}}
+@extends('layouts.app')
 
-@extends(
-    preg_match('/(android|bb\d+|meego).+mobile|avantgo|bada\/|blackberry|blazer|compal|elaine|fennec|hiptop|iemobile|ip(hone|od)|iris|kindle|lge |maemo|midp|mmp|mobile.+firefox|netfront|opera m(ob|in)i|palm( os)?|phone|p(ixi|re)\/|plucker|pocket|psp|series(4|6)0|symbian|treo|up\.(browser|link)|vodafone|wap|windows ce|xda|xiino/i', request()->header('User-Agent')) 
-    || preg_match('/(ipad|tablet|(android(?!.*mobile)))/i', request()->header('User-Agent')) 
-    ? 'layouts.mobile-app' 
-    : 'layouts.app'
-)
-
-@section('title','Master Produk')
+@section('title', 'Kartu Stok Produk')
 
 @section('content')
+<div>
+    <x-page-header title="Kartu Stok Produk" subtitle="Pantau pergerakan dan sisa stok barang di seluruh cabang">
+    </x-page-header>
 
-<x-page-header
+    <x-card>
+        <form method="GET" class="mb-6">
+            <div class="flex flex-wrap gap-3">
+                <!-- Filter Search -->
+                <div class="w-[280px]">
+                    <x-input name="search" placeholder="Cari Nama / Barcode / Brand..." :value="request('search')" />
+                </div>
 
-    title="Kartu Stok"
+                <!-- Filter Cabang (Hanya Owner & Admin yang bisa memilih Semua Cabang) -->
+                <div class="w-48">
+                    @if($isGlobalUser)
+                        <x-select name="branch_id">
+                            <option value="">Semua Cabang</option>
+                            @foreach($branches as $branch)
+                                <option value="{{ $branch->id }}" @selected($selectedBranchId == $branch->id)>
+                                    {{ $branch->name }}
+                                </option>
+                            @endforeach
+                        </x-select>
+                    @else
+                        <x-input 
+                            value="{{ auth()->user()->branch->name ?? 'Cabang Anda' }}" 
+                            readonly 
+                            class="bg-slate-100 font-medium text-slate-600"
+                        />
+                        <input type="hidden" name="branch_id" value="{{ auth()->user()->branch_id }}">
+                    @endif
+                </div>
 
-    subtitle="Monitoring mutasi stok"
+                <!-- Filter Stok -->
+                <div class="w-40">
+                    <x-select name="stock">
+                        <option value="">Semua Stok</option>
+                        <option value="available" @selected(request('stock') == 'available')>Tersedia</option>
+                        <option value="low" @selected(request('stock') == 'low')>Menipis</option>
+                        <option value="empty" @selected(request('stock') == 'empty')>Habis</option>
+                    </x-select>
+                </div>
 
->
-
-    
-
-</x-page-header>
-
-
-<x-card>
-
-    {{-- Toolbar --}}
-    {{-- <div class="flex justify-between items-center mb-6"> --}}
-    <div class="mb-6">    
-        <form
-            method="GET"
-            action="{{ route('stock-cards.index') }}"
-            class="flex flex-col md:flex-row gap-3 md:items-center"
-        >
-
-            
-            {{-- Search --}}
-            <div class="w-full md:flex-1">
-                <x-search-box-mobile
-
-                    name="search"
-
-                    :value="request('search')"
-
-                    placeholder="Cari produk..."
-
-                />
-
-                
-                
+                <x-button type="submit" color="green"><i class="ri-filter-3-line"></i> Cari</x-button>
             </div>
-            
-            
-            {{-- Kategori & Stock Filter --}}
-            <div class="flex flex-col sm:flex-row gap-2 w-full md:w-auto">
-                {{-- <x-select
-                    name="category"
-                    class="w-40"
-                >
-
-                    <option value="">
-
-                        Semua Kategori
-
-                    </option>
-
-                    @foreach($categories as $category)
-
-                        <option
-
-                            value="{{ $category->id }}"
-
-                            @selected(request('category')==$category->id)
-
-                        >
-
-                            {{ $category->name }}
-
-                        </option>
-
-                    @endforeach
-
-                </x-select> --}}
-
-            {{-- Stock --}}
-
-                <x-select
-                    name="stock"
-                    class="w-40"
-                >
-
-                    <option value="">
-
-                        Semua Stok
-
-                    </option>
-
-                    <option
-                        value="available"
-                        @selected(request('stock')=='available')
-                    >
-                        Tersedia
-                    </option>
-
-                    <option
-                        value="low"
-                        @selected(request('stock')=='low')
-                    >
-                        Menipis
-                    </option>
-
-                    <option
-                        value="empty"
-                        @selected(request('stock')=='empty')
-                    >
-                        Habis
-                    </option>
-
-                </x-select>
-
-                <x-button
-                    color="gray"
-                    type="submit"
-                >
-
-                    <i class="ri-filter-3-line"></i>
-
-                    Filter
-
-                </x-button>
-            </div>    
         </form>
 
-    </div>
-
-    <!-- TAMPILAN DESKTOP (TABEL) -->
-    <div class="hidden md:block">
-        <x-table >
-
-            {{-- <thead> --}}
-            <x-table-header >
-
-                <tr>
-                    
-                    {{-- <th class="text-left  py-4 px-3">Produk</th> --}}
-                    <x-table-head class="text-left">Produk</x-table-head>
-                    <x-table-head class="text-left">Barcode</x-table-head>
-                    <x-table-head class="text-right">Harga</x-table-head>
-                    <x-table-head class="text-right">Stock</x-table-head>
+        <x-table>
+            <x-table-header>
+                <tr class="text-left">
+                    <x-table-head>Kode/SKU</x-table-head>
+                    <x-table-head>Nama Produk</x-table-head>
+                    <x-table-head>Cabang</x-table-head>
+                    <x-table-head>Supplier</x-table-head>
+                    <x-table-head class="text-right">Harga Jual</x-table-head>
+                    <x-table-head class="text-center">Stok</x-table-head>
                     <x-table-head class="text-center">Status</x-table-head>
-                    <x-table-head class="text-center">View</x-table-head>
-                    
+                    <x-table-head class="text-center">Aksi</x-table-head>
                 </tr>
-            </x-table-header >    
-            {{-- </thead> --}}
-
+            </x-table-header>
             <tbody>
-
-            @forelse($products as $product)
-
-                <tr>
-
-                    <x-table-cell class="text-left">
-
-                        {{-- <div class="font-semibold"> --}}
-
-                            {{ $product->name }} 
-
-                        {{-- </div> --}}
-
-                    </x-table-cell>
-
-                    <x-table-cell class="text-left">
-
-                        {{ $product->barcode }}
-
-                    </x-table-cell>
-
-                    
-
-                    <x-table-cell class="text-right">
-
-                        Rp {{ number_format($product->price,0,',','.') }}
-
-                    </x-table-cell>
-
-                    <x-table-cell class="text-right">
-
-                        @if($product->stock <= 5)
-
-                            <x-badge color="red">
-
-                                {{ $product->stock }}
-
-                            </x-badge>
-
-                        @elseif($product->stock <= 15)
-
-                            <x-badge color="yellow">
-
-                                {{ $product->stock }}
-
-                            </x-badge>
-
-                        @else
-
-                            <x-badge color="green">
-
-                                {{ $product->stock }}
-
-                            </x-badge>
-
-                        @endif
-
-                    </x-table-cell>
-
-                    <x-table-cell class="text-center">
-
-                        @if($product->stock > 0)
-
-                            <x-badge color="green">
-
-                                Tersedia
-
-                            </x-badge>
-
-                        @else
-
-                            <x-badge color="red">
-
-                                Habis
-
-                            </x-badge>
-
-                        @endif
-
-                    </x-table-cell>
-
-                    <x-table-cell class="text-center">
-
-                        <div class="flex justify-center gap-2">
-
-                            <a
-                                href=" {{ url( '/stock-cards/' . $product->id) }}"
-                            >
-
-                                <x-button
-
-                                    color="blue"
-
-                                    size="sm"
-
-                                >
-
-                                    <i class="ri-file-chart-line"></i>
-
-                                </x-button>
-
-                            </a>
-
-                            
-
-                        </div>
-
-                    </x-table-cell>
-
-                </tr>
-
-            @empty
-
-                <tr>
-
-                    <td colspan="7">
-
-                        <x-empty-state
-
-                            icon="ri-box-3-line"
-
-                            title="Belum ada produk"
-
-                            description="Tambah Produk untuk membuat data baru."
-
-                        />
-
-                    </td>
-
-                </tr>
-
-            @endforelse
-
+                @forelse($products as $product)
+                    @forelse($product->stocks as $pStock)
+                        @php 
+                            $isLow = $pStock->stock > 0 && $pStock->stock <= $pStock->min_stock; 
+                        @endphp
+                        <tr class="hover:bg-slate-50/50">
+                            <td class="p-3 font-mono text-sm font-semibold text-slate-700">{{ $product->sku ?: '-' }}</td>
+                            <td class="p-3 font-semibold text-slate-800">
+                                {{ $product->name }}
+                                <div class="text-xs font-normal text-slate-400">{{ $product->satuan }}</div>
+                            </td>
+                            <td class="p-3">
+                                <span class="font-medium text-slate-700 text-xs bg-slate-100 px-2 py-1 rounded border border-slate-200">
+                                    <i class="ri-store-2-line text-emerald-600"></i> {{ $pStock->branch->name ?? '-' }}
+                                </span>
+                            </td>
+                            <td class="p-3 text-slate-600">{{ $product->supplier->name ?? '-' }}</td>
+                            <td class="p-3 text-right font-mono font-medium text-slate-800">
+                                Rp {{ number_format($product->price, 0, ',', '.') }}
+                            </td>
+                            <td class="p-3 text-center">
+                                <span class="font-mono px-2 py-0.5 rounded text-xs {{ $pStock->stock <= 0 ? 'bg-red-50 text-red-600 font-bold border border-red-200' : ($isLow ? 'bg-amber-50 text-amber-600 font-bold border border-amber-200' : 'text-slate-800 font-semibold') }}">
+                                    {{ number_format($pStock->stock) }}
+                                </span>
+                            </td>
+                            <td class="p-3 text-center">
+                                @if($pStock->stock <= 0)
+                                    <x-badge color="red">Habis</x-badge>
+                                @elseif($isLow)
+                                    <x-badge color="yellow">Menipis</x-badge>
+                                @else
+                                    <x-badge color="green">Tersedia</x-badge>
+                                @endif
+                            </td>
+                            <td class="p-3 text-center">
+                                <!-- Pass branch_id via URL parameter -->
+                                <a href="{{ route('stock-cards.show', [$product->id, 'branch_id' => $pStock->branch_id]) }}" title="Lihat Mutasi Stok">
+                                    <x-button size="sm" color="blue">
+                                        <i class="ri-file-chart-line"></i>
+                                    </x-button>
+                                </a>
+                            </td>
+                        </tr>
+                    @empty
+                        <tr class="hover:bg-slate-50/50">
+                            <td class="p-3 font-mono text-sm font-semibold text-slate-700">{{ $product->sku ?: '-' }}</td>
+                            <td class="p-3 font-semibold text-slate-800">
+                                {{ $product->name }}
+                                <div class="text-xs font-normal text-slate-400">{{ $product->satuan }}</div>
+                            </td>
+                            <td class="p-3 text-xs text-slate-400">-</td>
+                            <td class="p-3 text-slate-600">{{ $product->supplier->name ?? '-' }}</td>
+                            <td class="p-3 text-right font-mono font-medium text-slate-800">
+                                Rp {{ number_format($product->price, 0, ',', '.') }}
+                            </td>
+                            <td class="p-3 text-center text-xs text-red-500 font-bold">0</td>
+                            <td class="p-3 text-center">
+                                <x-badge color="red">Habis</x-badge>
+                            </td>
+                            <td class="p-3 text-center">
+                                <a href="{{ route('stock-cards.show', $product->id) }}" title="Lihat Mutasi Stok">
+                                    <x-button size="sm" color="blue">
+                                        <i class="ri-file-chart-line"></i>
+                                    </x-button>
+                                </a>
+                            </td>
+                        </tr>
+                    @endforelse
+                @empty
+                    <tr>
+                        <td colspan="8">
+                            <x-empty-state icon="ri-archive-line" title="Belum ada Produk Barang" description="Data produk tidak ditemukan untuk filter ini." />
+                        </td>
+                    </tr>
+                @endforelse
             </tbody>
-
         </x-table>
-    </div>
-    
-    <!-- TAMPILAN MOBILE & TABLET (CARD LIST) -->
-    <div class="block md:hidden space-y-3">
-        @forelse($products as $product)
-        <div class="bg-slate-50 border border-slate-200/80 rounded-2xl p-4 shadow-3xs flex flex-col justify-between gap-3">
-            <div class="flex justify-between items-start">
-                <div>
-                    <h4 class="font-bold text-slate-800 text-base">{{ $product->nama_barang }}</h4>
-                    <p class="text-xs font-mono text-slate-500 mt-0.5"><i class="ri-barcode-line"></i> {{ $product->barcode ?: '-' }}</p>
-                </div>
-                <div>
-                    @if($product->stock > 0)
-                        <x-badge color="green">Tersedia</x-badge>
-                    @else
-                        <x-badge color="red">Habis</x-badge>
-                    @endif
-                </div>
-            </div>
 
-            <div class="flex justify-between items-center text-xs bg-white p-2.5 rounded-xl border border-slate-100">
-                <span class="text-slate-500">Harga: <strong class="text-slate-700">Rp {{ number_format($product->harga, 0, ',', '.') }}</strong></span>
-                <span class="text-slate-500">Sisa Stok: 
-                    @if($product->stock <= 5)
-                        <x-badge color="red">{{ $product->stock }}</x-badge>
-                    @elseif($product->stock <= 15)
-                        <x-badge color="yellow">{{ $product->stock }}</x-badge>
-                    @else
-                        <x-badge color="green">{{ $product->stock }}</x-badge>
-                    @endif
-                </span>
-            </div>
-
-            <div class="flex items-center justify-end pt-2 border-t border-slate-200/60">
-                <a href="/stock-cards/{{ $product->id }}" class="w-full">
-                    <x-button color="blue" size="sm" class="w-full justify-center">
-                        <i class="ri-file-chart-line"></i> Lihat Riwayat Stok
-                    </x-button>
-                </a>
-            </div>
+        <div class="mt-6">
+            {{ $products->links() }}
         </div>
-        @empty
-        <x-empty-state
-            icon="ri-box-3-line"
-            title="Belum ada produk"
-            description="Tambah Produk untuk membuat data baru."
-        />
-        @endforelse
-    </div>
-
-    {{-- end mobile view --}}
-
-
-
-
-    <div class="mt-6">
-
-        {{ $products->links() }}
-
-    </div>
-
-</x-card>
-
+    </x-card>
+</div>
 @endsection

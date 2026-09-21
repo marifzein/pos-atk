@@ -54,11 +54,12 @@
 
                 </x-table-head>
 
-                <x-table-head class="text-left">
+                {{-- <x-table-head class="text-left">
 
                     Email
 
-                </x-table-head>
+                </x-table-head> --}}
+                <x-table-head class="text-center">Cabang</x-table-head>
 
                 <x-table-head class="text-center">
 
@@ -104,10 +105,17 @@
 
                 </x-table-cell>
 
-                <x-table-cell>
+                {{-- <x-table-cell>
 
                     {{ $user->email }}
 
+                </x-table-cell> --}}
+                
+                {{-- TAMPILAN CABANG --}}
+                <x-table-cell class="text-center">
+                    <x-badge color="gray">
+                        {{ $user->branch->name ?? 'Utama' }}
+                    </x-badge>
                 </x-table-cell>
 
                 <x-table-cell class="text-center">  

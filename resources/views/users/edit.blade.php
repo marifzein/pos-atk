@@ -69,6 +69,40 @@
 
 <div class="grid grid-cols-2 gap-6">
 
+    {{-- Input Cabang --}}
+    {{-- <div>
+        <label class="block text-sm font-medium text-slate-700 mb-1">Cabang / Unit *</label>
+        <select
+            name="branch_id"
+            required
+            class="w-full py-2 pl-3 pr-8 bg-slate-50 border border-slate-300 text-slate-800 text-sm rounded-lg focus:ring-green-500 focus:border-green-500 block"
+        >
+            <option value="">-- Pilih Cabang --</option>
+            @foreach($branches as $branch)
+                <option value="{{ $branch->id }}" {{ old('branch_id', $user->branch_id) == $branch->id ? 'selected' : '' }}>
+                    {{ $branch->name }} ({{ $branch->code }})
+                </option>
+            @endforeach
+        </select>
+    </div> --}}
+    <x-select
+        label="Cabang / Unit"
+        name="branch_id"
+        icon="ri-store-2-line"
+        required
+    >
+        <option value="">-- Pilih Cabang --</option>
+        @foreach($branches as $branch)
+            <option 
+                value="{{ $branch->id }}" 
+                {{ old('branch_id', $user->branch_id) == $branch->id ? 'selected' : '' }}
+            >
+                {{ $branch->name }} ({{ $branch->code }})
+            </option>
+        @endforeach
+    </x-select>
+    
+
     <x-input
 
         label="Nama Lengkap"
@@ -99,7 +133,7 @@
 
     />
 
-    <select
+    {{-- <select
             name="role"
             required
             class="w-full pl-10 pr-4 py-2 bg-slate-50 border border-slate-300 text-slate-800 text-sm rounded-lg focus:ring-green-500 focus:border-green-500 block"
@@ -110,7 +144,27 @@
             <option value="Kasir" {{ old('role', $user->role) == 'Kasir' ? 'selected' : '' }}>Kasir</option>
             <option value="Staff Barang" {{ old('role', $user->role) == 'Staff Barang' ? 'selected' : '' }}>Staff Barang</option>
             <option value="Staff Jasa" {{ old('role', $user->role) == 'Staff Jasa' ? 'selected' : '' }}>Staff Jasa</option>
-        </select>
+        </select> --}}
+    
+        {{-- Dropdown Role --}}
+        <x-select
+            label="Role"
+            name="role"
+            icon="ri-shield-user-line"
+            required
+        >
+            <option value="">-- Pilih Role --</option>
+            @can('akses-developer')
+                <option value="Admin" {{ old('role', $user->role) == 'Admin' ? 'selected' : '' }}>Admin</option>
+            @endcan
+            @can('akses-owner-admin')
+                <option value="Owner" {{ old('role', $user->role) == 'Owner' ? 'selected' : '' }}>Owner</option>
+            @endcan
+            <option value="Supervisor" {{ old('role', $user->role) == 'Supervisor' ? 'selected' : '' }}>Supervisor</option>
+            <option value="Kasir" {{ old('role', $user->role) == 'Kasir' ? 'selected' : '' }}>Kasir</option>
+            <option value="Staff Barang" {{ old('role', $user->role) == 'Staff Barang' ? 'selected' : '' }}>Staff Barang</option>
+            <option value="Staff Jasa" {{ old('role', $user->role) == 'Staff Jasa' ? 'selected' : '' }}>Staff Jasa</option>
+        </x-select>
 
     
 
@@ -124,7 +178,7 @@
         />
     </div>
 
-    <div class="col-span-2">
+    <div >
 
         <x-input
 

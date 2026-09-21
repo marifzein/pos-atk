@@ -1,26 +1,27 @@
 @extends('layouts.app')
 
-@section('title', 'Detail Pesanan Jasa')
+@section('title', 'Detail Pesanan Jasa - ' . ($order->branch->name ?? 'Pusat'))
 
 @section('content')
 
-<div class="max-w-5xl mx-auto p-4 sm:p-6">
+<div class="max-w-7xl mx-auto p-2 sm:p-4">
 
-    <!-- Tombol Navigasi Header -->
-    <div class="flex justify-end mb-4">
-        <a href="{{ route('pesanan-jasa.history') }}">
-            <x-button color="secondary" class="px-5">
+   
+    <x-page-header title="Detail Pesanan Jasa - {{ ($order->branch->name ?? 'Pusat') }} " subtitle="">
+        <x-slot:action>
+            <x-button color="secondary" class="px-4 py-1.5 ">
                 <i class="ri-arrow-left-circle-line mr-1"></i> Kembali
             </x-button>
-        </a>
-    </div>
+        </x-slot:action>
+    </x-page-header>
+
 
     <!-- Main Card Container -->
     <div class="bg-white rounded-2xl shadow-sm p-6 sm:p-8 border border-slate-100">
 
-        <h1 class="text-xl font-bold text-slate-800 mb-6">
-            Detail Pesanan Jasa
-        </h1>
+        {{-- <h1 class="text-xl font-bold text-slate-800 mb-6">
+            Detail Pesanan Jasa - {{ ($order->branch->name ?? 'Pusat') }} 
+        </h1> --}}
 
         <!-- Box Informasional (Satu Warna bg dengan Header Tabel) -->
         <div class="bg-slate-100/70 p-5 rounded-2xl border border-slate-200/80 mb-6">

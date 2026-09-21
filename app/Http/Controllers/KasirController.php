@@ -246,7 +246,7 @@ class KasirController extends Controller
             'nama_toko' => 'TOKO ANDA',
             'alamat' => 'Jl. Contoh No.123',
             'telepon' => '08123456789',
-            'footer_nota' => 'Terima Kasih\nBarang yang sudah dibeli\ntidak dapat ditukar'
+            'footer_nota' => 'Terima Kasih Barang yang sudah dibeli tidak dapat ditukar'
         ]);
         
         return view(
@@ -315,17 +315,23 @@ class KasirController extends Controller
         $limit  = $request->input('limit', 10);
         $page   = $request->input('page', 1);
 
-        $query = Order::with(['customer', 'operator', 'items', 'orderItems'])
-            ->where('status', 'order')
-            ->when($search, function ($q) use ($search) {
-                $q->where(function ($sub) use ($search) {
-                    $sub->where('no_pesanan', 'like', "%{$search}%")
-                        ->orWhere('customer_name_manual', 'like', "%{$search}%")
-                        ->orWhereHas('customer', function ($c) use ($search) {
-                            $c->where('nama', 'like', "%{$search}%");
-                        });
-                });
+       $query = Order::with(['branch', 'customer', 'operator', 'items', 'orderItems'])
+        ->where('status', 'order')
+        ->when($search, function ($q) use ($search) {
+            $q->where(function ($sub) use ($search) {
+                $sub->where('no_pesanan', 'like', "%{$search}%")
+                    ->orWhere('customer_name_manual', 'like', "%{$search}%")
+                    ->orWhereHas('customer', function ($c) use ($search) {
+                        $c->where('nama', 'like', "%{$search}%");
+                    });
             });
+        });
+
+        // 🔒 JIKA USER ADALAH KASIR, HANYA TAMPILKAN WO DI CABANG SI KASIR
+        $user = auth()->user();
+        if ($user && in_array(strtolower($user->role), ['kasir'])) {
+            $query->where('branch_id', $user->branch_id);
+        }
 
         // Sorting dinamis
         if ($request->has('sort')) {
@@ -343,8 +349,20 @@ class KasirController extends Controller
                 $total = $order->orderItems?->sum('subtotal') ?? $order->items?->sum('subtotal') ?? 0;
                 $pelanggan = $order->customer->nama ?? $order->customer_name_manual ?? 'Umum (Non-Member)';
                 
-                return [
-                    $order->no_pesanan,
+                // return [
+                //     $order->no_pesanan,
+                //     $order->created_at ? $order->created_at->format('Y-m-d H:i:s') : '-',
+                //     $order->operator->name ?? 'Admin',
+                //     $pelanggan,
+                //     'ORDER',
+                //     'Rp ' . number_format($total, 0, ',', '.'),
+                //     route('kasir.create', ['order_id' => $order->id])
+                // ];
+               return [
+                    [
+                        'no_pesanan'  => $order->no_pesanan,
+                        'branch_name' => $order->branch->name ?? '-'
+                    ],
                     $order->created_at ? $order->created_at->format('Y-m-d H:i:s') : '-',
                     $order->operator->name ?? 'Admin',
                     $pelanggan,

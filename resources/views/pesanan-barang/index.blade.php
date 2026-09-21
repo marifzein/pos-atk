@@ -18,7 +18,7 @@
                 
                 <div>
                     <label class="block text-[11px] text-slate-400 font-bold uppercase tracking-wider mb-1.5">No. Pesanan Barang</label>
-                    <input type="text" value="{{ $nomorSO }}" readonly class="w-full border border-slate-200 rounded-lg p-2.5 bg-slate-50 text-slate-700 font-bold text-sm outline-none shadow-inner">
+                    <input type="text" value="{{ $nomorWO }}" readonly class="w-full border border-slate-200 rounded-lg p-2.5 bg-slate-50 text-slate-700 font-bold text-sm outline-none shadow-inner">
                 </div>
 
                 <div>
@@ -421,7 +421,7 @@ function posBarang() {
 
             const confirmSubmit = await Swal.fire({
                 title: 'Simpan Pesanan Barang?',
-                text: "Pesanan ini akan disimpan ke sistem.",
+                text: "Pesanan ini akan disimpan ke database.",
                 icon: 'question',
                 showCancelButton: true,
                 confirmButtonText: 'Ya, Simpan',

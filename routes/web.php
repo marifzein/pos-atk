@@ -28,6 +28,8 @@ use App\Http\Controllers\ReturBarangController;
 use App\Http\Controllers\StockAdjustmentController;
 use App\Http\Controllers\StockCardController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\SettingController;
+use App\Http\Controllers\BranchController;
 
 
 
@@ -215,11 +217,15 @@ Route::middleware(['auth', \App\Http\Middleware\CheckCommissionScheme::class])->
             // MANAGEMEN INTEGRASI AKSES MODUL CLIENT
             Route::get('/modules', [\App\Http\Controllers\DeveloperController::class, 'modulesIndex'])->name('modules.index');
             Route::post('/modules/update', [\App\Http\Controllers\DeveloperController::class, 'modulesUpdate'])->name('modules.update');
+
+            
         });
         
         // Pengaturan Profil Toko
         Route::get('/system/setting', [SettingController::class, 'index'])->name('setting.index');
-        Route::put('/system/setting', [SettingController::class, 'update'])->name('setting.update');    
+        Route::put('/system/setting', [SettingController::class, 'update'])->name('setting.update');
+        // Master Branch
+        Route::resource('branches', BranchController::class);    
         
     });
 

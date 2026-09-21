@@ -4,10 +4,12 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Traits\BelongsToBranch;
+
 
 class StockOpname extends Model
 {
-    use HasFactory;
+    use HasFactory, BelongsToBranch;
 
     protected $table = 'stock_opnames';
 

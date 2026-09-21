@@ -1,11 +1,13 @@
 <?php
 
 namespace App\Models;
-
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Traits\BelongsToBranch;
 
 class Shift extends Model
 {
+    use HasFactory, BelongsToBranch;
     protected $fillable = [
         'user_id',
         'starting_cash',

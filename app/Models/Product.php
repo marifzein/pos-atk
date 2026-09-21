@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Product extends Model
 {
@@ -23,7 +24,12 @@ class Product extends Model
         'catatan',
     ];
 
-    // Produk ini disuplai oleh...
+    public function stocks(): HasMany
+    {
+        return $this->hasMany(ProductStock::class, 'product_id');
+    }
+
+    // supplier
     public function supplier()
     {
         return $this->belongsTo(Supplier::class);

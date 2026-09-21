@@ -4,8 +4,7 @@ namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\Gate;
-use Illuminate\Support\Facades\View;
-use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\URL;     
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -22,6 +21,10 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        // Paksa semua URL asset & route memakai HTTPS jika diakses via Cloudflare
+        //  Paksa HTTPS untuk semua panggil asset & URL
+        URL::forceScheme('https');
+
         // 1. MENU DEVELOPER & BACKUP DB: Hanya murni Admin IT saja
         Gate::define('akses-developer', function ($user) {
             return $user->role === 'Admin';

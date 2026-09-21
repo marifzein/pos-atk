@@ -4,34 +4,34 @@
 
 @section('content')
 <!-- Judul Halaman -->
-<div class="mb-4 px-1">
-    <h2 class="text-xl font-bold text-slate-800 tracking-tight flex items-center gap-2">
-        <i class="ri-customer-service-2-line text-indigo-600"></i> Pesanan ( Khusus Layanan Jasa )
+<div class="mb-3 md:mb-4 px-1">
+    <h2 class="text-lg md:text-xl font-bold text-slate-800 tracking-tight flex items-center gap-2">
+        <i class="ri-customer-service-2-line text-indigo-600 text-xl"></i> 
+        <span>Pesanan <span class="text-xs md:text-sm font-normal text-slate-500">( Layanan Jasa )</span></span>
     </h2>
 </div>
 
-
 <!-- CONTAINER UTAMA POS JASA -->
-<div class="w-full px-1" x-data="posJasa()">
-    <!-- Grid System Responsif yang Aman untuk Layout Sidebar -->
-    <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start w-full">
+<div class="w-full px-0 md:px-1" x-data="posJasa()">
+    <!-- Grid System Responsif: 1 Kolom di HP (grid-cols-1), 12 Kolom di Desktop (lg:grid-cols-12) -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 md:gap-5 items-start w-full">
 
-        <!-- ==================== CARD KIRI (Sidebar Form) ==================== -->
-        <div class="col-span-1 lg:col-span-4 xl:col-span-3 space-y-4 w-full">
-            <div class="bg-white rounded-xl shadow-sm border border-slate-200/80 p-5 space-y-5">
+        <!-- ==================== CARD KIRI / ATAS (Form Pelanggan & Info) ==================== -->
+        <div class="col-span-1 lg:col-span-4 xl:col-span-3 space-y-3 md:space-y-4 w-full">
+            <div class="bg-white rounded-xl shadow-sm border border-slate-200/80 p-3.5 md:p-5 space-y-4">
                 
                 <!-- 1. No Pesanan -->
                 <div>
-                    <label class="block text-[11px] text-slate-400 font-bold uppercase tracking-wider mb-1.5">No. Pesanan Jasa</label>
+                    <label class="block text-[11px] text-slate-400 font-bold uppercase tracking-wider mb-1">No. Pesanan Jasa</label>
                     <input type="text" value="{{ $nomorWO }}" readonly class="w-full border border-slate-200 rounded-lg p-2.5 bg-slate-50 text-slate-700 font-bold text-sm outline-none shadow-inner">
                 </div>
 
                 <!-- 2. Pelanggan -->
                 <div>
-                    <div class="flex justify-between items-center mb-1.5">
-                        <label class="block text-[11px] text-slate-400 font-bold uppercase tracking-wider">Pelanggan</label>
-                        <button type="button" @click="$dispatch('open-customer-modal')" class="text-[10px] text-indigo-600 font-semibold hover:underline cursor-pointer">
-                            + Tambah Baru
+                    <div class="flex justify-between items-center mb-1">
+                        <label class="block text-[11px] text-slate-400 font-bold uppercase tracking-wider">Pelanggan (F8)</label>
+                        <button type="button" @click="$dispatch('open-customer-modal')" class="text-[11px] text-indigo-600 font-bold hover:underline cursor-pointer flex items-center gap-0.5">
+                            <i class="ri-user-add-line"></i> + Tambah
                         </button>
                     </div>
                     <div class="relative" @click.outside="customerResults=[]">
@@ -50,24 +50,25 @@
 
                     <!-- Detail Pelanggan Terpilih -->
                     <template x-if="selectedCustomer">
-                        <div class="mt-2.5 rounded-lg bg-indigo-50/50 border border-indigo-100 p-3 relative text-xs">
-                            <div class="font-bold text-indigo-900" x-text="selectedCustomer.nama"></div>
-                            <div class="text-slate-500 mt-0.5" x-text="'Telp: ' + (selectedCustomer.telepon || '-')"></div>
-                            <button @click="clearCustomer()" class="mt-2 text-rose-600 font-medium hover:underline block">Hapus Pelanggan</button>
+                        <div class="mt-2 rounded-lg bg-indigo-50/60 border border-indigo-100 p-2.5 relative text-xs flex justify-between items-center">
+                            <div>
+                                <div class="font-bold text-indigo-900" x-text="selectedCustomer.nama"></div>
+                                <div class="text-slate-500 text-[11px]" x-text="'Telp: ' + (selectedCustomer.telepon || '-')"></div>
+                            </div>
+                            <button @click="clearCustomer()" class="text-rose-600 font-semibold hover:bg-rose-50 px-2 py-1 rounded transition">Hapus</button>
                         </div>
                     </template>
                 </div>
 
-                <!-- 3. Info Shortcut Keyboard -->
-                <div class="bg-amber-50/50 border border-amber-200 rounded-xl p-4">
+                <!-- 3. Info Shortcut Keyboard (Disembunyikan di HP, Muncul di Desktop) -->
+                <div class="hidden lg:block bg-amber-50/50 border border-amber-200 rounded-xl p-3.5">
                     <label class="block text-[11px] text-amber-800 font-bold uppercase tracking-wider mb-2 flex items-center gap-1">
                         <i class="ri-keyboard-line"></i> Shortcut Keyboard
                     </label>
-                    <div class="space-y-2 text-xs text-amber-900/90">
+                    <div class="space-y-1.5 text-xs text-amber-900/90">
                         <div class="flex justify-between"><span class="text-slate-500">Cari Jasa</span><span class="font-mono bg-white px-1.5 py-0.5 border rounded shadow-sm text-[10px]">F2</span></div>
                         <div class="flex justify-between"><span class="text-slate-500">Pilih Item</span><span class="font-mono bg-white px-1.5 py-0.5 border rounded shadow-sm text-[10px]">↑ / ↓</span></div>
                         <div class="flex justify-between"><span class="text-slate-500">Masuk Chart</span><span class="font-mono bg-white px-1.5 py-0.5 border rounded shadow-sm text-[10px]">Enter</span></div>
-
                         <div class="flex justify-between"><span>F3</span><span class="font-medium text-slate-800">Cek Harga Barang</span></div>
                         <div class="flex justify-between"><span>F8</span><span class="font-medium text-slate-800">Pelanggan</span></div>
                         <div class="flex justify-between"><span>F10</span><span class="font-medium text-slate-800">Simpan</span></div>
@@ -78,20 +79,25 @@
             </div>
         </div>
 
-        <!-- ==================== CARD KANAN (Tabel & Totalan) ==================== -->
+        <!-- ==================== CARD KANAN / BAWAH (Input Jasa & Keranjang) ==================== -->
         <div class="col-span-1 lg:col-span-8 xl:col-span-9 w-full">
-            <div class="bg-white rounded-xl shadow-sm border border-slate-200/80 p-5 flex flex-col min-h-[560px] w-full">
+            <div class="bg-white rounded-xl shadow-sm border border-slate-200/80 p-3.5 md:p-5 flex flex-col min-h-[480px] md:min-h-[560px] w-full">
                 
-                <!-- Input Jasa -->
+                <!-- Input Pencarian Jasa -->
                 <div class="mb-4">
                     <div class="relative">
-                        <span class="absolute inset-y-0 left-0 flex items-center pl-4 text-slate-400">
+                        <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 text-slate-400">
                             <i class="ri-search-2-line text-lg"></i>
                         </span>
-                        <input id="jasaInput" x-ref="jasaInput" type="text" x-model="search" @input="searchJasa" @keydown.arrow-down.prevent="if(selectedIndex < jasaItems.length - 1) selectedIndex++" @keydown.arrow-up.prevent="if(selectedIndex > 0) selectedIndex--" @keydown.enter.prevent="if(jasaItems.length) addToCart(jasaItems[selectedIndex])" placeholder="Scan Barcode / Kode Jasa / Nama Layanan Jasa..." class="w-full border border-indigo-600 rounded-lg py-3.5 pl-11 pr-4 text-base focus:ring-2 focus:ring-indigo-100 outline-none shadow-sm font-medium placeholder-slate-400">
+                        <input id="jasaInput" x-ref="jasaInput" type="text" x-model="search" @input="searchJasa" @keydown.arrow-down.prevent="if(selectedIndex < jasaItems.length - 1) selectedIndex++" @keydown.arrow-up.prevent="if(selectedIndex > 0) selectedIndex--" @keydown.enter.prevent="if(jasaItems.length) addToCart(jasaItems[selectedIndex])" placeholder="Scan Barcode / Kode / Nama Jasa..." class="w-full border border-indigo-600 rounded-xl py-3 pl-10 pr-10 text-sm md:text-base focus:ring-2 focus:ring-indigo-100 outline-none shadow-sm font-medium placeholder-slate-400">
                         
+                        <!-- Tombol Buka Modal Cek Harga (Mobile Friendly) -->
+                        <button type="button" @click="showPriceModal = true; setTimeout(() => { $refs.priceInput?.focus(); }, 50);" class="absolute inset-y-1.5 right-1.5 bg-indigo-50 text-indigo-600 px-2.5 rounded-lg text-xs font-bold flex items-center gap-1 hover:bg-indigo-100 transition" title="Cek Harga (F3)">
+                            <i class="ri-price-tag-3-line"></i> <span class="hidden sm:inline">Cek Harga</span>
+                        </button>
+
                         <!-- Dropdown List Hasil Pencarian Jasa -->
-                        <div x-show="jasaItems.length" class="absolute left-0 right-0 bg-white border border-slate-200 rounded-lg shadow-2xl mt-1.5 z-50 max-h-64 overflow-y-auto">
+                        <div x-show="jasaItems.length" class="absolute left-0 right-0 bg-white border border-slate-200 rounded-xl shadow-2xl mt-1.5 z-50 max-h-64 overflow-y-auto">
                             <template x-for="(jasa, index) in jasaItems" :key="jasa.id">
                                 <div @click="addToCart(jasa)" :class="selectedIndex === index ? 'bg-indigo-600 text-white' : 'hover:bg-slate-50'" class="p-3 border-b border-slate-100 cursor-pointer flex justify-between items-center transition-colors">
                                     <div>
@@ -105,11 +111,62 @@
                     </div>
                 </div>
 
-                <!-- Label Tabel Keranjang Belanja -->
-                <div class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 px-1">Keranjang Belanja</div>
+                <!-- Label & Header Keranjang Belanja -->
+                <div class="flex justify-between items-center mb-2 px-1">
+                    <div class="text-xs font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1">
+                        <i class="ri-shopping-cart-2-line text-indigo-600"></i> Keranjang Belanja (<span x-text="cart.length"></span>)
+                    </div>
+                    <button x-show="cart.length > 0" @click="clearCart()" class="text-xs text-rose-600 font-semibold hover:underline">
+                        Kosongkan Cart
+                    </button>
+                </div>
 
-                <!-- Tabel / Chart Item Jasa -->
-                <div class="overflow-x-auto border border-slate-100 rounded-lg w-full mb-auto">
+                <!-- 1. TAMPILAN MOBILE (LIST / CARDS) - Terlihat di Layar HP (< 768px) -->
+                <div class="block md:hidden space-y-2.5 mb-auto">
+                    <template x-for="(item, index) in cart" :key="item.id">
+                        <div class="bg-slate-50/70 border border-slate-200/80 rounded-xl p-3 space-y-2.5 relative">
+                            <!-- Judul Item & Hapus -->
+                            <div class="flex justify-between items-start gap-2 pr-6">
+                                <div class="font-bold text-slate-800 text-sm">
+                                    <span x-text="item.nama_barang"></span>
+                                    <template x-if="item.is_custom">
+                                        <span class="inline-block text-[9px] bg-amber-50 text-amber-700 border border-amber-200 px-1 py-0.2 rounded font-medium ml-1">Custom</span>
+                                    </template>
+                                </div>
+                                <button @click="removeItem(item.id)" class="absolute top-2.5 right-2 text-slate-400 hover:text-rose-600 p-1">
+                                    <i class="ri-delete-bin-line text-lg"></i>
+                                </button>
+                            </div>
+
+                            <!-- Input Qty, Harga & Subtotal -->
+                            <div class="flex items-center justify-between pt-1 border-t border-slate-200/60 text-xs">
+                                <!-- Qty -->
+                                <div class="flex items-center gap-1">
+                                    <span class="text-slate-500 font-medium">Qty:</span>
+                                    <input type="number" min="1" x-model.number="item.qty" @change="validateQty(item)" @input="calculateItem(item)" class="w-16 border border-slate-300 bg-white rounded-md text-center py-1 font-bold text-sm focus:border-indigo-500 outline-none">
+                                </div>
+
+                                <!-- Harga (Jika Custom) / Subtotal -->
+                                <div class="text-right">
+                                    <template x-if="item.is_custom">
+                                        <div class="flex items-center justify-end gap-1 mb-0.5">
+                                            <span class="text-slate-400 text-[10px]">Rp</span>
+                                            <input type="number" min="0" x-model.number="item.harga" @input="validateHarga(item)" class="w-24 border border-amber-300 bg-amber-50/50 rounded text-right px-1 py-0.5 font-bold text-xs outline-none">
+                                        </div>
+                                    </template>
+                                    <div class="font-black text-slate-900 text-sm" x-text="formatRupiah(item.qty * item.harga)"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </template>
+
+                    <div x-show="cart.length === 0" class="text-center py-12 text-slate-400 italic text-xs bg-slate-50/40 rounded-xl border border-dashed border-slate-200">
+                        Belum ada item dimasukkan
+                    </div>
+                </div>
+
+                <!-- 2. TAMPILAN DESKTOP (TABEL) - Terlihat di Layar Tablet / PC (>= 768px) -->
+                <div class="hidden md:block overflow-x-auto border border-slate-100 rounded-lg w-full mb-auto">
                     <table class="w-full border-collapse bg-white table-auto">
                         <thead>
                             <tr class="bg-slate-50/70 border-b border-slate-200 text-slate-500 text-[11px] uppercase tracking-wider font-bold">
@@ -175,23 +232,23 @@
                     </table>
                 </div>
 
-                <!-- Bagian Bawah Grid Kanan: Catatan, Total & Simpan -->
-                <div class="mt-6 grid grid-cols-1 md:grid-cols-2 gap-5 pt-4 border-t border-slate-100 items-start w-full">
+                <!-- Bagian Bawah: Catatan, Total & Simpan -->
+                <div class="mt-4 md:mt-6 grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-5 pt-3 md:pt-4 border-t border-slate-100 items-start w-full">
                     
-                    <!-- Form Catatan (Kiri Bawah) -->
+                    <!-- Form Catatan -->
                     <div>
-                        <label class="block text-[11px] text-slate-400 font-bold uppercase tracking-wider mb-1.5">Catatan Pesanan / Pengerjaan</label>
-                        <textarea x-model="catatan" rows="3" placeholder="Misal: 'desain banner 3x5, finishing mata ayam'..." class="w-full border border-slate-300 rounded-lg p-3 text-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none shadow-sm placeholder-slate-400"></textarea>
+                        <label class="block text-[11px] text-slate-400 font-bold uppercase tracking-wider mb-1">Catatan Pesanan / Pengerjaan</label>
+                        <textarea x-model="catatan" rows="2" placeholder="Misal: 'desain banner 3x5, finishing mata ayam'..." class="w-full border border-slate-300 rounded-lg p-2.5 text-xs md:text-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none shadow-sm placeholder-slate-400"></textarea>
                     </div>
 
-                    <!-- Ringkasan Nilai & Aksi Simpan (Kanan Bawah) -->
-                    <div class="space-y-4">
-                        <div class="flex justify-between items-center py-2 border-b border-slate-100">
-                            <span class="font-semibold text-slate-500 text-sm">Total Biaya Jasa</span>
-                            <span class="font-black text-2xl text-slate-900" x-text="formatRupiah(subtotal)"></span>
+                    <!-- Ringkasan Nilai & Aksi Simpan -->
+                    <div class="space-y-3 md:space-y-4">
+                        <div class="flex justify-between items-center py-1.5 border-b border-slate-100">
+                            <span class="font-semibold text-slate-500 text-xs md:text-sm">Total Biaya Jasa</span>
+                            <span class="font-black text-xl md:text-2xl text-slate-900" x-text="formatRupiah(subtotal)"></span>
                         </div>
 
-                        <button @click="saveTransaction()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-3.5 rounded-lg font-bold transition flex justify-center items-center shadow-md shadow-indigo-100 text-sm tracking-wide">
+                        <button @click="saveTransaction()" class="w-full bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white py-3.5 rounded-xl font-bold transition flex justify-center items-center shadow-lg shadow-indigo-100 text-sm md:text-base tracking-wide cursor-pointer">
                             <i class="ri-save-3-line mr-2 text-lg"></i> F10 Simpan Pesanan Jasa
                         </button>
                     </div>
@@ -207,28 +264,28 @@
     <div
         x-show="showPriceModal"
         x-cloak
-        class="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
+        class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-3"
         @keydown.escape.window="closePriceModal()"
     >
-        <div class="bg-white rounded-xl p-6 w-full max-w-xl shadow-2xl">
-            <div class="flex justify-between mb-4 items-center">
-                <h3 class="font-bold text-xl text-slate-800">Cek Harga Jasa</h3>
-                <button @click="closePriceModal()" class="text-gray-400 hover:text-gray-600 text-lg">✕</button>
+        <div class="bg-white rounded-xl p-4 md:p-6 w-full max-w-xl shadow-2xl">
+            <div class="flex justify-between mb-3 md:mb-4 items-center">
+                <h3 class="font-bold text-lg md:text-xl text-slate-800">Cek Harga Jasa</h3>
+                <button @click="closePriceModal()" class="text-gray-400 hover:text-gray-600 text-xl font-bold">✕</button>
             </div>
 
             <input
                 x-ref="priceInput"
                 x-model="priceSearch"
                 @input="searchPrice()"
-                placeholder="Scan Barcode / Nama Layanan Jasa"
-                class="w-full border rounded-lg p-3 outline-none focus:border-indigo-500"
+                placeholder="Scan Barcode / Nama Layanan Jasa..."
+                class="w-full border rounded-lg p-3 text-sm outline-none focus:border-indigo-500 shadow-sm"
             >
 
-            <div class="mt-4 max-h-80 overflow-y-auto divide-y divide-slate-100">
+            <div class="mt-3 max-h-72 overflow-y-auto divide-y divide-slate-100">
                 <template x-for="item in priceResults" :key="item.id">
-                    <div class="py-3">
-                        <div class="font-semibold text-slate-800" x-text="item.name || item.nama_barang"></div>
-                        <div class="text-indigo-600 font-bold" x-text="'Tarif : Rp ' + Number(item.price || item.harga).toLocaleString('id-ID')"></div>
+                    <div class="py-2.5">
+                        <div class="font-semibold text-slate-800 text-sm" x-text="item.name || item.nama_barang"></div>
+                        <div class="text-indigo-600 font-bold text-xs" x-text="'Tarif : Rp ' + Number(item.price || item.harga).toLocaleString('id-ID')"></div>
                     </div>
                 </template>
             </div>
@@ -239,56 +296,56 @@
     <div x-data="customerModal" 
         @open-customer-modal.window="showCustomerModal = true; $nextTick(() => $refs.newCustomerName.focus())" 
         x-show="showCustomerModal" 
-        class="fixed inset-0 bg-black/50 flex items-center justify-center z-50" 
+        class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-3" 
         @keydown.escape.window="showCustomerModal = false" 
         style="display: none;">
 
-        <div class="bg-white rounded-xl p-6 w-full max-w-md shadow-2xl" @click.outside="showCustomerModal = false">
+        <div class="bg-white rounded-xl p-4 md:p-6 w-full max-w-md shadow-2xl" @click.outside="showCustomerModal = false">
             <div class="flex justify-between items-center mb-4">
-                <h3 class="font-bold text-xl text-slate-800 flex items-center gap-1">
+                <h3 class="font-bold text-lg md:text-xl text-slate-800 flex items-center gap-1">
                     <i class="ri-user-add-line text-indigo-600"></i> Tambah Pelanggan Baru
                 </h3>
-                <button type="button" @click="showCustomerModal = false" class="text-gray-400 hover:text-gray-600 text-lg">✕</button>
+                <button type="button" @click="showCustomerModal = false" class="text-gray-400 hover:text-gray-600 text-xl font-bold">✕</button>
             </div>
 
-            <div class="space-y-4">
+            <div class="space-y-3">
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Nama Lengkap</label>
+                    <label class="block text-xs font-medium text-gray-700 mb-1">Nama Lengkap</label>
                     <input 
                         x-ref="newCustomerName"
                         type="text" 
                         x-model="newCustomer.nama" 
                         @keydown.enter.prevent="$refs.newCustomerPhone.focus()"
                         placeholder="Masukkan nama pelanggan..." 
-                        class="w-full border rounded-xl p-3 text-sm focus:border-indigo-500 outline-none"
+                        class="w-full border rounded-xl p-2.5 text-sm focus:border-indigo-500 outline-none"
                     >
                 </div>
 
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">No. Telepon / HP</label>
+                    <label class="block text-xs font-medium text-gray-700 mb-1">No. Telepon / HP</label>
                     <input 
                         x-ref="newCustomerPhone"
                         type="text" 
                         x-model="newCustomer.telepon" 
                         @keydown.enter.prevent="saveNewCustomer()"
                         placeholder="Contoh: 081234567xx (Opsional)" 
-                        class="w-full border rounded-xl p-3 text-sm focus:border-indigo-500 outline-none"
+                        class="w-full border rounded-xl p-2.5 text-sm focus:border-indigo-500 outline-none"
                     >
                 </div>
 
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Alamat</label>
+                    <label class="block text-xs font-medium text-gray-700 mb-1">Alamat</label>
                     <textarea 
                         x-ref="newCustomerAlamat"
                         x-model="newCustomer.alamat" 
                         rows="2"
                         placeholder="Masukkan alamat pelanggan... (Opsional)" 
-                        class="w-full border rounded-xl p-3 text-sm focus:border-indigo-500 outline-none"
+                        class="w-full border rounded-xl p-2.5 text-sm focus:border-indigo-500 outline-none"
                     ></textarea>
                 </div>
             </div>
 
-            <div class="mt-6 flex justify-end gap-2">
+            <div class="mt-5 flex justify-end gap-2">
                 <button 
                     type="button" 
                     @click="showCustomerModal = false" 
@@ -543,8 +600,7 @@ function posJasa() {
 
             if (!confirmSubmit.isConfirmed) return;
 
-            // let response = await fetch('/api/pesanan-jasa', {
-            let response = await fetch("{{ url('/api/pesanan-jasa') }}" , {
+            let response = await fetch("{{ url('/api/pesanan-jasa') }}", {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -585,10 +641,7 @@ window.ALL_CUSTOMERS = @json($customers);
                 }
 
                 try {
-                    // let response = await fetch('/api/customers', {
-                    // fetch("{{ url('/api/pesanan-jasa') }}" , {
-
-                    let response = await fetch("{{ url('/api/customers') }}" , {
+                    let response = await fetch("{{ url('/api/customers') }}", {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',

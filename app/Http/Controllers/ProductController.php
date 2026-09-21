@@ -4,54 +4,95 @@ namespace App\Http\Controllers;
 
 use App\Models\Product;
 use App\Models\Supplier;
+use App\Models\Branch;
+use App\Models\ProductStock;
 use App\Models\StockMovement;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use App\Helpers\DocumentNumber;
+use Illuminate\Support\Facades\Auth;
 
 class ProductController extends Controller
 {
     public function index(Request $request)
-{
-    $query = Product::with('supplier');
+    {
+        $user = Auth::user();
+        $branches = Branch::where('is_active', 1)->get();
 
-    // 1. Filter Pencarian Teks (Nama, Barcode, SKU, Brand)
-    if ($request->filled('search')) {
-        $search = $request->search;
-        $query->where(function ($q) use ($search) {
-            $q->where('name', 'like', "%{$search}%")
-              ->orWhere('barcode', 'like', "%{$search}%")
-              ->orWhere('sku', 'like', "%{$search}%")
-              ->orWhere('brand', 'like', "%{$search}%");
-        });
-    }
+        // Query utama berbasis Product
+        $query = Product::with(['supplier', 'stocks.branch']);
 
-    // 2. Filter Tipe (Barang / Jasa)
-    if ($request->filled('type')) {
-        $query->where('type', $request->type);
-    }
+        // 1. Handling Filter Cabang & Hak Akses Role
+        $selectedBranchId = $request->branch_id;
 
-    // 3. Filter Kondisi Stok (Hanya Berlaku untuk Tipe Barang)
-    if ($request->filled('stock')) {
-        if ($request->stock === 'available') {
-            // Stok di atas batas minimum
-            $query->where('type', 'barang')
-                  ->whereColumn('stock', '>', 'min_stock');
-        } elseif ($request->stock === 'low') {
-            // Stok menipis (antara > 0 dan <= min_stock)
-            $query->where('type', 'barang')
-                  ->where('stock', '>', 0)
-                  ->whereColumn('stock', '<=', 'min_stock');
-        } elseif ($request->stock === 'empty') {
-            // Stok habis total (0)
-            $query->where('type', 'barang')
-                  ->where('stock', '<=', 0);
+        if (!in_array(strtolower($user->role), ['owner', 'admin', 'developer']) && $user->branch_id) {
+            $selectedBranchId = $user->branch_id;
         }
+
+        // Eager load relasi stocks untuk tampilan baris tabel
+        $query->with(['stocks' => function ($q) use ($selectedBranchId) {
+            $q->with('branch');
+            if ($selectedBranchId) {
+                $q->where('branch_id', $selectedBranchId);
+            }
+        }]);
+
+        // Filter ketersediaan berdasarkan Cabang yang dipilih
+        if ($selectedBranchId) {
+            $query->where(function ($q) use ($selectedBranchId) {
+                $q->whereHas('stocks', function ($q2) use ($selectedBranchId) {
+                    $q2->where('branch_id', $selectedBranchId);
+                });
+
+                // Hanya sertakan jasa jika filter type TIDAK sedang memfilter 'barang'
+                if (!request()->filled('type') || request('type') === 'jasa') {
+                    $q->orWhere('type', 'jasa');
+                }
+            });
+        }
+
+        // 2. Filter Pencarian Teks
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                ->orWhere('barcode', 'like', "%{$search}%")
+                ->orWhere('sku', 'like', "%{$search}%")
+                ->orWhere('brand', 'like', "%{$search}%");
+            });
+        }
+
+        // 3. Filter Tipe (Barang / Jasa) - INI YANG TADI DIBUTUHKAN
+        if ($request->filled('type')) {
+            $query->where('type', $request->type);
+        }
+
+        // 4. Filter Stok
+        if ($request->filled('stock')) {
+            $stockStatus = $request->stock;
+
+            $query->where(function ($q) use ($stockStatus, $selectedBranchId) {
+                $q->where('type', 'barang')->whereHas('stocks', function ($q2) use ($stockStatus, $selectedBranchId) {
+                    if ($selectedBranchId) {
+                        $q2->where('branch_id', $selectedBranchId);
+                    }
+
+                    if ($stockStatus === 'available') {
+                        $q2->whereColumn('stock', '>', 'min_stock');
+                    } elseif ($stockStatus === 'low') {
+                        $q2->where('stock', '>', 0)->whereColumn('stock', '<=', 'min_stock');
+                    } elseif ($stockStatus === 'empty') {
+                        $q2->where('stock', '<=', 0);
+                    }
+                });
+            });
+        }
+
+        $products = $query->latest()->paginate(15)->withQueryString();
+
+        return view('products.index', compact('products', 'branches', 'selectedBranchId', 'user'));
     }
 
-    $products = $query->latest()->paginate(10)->withQueryString();
-
-    return view('products.index', compact('products'));
-}
     // pencarian ploduk2 
     public function search(Request $request)
     {
@@ -150,67 +191,93 @@ class ProductController extends Controller
     public function create()
     {
         $suppliers = Supplier::where('is_active', 1)->orderBy('name', 'asc')->get();
-        return view('products.create', compact('suppliers'));
+        // Ambil daftar cabang aktif
+        $branches = Branch::where('is_active', 1)->get();
+        return view('products.create', compact('suppliers', 'branches'));
     }
 
     public function store(Request $request)
     {
         $request->validate([
             'barcode' => 'nullable|string|max:255|unique:products,barcode',
-            'sku' => 'nullable|string|max:255|unique:products,sku', // <-- Validasi unik SKU
+            'sku' => 'nullable|string|max:255|unique:products,sku',
             'name' => 'required|string|max:255',
             'brand' => 'nullable|string|max:255',
             'type' => 'required|in:barang,jasa',
-            'is_custom_price'  => 'nullable|boolean',
+            'is_custom_price' => 'nullable|boolean',
             'supplier_id' => 'nullable|exists:suppliers,id',
             'satuan' => 'required|string|max:255',
             'purchase_price' => 'required|integer|min:0',
             'price' => 'required|integer|min:0',
-            'stock' => 'required|integer|min:0',
-            'min_stock' => 'required|integer|min:0',
             'catatan' => 'nullable|string',
+            // Validasi array cabang (hanya wajib jika tipe barang)
+            'branches' => 'nullable|array',
+            'branches.*.stock' => 'nullable|integer|min:0',
+            'branches.*.min_stock' => 'nullable|integer|min:0',
         ]);
 
-        // Logic Hybrid SKU otomatis/manual bos[cite: 11, 12]
         $sku = $request->sku;
         if (!$sku) {
-            // Pakai method generateMaster (table, field, prefix, digit)[cite: 12]
-            $sku = DocumentNumber::generateMaster('products', 'sku', 'BRG', 4); // Hasil: BRG0001
+            $sku = DocumentNumber::generateMaster('products', 'sku', 'BRG', 4);
         }
 
-        // is_custom_price HANYA bisa bernilai 1 jika tipe-nya 'jasa'
         $isCustomPrice = ($request->type === 'jasa' && $request->has('is_custom_price')) ? 1 : 0;
 
-
-        $product=Product::create([
-            'barcode' => $request->barcode,
-            'sku' => $sku,
-            'name' => $request->name,
-            // 'brand' => $request->brand,
-            'type' => $request->type,
-            'is_custom_price' => $isCustomPrice,
-            'supplier_id' => $request->supplier_id,
-            'satuan' => $request->satuan,
-            'purchase_price' => $request->purchase_price,
-            'price' => $request->price,
-            'stock' => ($request->type === 'jasa') ? 0 : $request->stock, // Paksa 0 jika Jasa
-            'min_stock' => ($request->type === 'jasa') ? 0 : $request->min_stock,
-            'is_active' => $request->has('is_active') ? 1 : 0,
-            'catatan' => $request->catatan,
-        ]);
-
-        // insert kartu stok , status "opening" 
-        if ($product->type === 'barang' ) {
-            StockMovement::create([
-                'product_id'   => $product->id,
-                'type'         => 'OPENING',
-                'qty'          => $product->stock,      // Bisa 0, 10, dst.
-                'stock_before' => 0,
-                'stock_after'  => $product->stock,      // Nilai stok setelah opening
-                'reference_no' => 'OPENING',
-                'notes'        => 'Stok awal produk'
+        DB::transaction(function () use ($request, $sku, $isCustomPrice) {
+            // 1. Simpan Master Produk
+            $product = Product::create([
+                'barcode' => $request->barcode,
+                'sku' => $sku,
+                'name' => $request->name,
+                'type' => $request->type,
+                'is_custom_price' => $isCustomPrice,
+                'supplier_id' => $request->supplier_id,
+                'satuan' => $request->satuan,
+                'purchase_price' => $request->purchase_price,
+                'price' => $request->price,
+                'stock' => 0, // Dikosongkan karena stok pindah ke product_stocks
+                'min_stock' => 0,
+                'is_active' => $request->has('is_active') ? 1 : 0,
+                'catatan' => $request->catatan,
             ]);
-        }
+
+            // 2. Simpan Stok & Stock Movement per Cabang jika tipe 'barang'
+            // 2. Simpan Stok & Stock Movement per Cabang jika tipe 'barang'
+            if ($product->type === 'barang' && $request->has('branches')) {
+                foreach ($request->branches as $branchData) {
+                    // Gunakan nama variabel $targetBranchId agar tidak menimpa konteks loop
+                    $targetBranchId = $branchData['branch_id'] ?? null;
+                    $stockQty       = (int) ($branchData['stock'] ?? 0);
+                    $minStockQty    = (int) ($branchData['min_stock'] ?? 0);
+
+                    if (!$targetBranchId) {
+                        continue;
+                    }
+
+                    // Insert ke product_stocks
+                    ProductStock::create([
+                        'product_id' => $product->id,
+                        'branch_id'  => $targetBranchId,
+                        'stock'      => $stockQty,
+                        'min_stock'  => $minStockQty,
+                    ]);
+
+                    // Insert ke stock_movements jika stok > 0
+                    if ($stockQty > 0) {
+                        StockMovement::create([
+                            'branch_id'    => $targetBranchId,
+                            'product_id'   => $product->id,
+                            'type'         => 'OPENING',
+                            'qty'          => $stockQty,
+                            'stock_before' => 0,
+                            'stock_after'  => $stockQty,
+                            'reference_no' => 'OPENING',
+                            'notes'        => 'Stok awal produk',
+                        ]);
+                    }
+                }
+            }
+        });
 
         return redirect()->route('products.index')->with('success', 'Produk berhasil ditambahkan.');
     }
@@ -218,7 +285,15 @@ class ProductController extends Controller
     public function edit(Product $product)
     {
         $suppliers = Supplier::where('is_active', 1)->orderBy('name', 'asc')->get();
-        return view('products.edit', compact('product', 'suppliers'));
+        // Load cabang beserta stok khusus produk ini
+        $branches = Branch::where('is_active', 1)->get();
+        
+        // Map product_stocks ke key branch_id agar mudah diakses di Blade
+        $productStocks = ProductStock::where('product_id', $product->id)
+            ->get()
+            ->keyBy('branch_id');
+
+        return view('products.edit', compact('product', 'suppliers', 'branches', 'productStocks'));
     }
 
     public function update(Request $request, Product $product)
@@ -228,34 +303,50 @@ class ProductController extends Controller
             'name' => 'required|string|max:255',
             'brand' => 'nullable|string|max:255',
             'type' => 'required|in:barang,jasa',
-            'is_custom_price'  => 'nullable|boolean',
+            'is_custom_price' => 'nullable|boolean',
             'supplier_id' => 'nullable|exists:suppliers,id',
             'satuan' => 'required|string|max:255',
             'purchase_price' => 'required|integer|min:0',
             'price' => 'required|integer|min:0',
-            'stock' => 'required|integer|min:0',
-            'min_stock' => 'required|integer|min:0',
             'catatan' => 'nullable|string',
+            'branches' => 'nullable|array',
+            'branches.*.min_stock' => 'nullable|integer|min:0',
         ]);
 
-        // Guard: Jika diganti ke 'barang', paksa is_custom_price jadi 0
         $isCustomPrice = ($request->type === 'jasa' && $request->has('is_custom_price')) ? 1 : 0;
-        
-        $product->update([
-            'barcode' => $request->barcode,
-            'name' => $request->name,
-            'brand' => $request->brand,
-            'type' => $request->type,
-            'is_custom_price' => $isCustomPrice,
-            'supplier_id' => $request->supplier_id,
-            'satuan' => $request->satuan,
-            'purchase_price' => $request->purchase_price,
-            'price' => $request->price,
-            'stock' => $request->stock,
-            'min_stock' => $request->min_stock,
-            'is_active' => $request->has('is_active') ? 1 : 0,
-            'catatan' => $request->catatan,
-        ]);
+
+        DB::transaction(function () use ($request, $product, $isCustomPrice) {
+            // 1. Update Master Produk
+            $product->update([
+                'barcode' => $request->barcode,
+                'name' => $request->name,
+                'brand' => $request->brand,
+                'type' => $request->type,
+                'is_custom_price' => $isCustomPrice,
+                'supplier_id' => $request->supplier_id,
+                'satuan' => $request->satuan,
+                'purchase_price' => $request->purchase_price,
+                'price' => $request->price,
+                'is_active' => $request->has('is_active') ? 1 : 0,
+                'catatan' => $request->catatan,
+            ]);
+
+            // 2. Update Minimal Stok per Cabang
+            // Catatan: Jumlah stok aktual TIDAK DIEDIT di sini, melainkan via Penerimaan/Stok Opname
+            if ($product->type === 'barang' && $request->has('branches')) {
+                foreach ($request->branches as $branchId => $branchData) {
+                    ProductStock::updateOrCreate(
+                        [
+                            'product_id' => $product->id,
+                            'branch_id'  => $branchId,
+                        ],
+                        [
+                            'min_stock' => (int) ($branchData['min_stock'] ?? 0),
+                        ]
+                    );
+                }
+            }
+        });
 
         return redirect()->route('products.index')->with('success', 'Produk berhasil diperbarui.');
     }

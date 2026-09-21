@@ -42,7 +42,7 @@
             <x-search-box 
                 name="search" 
                 :value="request('search')" 
-                placeholder="Cari No Nota / Pelanggan..." 
+                placeholder="Cari Nomor WO / Nama Pelanggan..." 
             />
 
             {{-- <x-select name="customer_id" class="w-52">
@@ -83,6 +83,20 @@
                 </x-table-head>
 
                 <x-table-head class="p-3 text-left hover:bg-slate-200 transition cursor-pointer">
+                    <a href="{{ $getSortLink('created_at') }}" class="block w-full font-bold">
+                        Item <span class="text-indigo-600 text-xs">
+                            {{--    {{ $renderArrow('created_at') }}</span> --}}
+                    </a>
+                </x-table-head>
+
+                <x-table-head class="p-3 text-left hover:bg-slate-200 transition cursor-pointer">
+                    <a href="{{ $getSortLink('created_at') }}" class="block w-full font-bold">
+                        Catatan <span class="text-indigo-600 text-xs">
+                            {{-- {{ $renderArrow('catatan') }}</span> --}}
+                    </a>
+                </x-table-head>
+
+                <x-table-head class="p-3 text-left hover:bg-slate-200 transition cursor-pointer">
                     <a href="{{ $getSortLink('operator_id') }}" class="block w-full font-bold">
                         Operator <span class="text-indigo-600 text-xs">{{ $renderArrow('operator_id') }}</span>
                     </a>
@@ -107,14 +121,45 @@
 
         <tbody>
             @forelse($orders as $order)
+                @php
+                    // Ambil item pertama dari order
+                    $firstItem = $order->items->first();
+                    $firstItemName = $firstItem ? $firstItem->item_name : '-';
+                    $otherItemsCount = $order->items->count() - 1;
+                @endphp
+
                 <tr class="hover:bg-slate-50/50 transition">
                     <td class="p-3 font-semibold text-slate-800 font-mono text-sm">
-                        {{ $order->no_pesanan }}
+                        {{-- {{ $order->no_pesanan }} --}}
+                        <!-- Nomor WO -->
+                        <div class="font-semibold text-slate-800 font-mono text-sm leading-tight">
+                            {{ $order->no_pesanan }}
+                        </div>
+                        <!-- Nama Cabang (font diperkecil xs) -->
+                        <div class="text-[11px] text-slate-500 font-sans mt-0.5">
+                            {{ $order->branch->name ?? '-' }}
+                        </div>
                     </td>
 
                     <td class="p-3 text-slate-500 text-xs">
                         {{ $order->created_at->format('Y-m-d H:i:s') }}
                     </td>
+
+                    <!-- Item (Truncate 15 karakter) -->
+                    <td class="py-3.5 px-4 text-slate-700 font-medium" title="{{ $firstItemName }}">
+                        {{ \Illuminate\Support\Str::limit($firstItemName, 15, '...') }}
+                        @if($otherItemsCount > 0)
+                            <span class="inline-block text-[10px] bg-slate-100 text-slate-600 font-semibold px-1.5 py-0.5 rounded-full ml-1" title="Ada {{ $otherItemsCount }} item lainnya">
+                                +{{ $otherItemsCount }}
+                            </span>
+                        @endif
+                    </td>
+
+                    <!-- Catatan (Truncate 15 karakter) -->
+                    <td class="py-3.5 px-4 text-slate-500 text-xs italic" title="{{ $order->catatan }}">
+                        {{ \Illuminate\Support\Str::limit($order->catatan ?? '-', 15, '...') }}
+                    </td>
+                    
 
                     <td class="p-3 text-slate-700 font-medium text-sm">
                         {{ $order->operator->name ?? 'Admin' }}

@@ -4,11 +4,21 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Casts\Attribute;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use App\Traits\BelongsToBranch;
 
 class Order extends Model
 {
-    protected $fillable = ['no_pesanan', 'operator_id', 'customer_id', 'customer_name_manual', 'status', 'catatan'];
+    use HasFactory, BelongsToBranch;
+    // protected $fillable = ['no_pesanan', 'operator_id', 'customer_id', 'customer_name_manual', 'status', 'catatan'];
+    // Ganti $fillable dengan $guarded agar aman untuk branch_id dari Trait
+    protected $guarded = ['id'];
 
+    public function branch()
+    {
+        return $this->belongsTo(Branch::class);
+    }
+    
     // Relasi ke Operator/Desainer yang menginput
     public function operator()
     {

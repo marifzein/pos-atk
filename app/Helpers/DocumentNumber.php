@@ -3,6 +3,7 @@
 namespace App\Helpers;
 
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
 
 class DocumentNumber
 {
@@ -15,11 +16,25 @@ class DocumentNumber
         string $field,
         string $prefix
     ): string {
+        $user = Auth::user();
+
+    // STRICT CHECK: Wajib ada user login dan punya cabang
+        if (!$user || !$user->branch_id || !$user->branch) {
+            throw new \Exception('Maaf, cabang tidak terdeteksi. Silahkan login ulang.');
+        }
+
+        $branchId   = $user->branch_id;
+        $branchCode = strtoupper($user->branch->code);
+
+        // 2. Susun Prefix Gabungan: WO-PO
+        $fullPrefix = $prefix . '-' . $branchCode;
+
         $today = date('Ymd');
-        $like = $prefix . '-' . $today . '-%';
+        $like = $fullPrefix . '-' . $today . '-%';
 
         // Urutkan berdasarkan id dokumen terakhir untuk hari ini agar aman dari sorting string
         $last = DB::table($table)
+            ->where('branch_id', $branchId)
             ->where($field, 'like', $like)
             ->orderByDesc('id') // Menggunakan 'id' jauh lebih aman daripada urut string
             ->value($field);
@@ -33,7 +48,7 @@ class DocumentNumber
         }
 
         $digit = ($number > 9999) ? strlen((string)$number) : 4;
-        return sprintf('%s-%s-%0' . $digit . 'd', $prefix, $today, $number);
+        return sprintf('%s-%s-%0' . $digit . 'd', $fullPrefix, $today, $number);
     }
 
     /**

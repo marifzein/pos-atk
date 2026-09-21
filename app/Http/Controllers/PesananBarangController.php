@@ -17,14 +17,25 @@ class PesananBarangController extends Controller
 {
     public function index()
     {
-        // 1. Generate No Pesanan Barang Otomatis via Helper
-        $nomorSO = DocumentNumber::generate('orders', 'no_pesanan', 'SO');
+        $user = Auth::user();
 
-        // 2. PROTEKSI STRICT: Hanya load produk yang tipenya 'barang'
+        // STRICT CHECK: User wajib punya branch_id
+        if (!$user || !$user->branch_id) {
+            return redirect()->back()->with('error', 'Maaf, cabang tidak terdeteksi. Silahkan login ulang.');
+        }
+
+        try {
+            // Generate No Pesanan Barang Otomatis berdasarkan cabang user
+            $nomorWO = DocumentNumber::generate('orders', 'no_pesanan', 'WO');
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', $e->getMessage());
+        }
+
+        // Load produk tipe barang
         $products = Product::where('type', 'barang')->where('is_active', 1)->get();
         $customers = Customer::where('status', 1)->get();
 
-        return view('pesanan-barang.index', compact('nomorSO', 'products', 'customers'));
+        return view('pesanan-barang.index', compact('nomorWO', 'products', 'customers'));
     }
 
     public function store(Request $request)
@@ -35,10 +46,25 @@ class PesananBarangController extends Controller
             'cart.*.qty' => 'required|integer|min:1',
         ]);
 
+        $user = Auth::user();
+
+        // STRICT CHECK: Tolak simpan jika tidak ada branch_id
+        if (!$user || !$user->branch_id) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Maaf, cabang tidak terdeteksi. Silahkan login ulang.'
+            ], 422);
+        }
+
+        $warnings = [];
+
+
         DB::beginTransaction();
         try {
+            $branchId = $user->branch_id;
             $no_pesanan = DocumentNumber::generate('orders', 'no_pesanan', 'WO');
 
+            // Cari customer berdasarkan kode_pelanggan jika dikirim
             $customer = null;
             if ($request->pelanggan) {
                 $customer = Customer::where('kode_pelanggan', $request->pelanggan)->first();
@@ -46,6 +72,7 @@ class PesananBarangController extends Controller
 
             // Simpan Data Master Order
             $order = new Order();
+            $order->branch_id = $branchId;
             $order->no_pesanan = $no_pesanan;
             $order->operator_id = Auth::id() ?? 1;
             $order->customer_id = $customer ? $customer->id : null;
@@ -61,6 +88,13 @@ class PesananBarangController extends Controller
                 if (!$product) {
                     throw new \Exception("Item " . $item['nama_barang'] . " bukan tipe Barang!");
                 }
+
+                // Cek Stok (Hanya Peringatan/Warning)
+                $stockTersedia = $product->stock ?? 0;
+                if ($item['qty'] > $stockTersedia) {
+                    $warnings[] = "Stok {$product->name} kurang! (Diorder: {$item['qty']}, Stok DB: {$stockTersedia})";
+                }
+
 
                 $detail = new OrderItem();
                 $detail->order_id = $order->id;
@@ -79,7 +113,8 @@ class PesananBarangController extends Controller
                 'success' => true,
                 'message' => 'Pesanan barang berhasil disimpan',
                 'order_id' => $order->id,
-                'no_nota' => $order->no_pesanan
+                'no_nota' => $order->no_pesanan,
+                'warnings' => $warnings // Dikirim sebagai peringatan saja
             ]);
 
         } catch (\Exception $e) {
@@ -136,7 +171,7 @@ class PesananBarangController extends Controller
 
     public function show(Order $order)
     {
-        $order->load(['operator', 'customer', 'orderItems.product']);
+        $order->load(['branch', 'operator', 'customer', 'orderItems.product']);
 
         return view('pesanan-barang.show', compact('order'));
     }

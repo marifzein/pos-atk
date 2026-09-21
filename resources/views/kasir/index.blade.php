@@ -12,12 +12,16 @@
 <script src="{{ asset('js/gridjs/gridjs.umd.js') }}"></script>
 
 <style>
-    .gridjs-wrapper { border-radius: 0.5rem; border: none !important; box-shadow: none !important; }
+    /* .gridjs-wrapper { border-radius: 0.5rem; border: none !important; box-shadow: none !important; }
     .gridjs-head { background-color: #f8fafc; }
     th.gridjs-th { background-color: #f8fafc !important; color: #475569 !important; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; padding: 12px 16px !important; }
     td.gridjs-td { padding: 12px 16px !important; border-bottom: 1px solid #f1f5f9 !important; font-size: 0.875rem; }
     .gridjs-footer { border-top: 1px solid #f1f5f9 !important; background-color: transparent !important; padding: 12px 0 0 0 !important; }
-    .gridjs-pagination .gridjs-pages button.gridjs-currentPage { background-color: #4f46e5 !important; color: white !important; border-color: #4f46e5 !important; }
+    .gridjs-pagination .gridjs-pages button.gridjs-currentPage { background-color: #4f46e5 !important; color: white !important; border-color: #4f46e5 !important; } */
+
+    
+    /* 1. Container Wrapper & Tabel Utama */
+    
 </style>
 
 
@@ -39,9 +43,12 @@ document.addEventListener('DOMContentLoaded', function() {
         columns: [
             { 
                 name: 'No WO',
-                formatter: (cell) => gridjs.html(`<span class="font-bold text-slate-800 font-mono text-base">${cell}</span>`)
+                formatter: (cell) => gridjs.html(`
+                    <div class="font-bold text-slate-800 font-mono text-lg leading-tight">${cell.no_pesanan}</div>
+                    <div class="text-[11px] text-slate-500 font-sans mt-0.5">${cell.branch_name}</div>
+                `)
             },
-            { name: 'Tanggal' },
+           { name: 'Tanggal' },
             { name: 'Operator' },
             { 
                 name: 'Pelanggan',
@@ -49,20 +56,23 @@ document.addEventListener('DOMContentLoaded', function() {
             },
             { 
                 name: 'Status',
-                attributes: { class: 'text-center' },
-                formatter: () => gridjs.html(`<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-800">ORDER</span>`)
+                // attributes: { class: 'text-center' },
+                formatter: () => gridjs.html(`<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold  bg-amber-100 text-amber-800">ORDER</span>`)
             },
             { 
                 name: 'Total',
-                attributes: { class: 'text-right' },
-                formatter: (cell) => gridjs.html(`<span class="font-bold text-slate-900 font-mono">${cell}</span>`)
+                // attributes: { class: 'text-right' },
+                // formatter: (cell) => gridjs.html(`<span class="font-bold text-slate-900 font-mono">${cell}</span>`)
+                formatter: (cell) => gridjs.html(`
+                    <div class="text-right w-full font-bold text-slate-900 font-mono">${cell}</div>
+                `)
             },
             { 
                 name: 'Aksi',
                 sort: false,
-                attributes: { class: 'text-center' },
+                // attributes: { class: 'text-center' },
                 formatter: (url) => gridjs.html(`
-                    <a href="${url}" class="inline-flex items-center justify-center gap-1 bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1.5 rounded-lg transition shadow-xs text-xs font-semibold">
+                    <a href="${url}" class="inline-flex items-center justify-center gap-1 bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1.5 rounded-lg transition shadow-xs text-sm font-semibold">
                         <i class="ri-money-dollar-box-line"></i> Bayar
                     </a>
                 `)
@@ -73,6 +83,7 @@ document.addEventListener('DOMContentLoaded', function() {
             then: data => data.data,
             total: data => data.total
         },
+       
         search: {
             server: {
                 url: (prev, keyword) => `${prev}?search=${encodeURIComponent(keyword)}`

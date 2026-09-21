@@ -144,7 +144,7 @@
             <x-input label="Harga Jual (Rp) " name="price" type="number" icon="ri-price-tag-3-line" required :value="old('price', 0)" /> --}}
 
             <x-input 
-                label="Harga Beli (Rp)" 
+                label="Harga Beli/Biaya Jasa" 
                 name="purchase_price" 
                 type="number" 
                 icon="ri-money-dollar-circle-line" 
@@ -163,8 +163,8 @@
                 @focus="$event.target.select()"
             />
 
-            <x-input label="Stok Awal " name="stock" type="number" icon="ri-stack-line" required :value="old('stock', 0)" />
-            <x-input label="Minimal Stok " name="min_stock" type="number" icon="ri-alert-line" required :value="old('min_stock', 0)" />
+            {{-- <x-input label="Stok Awal " name="stock" type="number" icon="ri-stack-line" required :value="old('stock', 0)" />
+            <x-input label="Minimal Stok " name="min_stock" type="number" icon="ri-alert-line" required :value="old('min_stock', 0)" /> --}}
             
             <x-textarea label="Catatan Keterangan" name="catatan" rows="3" placeholder="Keterangan tambahan item...">{{ old('catatan') }}</x-textarea>
             
@@ -177,6 +177,87 @@
                 />
             </div>
         </div>
+
+        <!-- SECTION ALOKASI STOK PER CABANG (HANYA MUNCUL JIKA TIPE BARANG) -->
+        <div x-show="productType === 'barang'" class="mt-8 pt-6 border-t border-slate-200">
+            <div class="mb-4">
+                <h3 class="text-base font-semibold text-slate-800 flex items-center gap-2">
+                    <i class="ri-store-2-line text-emerald-600"></i> Alokasi Stok Awal per Cabang
+                </h3>
+                <p class="text-xs text-slate-500">Tentukan jumlah stok awal dan batas minimal stok untuk tiap cabang.</p>
+            </div>
+
+            <div class="overflow-x-auto border border-slate-200 rounded-lg">
+                <table class="w-full text-left text-sm text-slate-600">
+                    <thead class="bg-slate-50 border-b border-slate-200 text-xs text-slate-500 uppercase font-medium">
+                        <tr>
+                            <th class="px-4 py-3">Cabang</th>
+                            <th class="px-4 py-3 w-48">Stok Awal</th>
+                            <th class="px-4 py-3 w-48">Minimal Stok</th>
+                        </tr>
+                    </thead>
+                    {{-- <tbody class="divide-y divide-slate-100 bg-white">
+                        @foreach($branches as $branch)
+                            <tr>
+                                <td class="px-4 py-3 font-medium text-slate-800">
+                                    {{ $branch->name }}
+                                </td>
+                                <td class="px-4 py-2">
+                                    <input 
+                                        type="number" 
+                                        name="branches[{{ $branch->id }}][stock]" 
+                                        value="{{ old('branches.'.$branch->id.'.stock', 0) }}" 
+                                        min="0"
+                                        class="w-full rounded-md border-slate-300 shadow-xs focus:border-emerald-500 focus:ring-emerald-500 text-sm"
+                                    />
+                                </td>
+                                <td class="px-4 py-2">
+                                    <input 
+                                        type="number" 
+                                        name="branches[{{ $branch->id }}][min_stock]" 
+                                        value="{{ old('branches.'.$branch->id.'.min_stock', 0) }}" 
+                                        min="0"
+                                        class="w-full rounded-md border-slate-300 shadow-xs focus:border-emerald-500 focus:ring-emerald-500 text-sm"
+                                    />
+                                </td>
+                            </tr>
+                        @endforeach
+                    </tbody> --}}
+                    {{-- koreksi cabang-id --}}
+                    <tbody class="divide-y divide-slate-100 bg-white">
+                    @foreach($branches as $branch)
+                        <tr>
+                            <td class="px-4 py-3 font-medium text-slate-800">
+                                {{ $branch->name }}
+                            </td>
+                            <td class="px-4 py-2">
+                                <input 
+                                    type="number" 
+                                    name="branches[{{ $loop->index }}][stock]" 
+                                    value="{{ old('branches.'.$loop->index.'.stock', 0) }}" 
+                                    min="0"
+                                    class="w-full rounded-md border-slate-300 shadow-xs focus:border-emerald-500 focus:ring-emerald-500 text-sm"
+                                />
+                            </td>
+                            <td class="px-4 py-2">
+                                <input 
+                                    type="number" 
+                                    name="branches[{{ $loop->index }}][min_stock]" 
+                                    value="{{ old('branches.'.$loop->index.'.min_stock', 0) }}" 
+                                    min="0"
+                                    class="w-full rounded-md border-slate-300 shadow-xs focus:border-emerald-500 focus:ring-emerald-500 text-sm"
+                                />
+                                <!-- Tambahkan Hidden Input untuk branch_id secara tegas -->
+                                <input type="hidden" name="branches[{{ $loop->index }}][branch_id]" value="{{ $branch->id }}">
+                            </td>
+                        </tr>
+                    @endforeach
+                </tbody>
+                </table>
+            </div>
+        </div>
+
+
 
         <div class="flex justify-end gap-3 mt-8 border-t border-slate-100 pt-5">
             <a href="{{ route('products.index') }}">

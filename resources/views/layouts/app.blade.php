@@ -48,12 +48,12 @@
             <footer class="h-10 bg-white border-t border-slate-200 flex items-center justify-between px-6 text-xs text-slate-500 z-30 select-none">
                 <div class="flex items-center gap-2">
                     <span class="w-2 h-2 rounded-full bg-emerald-500 inline-block animate-pulse"></span>
-                    <span>flowpos.com</span>
+                    <span>TataKas.com</span>
                 </div>
                 <div class="hidden md:flex items-center gap-4 text-slate-400">
                     <span>Kasir: <strong class="text-slate-700">{{ Auth::user()->name }}</strong></span>
                     <span>•</span>
-                    <span>Modul: <strong class="text-indigo-600 font-medium">FlowPOS ATK v.1.0</strong></span>
+                    <span>Modul: <strong class="text-indigo-600 font-medium">TataKas v.1.0</strong></span>
                 </div>
                 <div>@2026 Powered by <strong class="text-slate-700">Zezdev</strong>Style</div>
             </footer>

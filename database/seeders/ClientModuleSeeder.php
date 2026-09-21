@@ -40,6 +40,7 @@ class ClientModuleSeeder extends Seeder
             'StockValuationController',
             'SupplierController',
             'UserController',
+            'BranchController',
         ];
 
         // Looping untuk memasukkan atau mengupdate data ke database

@@ -69,6 +69,21 @@
 {{-- <div class="grid grid-cols-1 md:grid-cols-2 gap-6"> --}}
     <div class="grid grid-cols-2 gap-6 ">
 
+    <x-select
+        label="Cabang / Unit"
+        name="branch_id"
+        icon="ri-store-2-line"
+        required
+    >
+        <option value="">-- Pilih Cabang --</option>
+        @foreach($branches as $branch)
+            <option value="{{ $branch->id }}" {{ old('branch_id') == $branch->id ? 'selected' : '' }}>
+                {{ $branch->name }} ({{ $branch->code }})
+            </option>
+        @endforeach
+    </x-select>
+    
+
     <x-input
 
         label="Nama Lengkap"
@@ -99,29 +114,6 @@
 
     />
 
-    <x-input
-
-        label="Password"
-
-        name="password"
-
-        type="password"
-
-        icon="ri-lock-password-line"
-
-        required
-
-    />
-    
-    {{-- Field Tambahan: Konfirmasi Password --}}
-    <x-input
-        label="Konfirmasi Password"
-        name="password_confirmation"
-        type="password"
-        icon="ri-lock-check-line"
-        required
-    />
-    
     <x-select
 
         label="Role"
@@ -218,6 +210,32 @@
         </option>
 
     </x-select>
+
+    <x-input
+
+        label="Password"
+
+        name="password"
+
+        type="password"
+
+        icon="ri-lock-password-line"
+
+        required
+
+    />
+    
+    {{-- Field Tambahan: Konfirmasi Password --}}
+    <x-input
+        label="Konfirmasi Password"
+        name="password_confirmation"
+        type="password"
+        icon="ri-lock-check-line"
+        required
+    />
+    
+    
+    
 
 </div>
 

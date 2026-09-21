@@ -113,7 +113,7 @@
             </div>
 
             <div class="text-center text-[10px] text-slate-300 mt-4">
-                &copy; {{ date('Y') }} FlowPOS. All rights reserved.
+                &copy; {{ date('Y') }} TataKas. All rights reserved.
             </div>
         </div>
 

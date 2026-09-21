@@ -3,9 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use App\Models\Branch;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Gate;
 
 
 class UserController extends Controller
@@ -13,33 +15,33 @@ class UserController extends Controller
 
     public function index()
     {
-        // Ambil role user yang sedang login saat ini
-        $currentUserRole = Auth::user()->role;
+        $currentUser = Auth::user();
 
-        // $users = User::latest()->paginate(10);
-        $users = User::query()
-        // JIKA yang login adalah Supervisor, maka FILTER/BUANG data user yang rolenya Admin atau Owner
-        ->when($currentUserRole === 'Supervisor', function ($query) {
-            return $query->whereNotIn('role', ['Admin', 'Owner']);
-        })
-        // 🚀 TAMBAHAN: JIKA yang login adalah Owner, FILTER/BUANG data user Admin
-        ->when($currentUserRole === 'Owner', function ($query) {
-            return $query->where('role', '!=', 'Admin');
-        })
-        ->latest() 
-        ->paginate(10); 
+        $users = User::with('branch') // Load relasi branch
+            // 🚀 JIKA BUKAN Owner/Admin, KUNCI HANYA BISA LIHAT CABANGNYA SENDIRI
+            ->when(!Gate::allows('akses-owner-admin'), function ($query) use ($currentUser) {
+                return $query->where('branch_id', $currentUser->branch_id);
+            })
+            // Filter proteksi role supervisor
+            ->when($currentUser->role === 'Supervisor', function ($query) {
+                return $query->whereNotIn('role', ['Admin', 'Owner']);
+            })
+            // Filter proteksi role owner
+            ->when($currentUser->role === 'Owner', function ($query) {
+                return $query->where('role', '!=', 'Admin');
+            })
+            ->latest() 
+            ->paginate(10); 
 
-        return view(
-            'users.index',
-            compact('users')
-        );
+        return view('users.index', compact('users'));
 
     }
 
     public function create()
     {
 
-        return view('users.create');
+        $branches = Branch::where('is_active', true)->get();
+        return view('users.create', compact('branches'));
 
     }
 
@@ -47,11 +49,9 @@ class UserController extends Controller
     {
 
         $request->validate([
-
+            'branch_id' => 'required|exists:branches,id',
             'name'=>'required',
-
             'email'    => 'nullable|email|unique:users',
-
             'role'=>'required',
             // Tambahkan 'confirmed' untuk mencocokkan dengan password_confirmation
             'password' => 'required|min:6|confirmed'
@@ -59,17 +59,14 @@ class UserController extends Controller
         ]);
 
         User::create([
-
+            'branch_id' => $request->branch_id,
             'name'=>$request->name,
-
             'email'=>$request->email,
-
             'role'=>$request->role,
-
             'password'=>Hash::make(
                 $request->password
             ),
-            // Perubahan 2: Secara default user baru statusnya Aktif
+            // Secara default user baru statusnya Aktif
             'is_active' => true
 
         ]);
@@ -96,9 +93,11 @@ class UserController extends Controller
             abort(403, 'Anda tidak memiliki hak akses untuk mengubah data akun ini.');
         }
 
+        $branches = Branch::where('is_active', true)->get();
+
         return view(
             'users.edit',
-            compact('user')
+            compact('user', 'branches')
         );
 
     }
@@ -120,6 +119,7 @@ class UserController extends Controller
         }
         
         $request->validate([
+            'branch_id' => 'required|exists:branches,id',
             'name'      => 'required',
             'email'     => 'nullable|email|unique:users,email,' . $user->id,
             'role'      => 'required',
@@ -128,7 +128,7 @@ class UserController extends Controller
         ]);
 
         $data = [
-
+            'branch_id' => $request->branch_id,
             'name'      => $request->name,
             'email'     => $request->email,
             'role'      => $request->role,
@@ -147,9 +147,7 @@ class UserController extends Controller
         $user->update($data);
 
         return redirect()
-
         ->route('users.index')
-
         ->with(
             'success',
             'User berhasil diperbarui.'
@@ -161,19 +159,13 @@ class UserController extends Controller
     public function resetPassword(User $user)
     {
         $user->update([
-
             'password'=>Hash::make('87654321')
-
         ]);
 
         return back()
-
             ->with(
-
                 'success',
-
                 'Password berhasil direset menjadi 87654321.'
-
             );
     }
 

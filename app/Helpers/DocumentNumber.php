@@ -8,8 +8,8 @@ use Illuminate\Support\Facades\Auth;
 class DocumentNumber
 {
     /**
-     * Untuk dokumen transaksi
-     * Contoh: PO-20260703-0001
+     * Untuk dokumen transaksi transaksi berbasis user login
+     * Contoh: PO-260703-0001
      */
     public static function generate(
         string $table,
@@ -29,7 +29,7 @@ class DocumentNumber
         // 2. Susun Prefix Gabungan: WO-PO
         $fullPrefix = $prefix . '-' . $branchCode;
 
-        $today = date('Ymd');
+        $today = date('ymd');
         $like = $fullPrefix . '-' . $today . '-%';
 
         // Urutkan berdasarkan id dokumen terakhir untuk hari ini agar aman dari sorting string
@@ -82,4 +82,47 @@ class DocumentNumber
                 STR_PAD_LEFT
             );
     }
+
+    // ====================
+    public static function generate_custom(
+        string $table,
+        string $field,
+        string $prefix,
+        int $branchId
+    ): string {
+        // Cari data cabang berdasarkan branch_id
+        $branch = DB::table('branches')->where('id', $branchId)->first();
+
+        if (!$branch) {
+            throw new \Exception('Cabang tidak ditemukan.');
+        }
+
+        $branchCode = strtoupper($branch->code);
+
+        // Format Prefix Gabungan: PB-TU / PB-PO / PB-PM
+        $fullPrefix = $prefix . '-' . $branchCode;
+
+        $today = date('ymd');
+        $like = $fullPrefix . '-' . $today . '-%';
+
+        // Cari transaksi terakhir untuk hari ini berdasarkan branch_id
+        $last = DB::table($table)
+            ->where('branch_id', $branchId)
+            ->where($field, 'like', $like)
+            ->orderByDesc('id')
+            ->value($field);
+
+        if (!$last) {
+            $number = 1;
+        } else {
+            $parts = explode('-', $last);
+            $number = (int) end($parts) + 1;
+        }
+
+        $digit = ($number > 9999) ? strlen((string)$number) : 4;
+        return sprintf('%s-%s-%0' . $digit . 'd', $fullPrefix, $today, $number);
+    }
+
+    
 }
+

@@ -1,12 +1,12 @@
 @extends('layouts.app')
 
-@section('title','POS - Point of Sales')
+@section('title','POS - Nota Penjualan')
 
 @section('content')
 
     
 
-    <x-page-header title="POS/Kasir" subtitle="Buat dan Cetak Nota">
+    <x-page-header title="POS Nota Penjualan" subtitle="Buat dan Cetak Nota Penjualan">
     <x-slot:action>
         <a href="{{ route('kasir.index') }}">
             <x-button color="gray" type="button">
@@ -29,14 +29,21 @@
                     <h2 class="font-bold text-lg border-b pb-2">Informasi Transaksi</h2>
                     
                     <template x-if="orderData">
-                        <div class="bg-indigo-50 border border-indigo-200 rounded-lg p-2.5">
-                            <label class="text-xs font-semibold text-indigo-600 uppercase block">No. Pesanan ( Work Order )</label>
-                            <span class="text-base font-bold text-indigo-950 font-mono" x-text="orderData.no_pesanan"></span>
+                        <div class="bg-indigo-50 border border-indigo-200 rounded-lg p-2.5 space-y-1">
+                            <div>
+                                <label class="text-xs font-semibold text-indigo-600 uppercase block">No. Pesanan ( Work Order )</label>
+                                <span class="text-base font-bold text-indigo-950 font-mono" x-text="orderData.no_pesanan"></span>
+                            </div>
+                            <!-- TAMBAHAN: Nama Staff Pembuat WO -->
+                            <div class="border-t border-indigo-200/60 pt-1 flex justify-between items-center text-xs">
+                                <span class="text-slate-500 font-medium">Staff Pembuat :</span>
+                                <span class="font-bold text-indigo-900" x-text="orderData.operator_name || '-'"></span>
+                            </div>
                         </div>
                     </template>
 
                     <div>
-                        <label class="text-sm text-gray-500">No Nota</label>
+                        <label class="text-sm text-gray-500">No Nota Penjualan</label>
                         <input type="text" value="{{ $noNota }}" readonly class="w-full mt-1 border rounded-lg p-2 bg-gray-50 font-medium font-mono">
                     </div>
                 </div>
@@ -270,7 +277,7 @@
                                 </div>
 
                                 <div class="flex justify-between items-center">
-                                    <label class="font-medium text-slate-700">Card</label>
+                                    <label class="font-medium text-slate-700">Card/QRIS/Debit</label>
                                     <input
                                         type="number"
                                         min="0"
@@ -315,7 +322,7 @@
                                     @click="saveTransaction()"
                                     class="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-3.5 rounded-xl font-bold shadow-md transition flex items-center justify-center gap-2 text-base cursor-pointer"
                                 >
-                                    <i class="ri-save-line text-xl"></i> Simpan Transaksi
+                                    <i class="ri-save-line text-xl"></i> F10 - Simpan & Cetak Nota
                                 </button>
 
                             </div>    

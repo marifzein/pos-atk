@@ -5,9 +5,9 @@
 @section('content')
 
 <x-page-header
-    title="View Purchase Order"
+    :title="'Purchase Order' . ($po->branch ? ' - ' . $po->branch->name : '')"
     subtitle="Informasi detail data PO"
->
+>   
     <x-slot:action>
         <a href="{{ route('purchasing.index') }}">
             <x-button color="gray" type="button">

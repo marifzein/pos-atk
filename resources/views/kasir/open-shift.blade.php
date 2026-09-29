@@ -8,15 +8,13 @@
 @section('title', 'Buka Shift Kasir')
 
 @section('content')
-{{-- <div class="min-h-[70vh] flex items-center justify-center"> --}}
 <div class="min-h-[70vh] md:min-h-0 flex items-center justify-center p-0 md:p-6">
-    {{-- <div class="max-w-md w-full bg-white rounded-2xl shadow-xl border border-slate-100 p-8"> --}}
     <div class="w-full max-w-md bg-white rounded-2xl md:shadow-xl border border-slate-100 p-6 md:p-8">
         
         <!-- Header -->
         <div class="text-center mb-6">
-            <div class="w-16 h-16 bg-indigo-50 text-indigo-600 rounded-2xl flex items-center justify-center mx-auto mb-4 text-2xl font-bold shadow-sm">
-                💰
+            <div class="w-16 h-16 bg-indigo-50 text-indigo-600 rounded-2xl flex items-center justify-center mx-auto mb-4 text-3xl shadow-sm">
+                <i class="ri-wallet-3-line"></i>
             </div>
             <h2 class="text-2xl font-bold text-slate-800">Sesi Shift Baru</h2>
             <p class="text-sm text-slate-500 mt-1">Silakan masukkan nominal uang modal awal di laci kasir untuk mengaktifkan aplikasi POS.</p>
@@ -53,8 +51,8 @@
             </div>
 
             <!-- Petunjuk Info -->
-            <div class="mb-6 p-3.5 bg-amber-50 rounded-xl border border-amber-200/60 flex gap-3 text-amber-800">
-                <span class="text-lg">💡</span>
+            <div class="mb-6 p-3.5 bg-amber-50 rounded-xl border border-amber-200/60 flex items-start gap-3 text-amber-800">
+                <i class="ri-lightbulb-line text-lg text-amber-600 shrink-0 mt-0.5"></i>
                 <p class="text-xs leading-relaxed">
                     <strong>Penting:</strong> Masukkan total uang kertas & koin yang disediakan toko untuk uang kembalian sebelum transaksi dimulai.
                 </p>
@@ -63,9 +61,10 @@
             <!-- Tombol Submit -->
             <button 
                 type="submit" 
-                class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-4 rounded-xl shadow-lg shadow-indigo-200 transition duration-200 flex items-center justify-center gap-2 text-sm"
+                class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 px-4 rounded-xl shadow-lg shadow-indigo-200 transition duration-200 flex items-center justify-center gap-2 text-sm"
             >
-                🚀 Buka Shift & Mulai POS
+                <i class="ri-rocket-line text-lg"></i>
+                Buka Shift & Mulai POS
             </button>
         </form>
     </div>

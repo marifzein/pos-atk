@@ -35,6 +35,9 @@ class DeveloperController extends Controller
 
         DB::table('order_items')->truncate();
         DB::table('orders')->truncate();
+        DB::table('order_payments')->truncate();
+
+        
         
         DB::table('pembatalan_orders')->truncate();
         
@@ -42,6 +45,8 @@ class DeveloperController extends Controller
         
         DB::table('penerimaan_barang')->truncate();
         DB::table('penerimaan_barang_items')->truncate();
+
+        DB::table('product_stocks')->truncate();
         
         DB::table('purchase_order_items')->truncate();
         DB::table('purchase_orders')->truncate();
@@ -61,6 +66,8 @@ class DeveloperController extends Controller
         
         DB::table('transaction_details')->truncate();
         DB::table('transactions')->truncate();
+        
+        
 
 
         DB::statement('SET FOREIGN_KEY_CHECKS=1');

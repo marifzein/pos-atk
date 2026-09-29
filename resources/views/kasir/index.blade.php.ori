@@ -4,107 +4,219 @@
 
 @section('content')
 
+{{-- gridjs bos --}}
+{{-- <link href="https://unpkg.com/gridjs/dist/theme/mermaid.min.css" rel="stylesheet" />
+<script src="https://unpkg.com/gridjs/dist/gridjs.umd.js"></script> --}}
+
+<link href="{{ asset('css/gridjs/mermaid.min.css') }}" rel="stylesheet" />
+<script src="{{ asset('js/gridjs/gridjs.umd.js') }}"></script>
 
 
 
 
-<x-page-header title="POS / Kasir" subtitle="Daftar pesanan yang siap diproses menjadi Nota">
+
+{{-- <x-page-header title="POS / Kasir" subtitle="Daftar pesanan yang siap diproses menjadi Nota">
     
-</x-page-header>
+</x-page-header> --}}
 
+<!-- Header Halaman + Pengingat Badge Interaktif -->
+{{-- <div class="flex flex-col md:flex-row md:items-center justify-between gap-3 mb-6"> --}}
+<!-- Header Halaman + Pengingat Bersusun Presisi Sesuai Skrinsut -->
+<div class="flex flex-col sm:flex-row sm:items-start justify-between gap-3 mb-6">
+    <div>
+        <h1 class="text-2xl font-bold text-slate-800">POS / Kasir</h1>
+        <p class="text-sm text-slate-500 mt-0.5">Daftar pesanan yang siap diproses menjadi Nota</p>
+    </div>
+
+    <!-- Container Pengingat Blok Kanan -->
+    <div class="flex flex-col items-start gap-1 text-xs">
+        <!-- Judul Ingat! Sejajar dengan Tombol Badge -->
+        <span class="text-red-600 font-bold text-sm tracking-wide"><i class="ri-file-warning-line font-normal"></i> REMINDER</span>
+
+        <div class="space-y-1.5 mt-0.5">
+            <!-- Baris Tutup Shift -->
+            <div class="flex items-center gap-2.5">
+                <a href="{{ route('kasir.close-shift') }}" 
+                   class="w-24 inline-flex items-center justify-center px-3 py-1 rounded-full bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-400 font-semibold text-xs shadow-2xs transition">
+                    Tutup Shift
+                </a>
+                <span class="text-slate-600 font-medium">Saat jam kerja selesai</span>
+            </div>
+
+            <!-- Baris Logout -->
+            <div class="flex items-center gap-2.5">
+                <button type="button" 
+                        onclick="confirmLogout()" 
+                        class="w-24 inline-flex items-center justify-center px-3 py-1 rounded-full bg-rose-50 hover:bg-rose-100 text-rose-800 border border-rose-300 font-semibold text-xs shadow-2xs transition cursor-pointer">
+                    Logout
+                </button>
+                <span class="text-slate-600 font-medium">Saat meninggalkan komputer</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!-- Form Logout Tersembunyi (Laravel CSRF) -->
+<form id="logout-form" action="{{ route('logout') }}" method="POST" class="hidden">
+    @csrf
+</form>
 
 
 <!-- Container Card Utama -->
 <div class="bg-white rounded-xl shadow-sm border border-slate-200/80 p-5">
-    
-    <!-- Filter & Pencarian -->
-    <div class="mb-5 flex flex-col sm:flex-row items-center justify-between gap-3">
-        <form method="GET" action="{{ route('kasir.index') }}" class="w-full sm:w-80 relative">
-            <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">
-                <i class="ri-search-line"></i>
-            </span>
-            <input type="text" name="search" value="{{ $search ?? '' }}" 
-                   placeholder="Cari No. WO / Pelanggan..." 
-                   class="w-full text-sm border border-slate-300 rounded-lg pl-9 pr-3 py-2 focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 outline-none">
-        </form>
-    </div>
-
-    <!-- Tabel Data WO -->
-    <div class="overflow-x-auto border border-slate-100 rounded-lg">
-       <!-- Tabel Data WO -->
-        <x-table>
-            <x-table-header>
-                <tr>
-                    <x-table-head class="p-3 text-left font-bold">No WO</x-table-head>
-                    <x-table-head class="p-3 text-left font-bold">Tanggal</x-table-head>
-                    <x-table-head class="p-3 text-left font-bold">Operator</x-table-head>
-                    <x-table-head class="p-3 text-left font-bold">Pelanggan</x-table-head>
-                    <x-table-head class="p-3 text-center font-bold">Status</x-table-head>
-                    <x-table-head class="p-3 text-right font-bold">Total</x-table-head>
-                    <x-table-head class="p-3 text-center font-bold">Aksi</x-table-head>
-                </tr>
-            </x-table-header>
-
-            <tbody>
-                @forelse($orders as $order)
-                    <tr class="hover:bg-slate-50/50 transition">
-                        <td class="p-3 font-semibold text-slate-800 font-mono text-lg">
-                            {{ $order->no_pesanan }}
-                        </td>
-
-                        <td class="p-3 text-slate-500 text-sm">
-                            {{ $order->created_at ? $order->created_at->format('Y-m-d H:i:s') : '-' }}
-                        </td>
-
-                        <td class="p-3 text-slate-700 font-medium text-sm">
-                            {{ $order->operator->name ?? 'Admin' }}
-                        </td>
-
-                        <td class="p-3 text-slate-700 text-sm">
-                            @if($order->customer)
-                                <span class="font-semibold text-indigo-900">{{ $order->customer->nama }}</span>
-                            @else
-                                <span class="text-slate-400 italic">{{ $order->customer_name_manual ?? 'Umum (Non-Member)' }}</span>
-                            @endif
-                        </td>
-
-                        <td class="p-3 text-center">
-                            <x-badge color="yellow">ORDER</x-badge>
-                        </td>
-
-                        <td class="p-3 text-right font-bold text-slate-900 font-mono">
-                            Rp {{ number_format($order->orderItems?->sum('subtotal') ?? $order->items?->sum('subtotal') ?? 0, 0, ',', '.') }}
-                        </td>
-
-                        <td class="p-3 text-center">
-                            <a href="{{ route('kasir.create', ['order_id' => $order->id]) }}" 
-                               class="inline-flex items-center justify-center gap-1 bg-emerald-600 hover:bg-emerald-700 text-white   px-2.5 py-1 rounded-md transition shadow-sm">
-                                <i class="ri-money-dollar-box-line"></i> Bayar
-                            </a>
-                        </td>
-                    </tr>
-                @empty
-                    <tr>
-                        <td colspan="7">
-                            <x-empty-state 
-                                icon="ri-shopping-cart-line" 
-                                title="Belum ada pesanan" 
-                                description="Tidak ada Work Order (WO) yang siap dibayar saat ini." 
-                            />
-                        </td>
-                    </tr>
-                @endforelse
-            </tbody>
-        </x-table>
-
-        <div class="mt-6">
-            {{ $orders->links() }}
-        </div>
-    </div>
-
-    <!-- Pagination -->
-    <div class="mt-4">
-        {{ $orders->links() }}
-    </div>
+    <div id="gridjs-table"></div>
 </div>
+
+<script>
+    // Function SweetAlert Konfirmasi Logout
+    function confirmLogout() {
+        Swal.fire({
+            title: 'Log Out sekarang?',
+            text: 'Pastikan pekerjaan atau transaksi Anda sudah selesai.',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#e11d48', // Red-600
+            cancelButtonColor: '#64748b',  // Slate-500
+            confirmButtonText: 'Ya, Log Out!',
+            cancelButtonText: 'Batal',
+            reverseButtons: true,
+            customClass: {
+                popup: 'rounded-2xl',
+                confirmButton: 'rounded-xl px-4 py-2 font-semibold',
+                cancelButton: 'rounded-xl px-4 py-2 font-semibold'
+            }
+        }).then((result) => {
+            if (result.isConfirmed) {
+                document.getElementById('logout-form').submit();
+            }
+        });
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        new gridjs.Grid({
+            columns: [
+                { 
+                    name: 'No WO',
+                    formatter: (cell) => gridjs.html(`
+                        <div class="font-bold text-slate-800 font-mono text-lg leading-tight">${cell.no_pesanan}</div>
+                        <div class="text-[11px] text-slate-500 font-sans mt-0.5">${cell.branch_name}</div>
+                    `)
+                },
+            { 
+                    name: 'Tgl',
+                    formatter: (cell) => gridjs.html(`
+                        <div class="text-[12px] text-slate-500 font-mono">${cell.tanggal}</div>
+                        <div class="font-mono text-xs text-slate-800 font-semibold">${cell.jam}</div>
+                    `)
+                },
+                { 
+                    name: 'Item',
+                    formatter: (cell) => {
+                        const str = String(cell || '-');
+                        const truncated = str.length > 15 ? str.substring(0, 15) + '...' : str;
+                        return gridjs.html(`<span class="text-sm font-medium text-slate-700" title="${str}">${truncated}</span>`);
+                    }
+                },
+
+                { name: 'Operator' },
+                { 
+                    name: 'Pelanggan',
+                    formatter: (cell) => gridjs.html(`<span class="font-semibold text-slate-700">${cell}</span>`)
+                },
+                { 
+                    name: 'Status',
+                    // attributes: { class: 'text-center' },
+                    formatter: () => gridjs.html(`<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold  bg-amber-100 text-amber-800">ORDER</span>`)
+                },
+                { 
+                    name: 'Total',
+                    // attributes: { class: 'text-right' },
+                    // formatter: (cell) => gridjs.html(`<span class="font-bold text-slate-900 font-mono">${cell}</span>`)
+                    formatter: (cell) => gridjs.html(`
+                        <div class="text-right w-full font-bold text-slate-900 font-mono">${cell}</div>
+                    `)
+                },
+                // { 
+                //     name: 'Aksi',
+                //     sort: false,
+                //     // attributes: { class: 'text-center' },
+                //     formatter: (url) => gridjs.html(`
+                //         <a href="${url}" class="inline-flex items-center justify-center gap-1 bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1.5 rounded-lg transition shadow-xs text-sm font-semibold">
+                //             <i class="ri-money-dollar-box-line"></i> Bayar
+                //         </a>
+                //     `)
+                // }
+
+                { 
+                    name: 'Aksi',
+                    sort: false,
+                    formatter: (cell) => {
+                        // Jika cabang sama, aktifkan tombol bayar
+                        if (cell.is_same_branch) {
+                            return gridjs.html(`
+                                <a href="${cell.url}" class="inline-flex items-center justify-center gap-1 bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1.5 rounded-lg transition shadow-xs text-sm font-semibold">
+                                    <i class="ri-money-dollar-box-line"></i> Bayar
+                                </a>
+                            `);
+                        }
+
+                        // Jika cabang berbeda, tombol di-disabled
+                        return gridjs.html(`
+                            <button type="button" disabled class="inline-flex items-center justify-center gap-1 bg-slate-200 text-slate-400 cursor-not-allowed px-3 py-1.5 rounded-lg text-xs font-medium" title="Hanya kasir/user cabang bersangkutan yang dapat melunasi">
+                                <i class="ri-lock-line"></i> - N/A - 
+                            </button>
+                        `);
+                    }
+                }
+            ],
+            server: {
+                url: '{{ route("kasir.api.orders") }}',
+                then: data => data.data,
+                total: data => data.total
+            },
+        
+            search: {
+                server: {
+                    url: (prev, keyword) => `${prev}?search=${encodeURIComponent(keyword)}`
+                }
+            },
+            sort: {
+                multiColumn: false,
+                server: {
+                    url: (prev, columns) => {
+                        if (!columns.length) return prev;
+                        const col = columns[0];
+                        const dir = col.direction === 1 ? 'asc' : 'desc';
+                        const delimiter = prev.includes('?') ? '&' : '?';
+                        return `${prev}${delimiter}sort=${dir}`;
+                    }
+                }
+            },
+            pagination: {
+                limit: 10,
+                server: {
+                    url: (prev, page, limit) => {
+                        const delimiter = prev.includes('?') ? '&' : '?';
+                        return `${prev}${delimiter}page=${page + 1}&limit=${limit}`;
+                    }
+                }
+            },
+            language: {
+                'search': {
+                    'placeholder': '🔍 Cari No. WO / Pelanggan...'
+                },
+                'pagination': {
+                    'previous': '<',
+                    'next': '>',
+                    'showing': 'Menampilkan',
+                    'results': () => 'Data',
+                    'of': 'dari',
+                    'to': 'sampai'
+                },
+                'noRecordsFound': 'Tidak ada Work Order (WO) yang siap dibayar saat ini.'
+            }
+        }).render(document.getElementById("gridjs-table"));
+    });
+</script>
 @endsection

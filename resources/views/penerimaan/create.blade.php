@@ -4,7 +4,7 @@
 
 @section('content')
 
-<x-page-header title="Buat Penerimaan Barang" subtitle="Input penyesuaian barang masuk dari PO atau kulakan mandiri">
+<x-page-header title="Buat Penerimaan Barang" subtitle="Penerimaan Barang dari PO atau kulakan">
     <x-slot:action>
         <a href="{{ route('penerimaan.index') }}">
             <x-button color="gray" type="button">
@@ -48,6 +48,21 @@
                     placeholder="No Nota / Srt Jalan Grosir"
                     icon="ri-file-paper-2-line"
                 />
+
+                {{-- TAMBAHAN: SELECT CABANG TUJUAN --}}
+                <x-select
+                    label="Cabang Tujuan Stock"
+                    name="branch_id"
+                    required
+                    icon="ri-store-2-line"
+                >
+                    <option value="">-- Pilih Cabang Tujuan --</option>
+                    @foreach($branches as $branch)
+                        <option value="{{ $branch->id }}" {{ (isset($selectedPo) && $selectedPo->branch_id == $branch->id) || old('branch_id') == $branch->id ? 'selected' : '' }}>
+                            {{ $branch->name }}
+                        </option>
+                    @endforeach
+                </x-select>
             </div>
 
             {{-- SISI KANAN: SELEKTOR SUPPLIER & TANGGAL (MENGGUNAKAN X-SELECT) --}}
@@ -372,10 +387,76 @@ document.addEventListener('click', function(e) {
 document.addEventListener('click', function(e) { if (!search.contains(e.target) && !result.contains(e.target)) { result.classList.add('hidden'); } });
 
 function validateForm(e) {
+    if (e && e.preventDefault) {
+        e.preventDefault();
+    }
+
+    if (cart.length === 0) { 
+        Swal.fire({ title: 'Peringatan', text: 'Daftar item penerimaan tidak boleh kosong!', icon: 'warning', confirmButtonColor: '#ef4444' }); 
+        return false; 
+    }
+
+    if (document.getElementsByName('supplier_id')[0].value === "") { 
+        Swal.fire({ title: 'Peringatan', text: 'Harap pilih supplier terlebih dahulu!', icon: 'warning', confirmButtonColor: '#ef4444' }); 
+        return false; 
+    }
+
+    // 1. Deklarasikan variabel branchName secara eksplisit
+    const branchSelect = document.getElementsByName('branch_id')[0];
+    let branchName = 'Cabang';
+
+    if (branchSelect && branchSelect.selectedIndex !== -1 && branchSelect.value !== "") {
+        branchName = branchSelect.options[branchSelect.selectedIndex].text.trim();
+    }
+
+    // 2. Tampilkan SweetAlert
+    Swal.fire({ 
+        title: 'Posting Penerimaan?', 
+        html: `Cabang : <b>${branchName}</b><br><br>Data penerimaan langsung masuk stok <b>${branchName}</b>. Anda yakin untuk Lanjut ?`, 
+        icon: 'question', 
+        showCancelButton: true, 
+        confirmButtonColor: '#2563eb', 
+        cancelButtonColor: '#64748b', 
+        confirmButtonText: 'YA, Simpan!', 
+        cancelButtonText: 'Batal' 
+    }).then((result) => { 
+        if (result.isConfirmed) { 
+            document.getElementById('main-form').submit(); 
+        } 
+    });
+
+    return false;
+}
+
+function validateForm2(e) {
     e.preventDefault();
-    if (cart.length === 0) { Swal.fire({ title: 'Peringatan', text: 'Daftar item penerimaan tidak boleh kosong!', icon: 'warning', confirmButtonColor: '#ef4444' }); return false; }
-    if (document.getElementsByName('supplier_id')[0].value === "") { Swal.fire({ title: 'Peringatan', text: 'Harap pilih supplier terlebih dahulu!', icon: 'warning', confirmButtonColor: '#ef4444' }); return false; }
-    Swal.fire({ title: 'Posting Penerimaan?', text: 'Data penerimaan langsung masuk stok komputer dan tidak dapat diubah kembali.', icon: 'question', showCancelButton: true, confirmButtonColor: '#2563eb', cancelButtonColor: '#64748b', confirmButtonText: 'YA, Simpan!', cancelButtonText: 'Batal' }).then((result) => { if (result.isConfirmed) { document.getElementById('main-form').submit(); } });
+    if (cart.length === 0) { 
+        Swal.fire({ title: 'Peringatan', 
+        text: 'Daftar item penerimaan tidak boleh kosong!', 
+        icon: 'warning', 
+        confirmButtonColor: '#ef4444' }); return false; 
+    }
+    if (document.getElementsByName('supplier_id')[0].value === "") { 
+        Swal.fire({ 
+            title: 'Peringatan', 
+            text: 'Harap pilih supplier terlebih dahulu!', 
+            icon: 'warning', 
+            confirmButtonColor: '#ef4444' }); 
+            return false; 
+    }
+   
+    Swal.fire({ title: 'Posting Penerimaan?', 
+    html: `Cabang : <b>${branchName}</b><br><br>Data penerimaan langsung masuk stok <b>${branchName}</b> . Anda yakin untuk Lanjut ?`,
+    icon: 'question', 
+    showCancelButton: true, 
+    confirmButtonColor: '#2563eb', 
+    cancelButtonColor: '#64748b', 
+    confirmButtonText: 'YA, Simpan!', 
+    cancelButtonText: 'Batal' }).then((result) => { 
+        if (result.isConfirmed) { 
+            document.getElementById('main-form').submit(); 
+        } 
+    });
 }
 </script>
 @endpush

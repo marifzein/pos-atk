@@ -7,8 +7,17 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     {{-- <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css"> --}}
     <link href="{{ asset('css/remixicon/remixicon.css') }}" rel="stylesheet" />
+    
+    <!-- PWA Meta Assets -->
+    <link rel="manifest" href="{{ asset('manifest.json') }}">
+    <meta name="theme-color" content="#ffffff">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="TataKas">
+    <link rel="apple-touch-icon" href="{{ asset('images/icons/icon-192x192.png') }}">
+    <!-- PWA Meta Assets -->
 </head>
-<body class="bg-[#0b0c10] min-h-screen flex items-center justify-center p-4 font-sans">
+<body class="bg-[#F7F2EB] min-h-screen flex items-center justify-center p-4 font-sans">
 
     <!-- Container Utama: Diturunkan lebar max-nya dari max-w-5xl ke max-w-4xl -->
     <div class="w-full max-w-4xl bg-white rounded-3xl shadow-2xl overflow-hidden grid grid-cols-1 md:grid-cols-12 min-h-[500px]">
@@ -129,6 +138,15 @@
                 passwordInput.type = this.checked ? 'text' : 'password';
             });
         });
+    </script>
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js')
+                    .then((reg) => console.log('PWA Login Active:', reg.scope))
+                    .catch((err) => console.error('PWA Login Failed:', err));
+            });
+        }
     </script>
 
 </body>

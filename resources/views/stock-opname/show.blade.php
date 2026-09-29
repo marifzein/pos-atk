@@ -6,7 +6,7 @@
 
 {{-- Header Page --}}
 <x-page-header 
-    title="Stock Opname" 
+    :title="'Stock Opname - ' . ($stockOpname->branch->name ?? 'Cabang')"
     subtitle="No SO: {{ $stockOpname->opname_no }} | Tanggal: {{ \Carbon\Carbon::parse($stockOpname->opname_date)->format('d-m-Y H:i') }}"
 >
     <x-slot:action>
@@ -299,8 +299,10 @@
                     return;
                 }
 
-                let r = await fetch("{{ url('/api/products/search') }}?q=" + encodeURIComponent(this.keyword));
+                // let r = await fetch("{{ url('/api/products/search-barang') }}?q=" + encodeURIComponent(this.keyword));
+                let url = "{{ url('/api/products/search-barang') }}?q=" + encodeURIComponent(this.keyword) + "&branch_id={{ $stockOpname->branch_id }}";
                 
+                let r = await fetch(url);
                 this.results = await r.json();
                 this.selectedIndex = -1;
 

@@ -55,6 +55,24 @@
                 </div>
             </div>
 
+            <!-- FILTER CABANG -->
+            <div>
+                <label class="block text-xs font-semibold text-slate-600 mb-1">Cabang</label>
+                @if(in_array(strtolower(Auth::user()->role), ['owner', 'admin', 'developer']))
+                    <select name="branch_id" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                        <option value="">Semua Cabang</option>
+                        @foreach($branches as $b)
+                            <option value="{{ $b->id }}" {{ $selectedBranchId == $b->id ? 'selected' : '' }}>
+                                {{ $b->name }}
+                            </option>
+                        @endforeach
+                    </select>
+                @else
+                    <input type="text" value="{{ Auth::user()->branch->name ?? 'Cabang Anda' }}" readonly class="w-full px-3 py-2 border border-slate-200 bg-slate-100 rounded-lg text-sm text-slate-600 font-medium">
+                @endif
+            </div>
+            
+
             <!-- Rentang Tanggal -->
             <div class="grid grid-cols-2 gap-2">
                 <div>
@@ -99,6 +117,7 @@
                 <tr class="bg-slate-50 text-slate-700 font-bold border-b border-slate-200">
                     <th class="p-3.5 text-left">No Nota</th>
                     <th class="p-3.5 text-left">Tanggal</th>
+                    <x-table-head class="text-left font-bold bg-slate-100 text-slate-700">Item</x-table-head>
                     <th class="p-3.5 text-left">Kasir</th>
                     <th class="p-3.5 text-left">Pelanggan</th>
                     <th class="p-3.5 text-center">Status</th>
@@ -110,11 +129,43 @@
                 @forelse($transactions as $trx)
                     <tr class="hover:bg-slate-50/70 transition">
                         <td class="p-3.5 font-semibold text-slate-800">
-                            {{ $trx->no_nota }}
+                            {{-- {{ $trx->no_nota }} --}}
+                            <span class="block">{{ $trx->no_nota }}</span>
+                            <span class="text-xs font-normal text-slate-500 block mt-0.5">
+                                {{ $trx->branch?->name ?? '-' }}
+                            </span>
                         </td>
-                        <td class="p-3.5 text-slate-600 font-mono text-xs">
+                        {{-- <td class="p-3.5 text-slate-600 font-mono text-xs">
                             {{ $trx->created_at->format('Y-m-d H:i:s') }}
-                        </td>
+                        </td> --}}
+                        
+                        <!-- 1. KOLOM TANGGAL & JAM (JAM DI BAWAH TANGGAL) -->
+                        <x-table-cell>
+                            <div class="font-medium text-slate-800">
+                                {{ \Carbon\Carbon::parse($trx->created_at)->translatedFormat('d F Y') }}
+                            </div>
+                            <div class="text-xs text-slate-400">
+                                {{ \Carbon\Carbon::parse($trx->created_at)->format('H:i') }} WIB
+                            </div>
+                        </x-table-cell>
+
+                        <!-- 2. KOLOM ITEM (FIRST ITEM TRUNCATE 15 CHARS) -->
+                        <x-table-cell>
+                            @php
+                                $firstDetail = $trx->details->first();
+                                $itemName = $firstDetail->nama_barang ?? '-';
+                                $totalCount = $trx->details->count();
+                            @endphp
+
+                            <div class="font-medium text-slate-800" title="{{ $itemName }}">
+                                {{ \Illuminate\Support\Str::limit($itemName, 15, '...') }}
+                                @if($totalCount > 1)
+                                    <span class="text-xs text-indigo-600 font-semibold">(+{{ $totalCount - 1 }} item)</span>
+                                @endif
+                            </div>
+                        </x-table-cell>
+                        
+
                         <td class="p-3.5 text-slate-600">
                             {{ $trx->cashier?->name ?? 'System' }}
                         </td>
@@ -182,12 +233,18 @@
     {{-- TAMPILAN MOBILE & TABLET (CARD LIST) --}}
     <div class="block md:hidden space-y-4 px-1">
         @forelse($transactions as $trx)
+            @php
+                $firstDetail = $trx->details->first();
+                $itemName = $firstDetail->nama_barang ?? '-';
+                $totalCount = $trx->details->count();
+            @endphp
+
             <div class="bg-white border border-slate-200/80 rounded-2xl p-4 shadow-sm space-y-3 w-full">
                 <div class="flex justify-between items-start border-b border-slate-100 pb-2.5">
                     <div>
                         <span class="text-base font-bold text-slate-900 block font-mono">{{ $trx->no_nota }}</span>
                         <span class="text-xs text-slate-500 font-medium flex items-center gap-1 mt-0.5">
-                            <i class="ri-time-line"></i> {{ $trx->created_at->format('Y-m-d H:i:s') }}
+                            <i class="ri-time-line"></i> {{ \Carbon\Carbon::parse($trx->created_at)->translatedFormat('d F Y') }} ({{ \Carbon\Carbon::parse($trx->created_at)->format('H:i') }})
                         </span>
                     </div>
                     <div>
@@ -204,6 +261,15 @@
                 </div>
 
                 <div class="grid grid-cols-2 gap-2 bg-slate-50 p-3 rounded-xl border border-slate-100 text-xs">
+                    <div class="col-span-2 border-b border-slate-200/60 pb-2 mb-1">
+                        <span class="text-slate-400 block mb-0.5">Item:</span>
+                        <span class="font-semibold text-slate-800 block">
+                            {{ \Illuminate\Support\Str::limit($itemName, 25, '...') }}
+                            @if($totalCount > 1)
+                                <span class="text-indigo-600 font-semibold">(+{{ $totalCount - 1 }} item)</span>
+                            @endif
+                        </span>
+                    </div>
                     <div>
                         <span class="text-slate-400 block mb-0.5">Kasir:</span>
                         <span class="font-semibold text-slate-800 block truncate">{{ $trx->cashier?->name ?? 'System' }}</span>

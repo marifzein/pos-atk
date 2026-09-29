@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Product;
 use App\Models\PurchaseOrder;
 use App\Models\StockMovement;
+use App\Models\PenerimaanBarang;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
@@ -14,10 +15,36 @@ class PenerimaanBarangController extends Controller
 {
     public function index(Request $request)
     {
+        $search = trim($request->search);
+
+        $penerimaan = PenerimaanBarang::with(['supplier', 'branch', 'user'])
+            ->when($search, function ($q) use ($search) {
+                $q->where(function($query) use ($search) {
+                    $query->where('no_penerimaan', 'like', "%{$search}%")
+                        ->orWhere('no_dokumen_supplier', 'like', "%{$search}%")
+                        ->orWhere('no_po', 'like', "%{$search}%");
+                });
+            })
+            ->latest()
+            ->paginate(10)
+            ->withQueryString();
+
+        // Data PO untuk modal rujukan
+        $purchaseOrders = PurchaseOrder::with('supplier')
+            ->where('status', 'ORDERED')
+            ->latest()
+            ->get();
+
+        return view('penerimaan.index', compact('penerimaan', 'purchaseOrders'));
+    }
+
+    public function index2(Request $request)
+    {
         // 1. Ambil data induk riwayat penerimaan barang untuk tabel utama
         $query = DB::table('penerimaan_barang')
             ->join('suppliers', 'penerimaan_barang.supplier_id', '=', 'suppliers.id')
             ->join('users', 'penerimaan_barang.user_id', '=', 'users.id')
+            ->leftJoin('branches', 'penerimaan_barang.branch_id', '=', 'branches.id')
             ->select('penerimaan_barang.*', 'suppliers.name as supplier_name', 'users.name as kasir_name')
             ->latest('penerimaan_barang.created_at');
 
@@ -40,6 +67,7 @@ class PenerimaanBarangController extends Controller
     public function create(Request $request)
     {
         $suppliers = DB::table('suppliers')->get();
+        $branches = DB::table('branches')->get();
         $selectedPo = null;
 
         // Jalur Rujukan PO: Verifikasi status PO harus 'ORDERED'
@@ -55,35 +83,26 @@ class PenerimaanBarangController extends Controller
             }
         }
 
-        return view('penerimaan.create', compact('suppliers', 'selectedPo'));
+        return view('penerimaan.create', compact('suppliers', 'selectedPo','branches'));
     }
 
     /**
      * Menampilkan rincian mutasi barang masuk yang sudah disimpan (Read-Only)
      */
-    public function show($id)
-    {
-        // 1. Ambil data induk penerimaan barang
-        $penerimaan = DB::table('penerimaan_barang')
-            ->join('suppliers', 'penerimaan_barang.supplier_id', '=', 'suppliers.id')
-            ->join('users', 'penerimaan_barang.user_id', '=', 'users.id')
-            ->select('penerimaan_barang.*', 'suppliers.name as supplier_name', 'users.name as kasir_name')
-            ->where('penerimaan_barang.id', $id)
-            ->first();
+    
+
+    public function show($id){
+        // Ambil data penerimaan dengan eager loading relasi lengkap
+        $penerimaan = PenerimaanBarang::with(['supplier', 'branch', 'user', 'items.product'])
+            ->find($id);
 
         if (!$penerimaan) {
             return redirect()->route('penerimaan.index')->with('error', 'Data penerimaan tidak ditemukan.');
         }
 
-        // 2. Ambil data rincian item produk yang masuk
-        $items = DB::table('penerimaan_barang_items')
-            ->join('products', 'penerimaan_barang_items.product_id', '=', 'products.id')
-            ->select('penerimaan_barang_items.*', 'products.name', 'products.sku')
-            ->where('penerimaan_barang_items.penerimaan_barang_id', $id)
-            ->get();
-
-        return view('penerimaan.show', compact('penerimaan', 'items'));
+        return view('penerimaan.show', compact('penerimaan'));
     }
+
 
     /**
      * API pencarian produk cepat untuk diintegrasikan dengan JS Lookup Sisi Kiri
@@ -136,6 +155,7 @@ class PenerimaanBarangController extends Controller
     {
         $request->validate([
             'supplier_id' => 'required|exists:suppliers,id',
+            'branch_id'         => 'required|exists:branches,id',
             'tanggal_terima' => 'required|date',
             'items' => 'required|array|min:1',
             'items.*.product_id' => 'required|exists:products,id',
@@ -153,18 +173,20 @@ class PenerimaanBarangController extends Controller
 
         DB::beginTransaction();
         try {
-            // $noPenerimaan = 'GR-' . date('Ymd') . '-' . sprintf('%04d', (DB::table('penerimaan_barang')->count() + 1));
-            $noPenerimaan = DocumentNumber::generate(
-                'penerimaan_barang', // nama tabel database kamu
-                'no_penerimaan',     // kolom target kode unik
-                'GR'                 // Prefix untuk Goods Receipt / Penerimaan Barang
+            
+            $noPenerimaan = DocumentNumber::generate_custom(
+                'penerimaan_barang', 
+                'no_penerimaan',     
+                'GR',                
+                (int) $request->branch_id 
             );
-            $currentUserId = Auth::id() ?? 1;
+            $currentUserId = Auth::id() ;
 
             // 1. Simpan Induk Penerimaan Barang
             $penerimaanId = DB::table('penerimaan_barang')->insertGetId([
                 'no_penerimaan' => $noPenerimaan,
                 'no_po' => $request->no_po,
+                'branch_id'         => $request->branch_id,
                 'no_dokumen_supplier' => $request->no_dokumen_supplier,
                 'supplier_id' => $request->supplier_id,
                 'tanggal_terima' => $request->tanggal_terima,
@@ -190,24 +212,49 @@ class PenerimaanBarangController extends Controller
                     'updated_at' => now()
                 ]);
 
-                // 3. Update Stok Produk & Kalkulasi HPP Rata-Rata Bergerak (Moving Average)
-                $product = Product::lockForUpdate()->find($item['product_id']);
-                $stokSebelum = $product->stock;
+                // 3. Ambil Stok Cabang Saat Ini dari tabel product_stocks (bukan dari tabel products)
+                $productStock = DB::table('product_stocks')
+                    ->where('branch_id', $request->branch_id)
+                    ->where('product_id', $item['product_id'])
+                    ->lockForUpdate()
+                    ->first();
+
+                $stokSebelum = $productStock ? $productStock->stock : 0;
                 $stokSesudah = $stokSebelum + $item['qty_terima'];
 
-                // $hppLama = $product->harga_beli ?? $item['harga_beli'];
+                // 4. Update HPP / Moving Average di Master Produk (HPP bersifat global)
+                $product = Product::lockForUpdate()->find($item['product_id']);
                 $hppLama = $product->purchase_price ?? $item['harga_beli']; 
                 $hppBaru = $stokSebelum > 0 
                     ? (($stokSebelum * $hppLama) + ($item['qty_terima'] * $item['harga_beli'])) / $stokSesudah 
-                    : $item['harga_beli'];
+                    : $item['harga_beli'];      
 
                 $product->update([
-                    'stock' => $stokSesudah,
+                    
                     'purchase_price' => round($hppBaru, 0)
                 ]);
 
-                // 4. Catat Riwayat Mutasi ke Stock Movement
+                // 5. Simpan / Update Stok di Tabel product_stocks (Per Cabang)
+                if ($productStock) {
+                    DB::table('product_stocks')
+                        ->where('id', $productStock->id)
+                        ->update([
+                            'stock'      => $stokSesudah,
+                            'updated_at' => now(),
+                        ]);
+                } else {
+                    DB::table('product_stocks')->insert([
+                        'branch_id'  => $request->branch_id,
+                        'product_id' => $item['product_id'],
+                        'stock'      => $stokSesudah,
+                        'created_at' => now(),
+                        'updated_at' => now(),
+                    ]);
+                }
+
+                // 6. Catat Riwayat Mutasi ke Stock Movement
                 StockMovement::create([
+                    'branch_id'    => $request->branch_id,
                     'product_id' => $product->id,
                     'type' => 'PENERIMAAN',
                     'qty' => $item['qty_terima'],
@@ -215,6 +262,7 @@ class PenerimaanBarangController extends Controller
                     'stock_after' => $stokSesudah,
                     'reference_no' => $noPenerimaan,
                     'notes' => 'Penerimaan Pembelian. Ref: ' . ($request->no_dokumen_supplier ?? '-') . ($request->no_po ? ' (PO: '.$request->no_po.')' : ''),
+                    'user_id'      => $currentUserId,
                 ]);
             }
 

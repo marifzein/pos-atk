@@ -73,13 +73,14 @@
 
             <tr>
 
-                <x-table-head>No PO</x-table-head>
+                <x-table-head class="text-left">No PO</x-table-head>
 
-                <x-table-head>Tanggal</x-table-head>
+                <x-table-head class="text-left">Tanggal</x-table-head>
 
-                <x-table-head>Supplier</x-table-head>
+                <x-table-head class="text-left">Supplier</x-table-head>
+                <x-table-head class="text-left">Dibuat Oleh</x-table-head>
 
-                <x-table-head class="text-right">Total</x-table-head>
+                <x-table-head class="text-center">Total</x-table-head>
 
                 <x-table-head class="text-center">Status</x-table-head>
 
@@ -96,9 +97,12 @@
             <tr>
 
                 <x-table-cell>
-
-                    {{ $po->po_number }}
-
+                    <div class="font-medium text-slate-900">
+                        {{ $po->po_number }}
+                    </div>
+                    <div class="text-xs text-slate-500">
+                        {{ $po->branch->name ?? '-' }}
+                    </div>
                 </x-table-cell>
 
                 <x-table-cell>
@@ -109,8 +113,14 @@
 
                 <x-table-cell>
 
-                    {{ $po->supplier->nama }}
+                    {{ $po->supplier->name }}
 
+                </x-table-cell>
+
+                <x-table-cell>
+                    <div class="font-medium text-slate-800">
+                        {{ $po->user->name ?? '-' }}
+                    </div>
                 </x-table-cell>
 
                 <x-table-cell class="text-right">

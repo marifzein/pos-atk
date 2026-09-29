@@ -1,4 +1,4 @@
-@extends('layouts.app')
+@extends('layouts.mobile-app')
 
 @section('title', 'Master Pelanggan')
 
@@ -17,7 +17,7 @@
         </a>
     </div>
 
-    <!-- Form Carian -->
+    <!-- Form Pencarian -->
     <form method="GET" action="{{ route('customers.index') }}">
         <div class="flex gap-2">
             <div class="grow">

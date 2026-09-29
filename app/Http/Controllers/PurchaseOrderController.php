@@ -48,7 +48,7 @@ class PurchaseOrderController extends Controller
     {
         $search = trim($request->search);
 
-        $purchaseOrders = PurchaseOrder::with('supplier')
+        $purchaseOrders = PurchaseOrder::with('supplier','branch', 'user')
 
             ->when($search, function ($q) use ($search) {
 
@@ -115,7 +115,6 @@ class PurchaseOrderController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'po_number'   => 'required|unique:purchase_orders,po_number',
             'supplier_id' => 'required|exists:suppliers,id',
             'po_date'     => 'required|date',
             'product_id'  => 'required|array|min:1',
@@ -127,9 +126,13 @@ class PurchaseOrderController extends Controller
         $po = DB::transaction(function () use ($request) {
 
             $status = $request->input('action') == 'ordered' ? 'ORDERED' : 'DRAFT';
-
+            $poNumber = DocumentNumber::generate(
+            'purchase_orders',
+            'po_number',
+            'PO'    
+        );
             $newPo = PurchaseOrder::create([
-                'po_number'   => $request->po_number,
+                'po_number'   => $poNumber,
                 'supplier_id' => $request->supplier_id,
                 'po_date'     => $request->po_date,
                 'status'      => $status,
@@ -164,7 +167,7 @@ class PurchaseOrderController extends Controller
             return $newPo;
         });
 
-        // Sekarang variabel $po di bawah ini aman digunakan & tidak bikin error 500 lagi!
+        // Sekarang variabel $po di bawah ini aman digunakan !
         if ($request->ajax() || $request->wantsJson()) {
             $pdfUrl = $request->input('action') == 'ordered' 
                 ? route('purchasing.print-pdf', $po->id)
@@ -378,7 +381,7 @@ class PurchaseOrderController extends Controller
     public function show(PurchaseOrder $purchasing)
     {
         // Load relasi supplier dan item produk
-        $purchasing->load(['supplier', 'purchaseOrderItems.product']);
+        $purchasing->load(['supplier', 'branch', 'purchaseOrderItems.product']);
 
         return view('purchasing.show', [
             'po' => $purchasing
@@ -394,6 +397,23 @@ class PurchaseOrderController extends Controller
     | Cetak PDF Purchase Order (Native Browser Print)
     |--------------------------------------------------------------------------
     */
+    public function printPdf1(PurchaseOrder $purchasing)
+    {
+        // Hanya status ORDERED & RECEIVED yang boleh di-print
+        if (!in_array($purchasing->status, ['ORDERED', 'RECEIVED'])) {
+            return redirect()->route('purchasing.index')
+                ->with('error', 'Cetak gagal! Dokumen Purchase Order harus berstatus ORDERED.');
+        }
+
+        // Load data relasi lengkap
+        $purchasing->load(['supplier', 'branch', 'purchaseOrderItems.product', 'user']);
+
+        // Langsung return view cetak biasa
+        return view('purchasing.print', [
+            'po' => $purchasing
+        ]);
+    }
+
     public function printPdf(PurchaseOrder $purchasing)
     {
         // Hanya status ORDERED & RECEIVED yang boleh di-print
@@ -402,12 +422,16 @@ class PurchaseOrderController extends Controller
                 ->with('error', 'Cetak gagal! Dokumen Purchase Order harus berstatus ORDERED.');
         }
 
-        // Load data relasi lengkap[cite: 7]
-        $purchasing->load(['supplier', 'purchaseOrderItems.product', 'user']);
+        // Load data relasi lengkap
+        $purchasing->load(['supplier', 'branch', 'purchaseOrderItems.product', 'user']);
 
-        // Langsung return view cetak biasa[cite: 8]
+        // Ambil data toko dari tabel settings[cite: 27]
+        $setting = DB::table('settings')->first();
+
+        // Return view cetak
         return view('purchasing.print', [
-            'po' => $purchasing
+            'po'      => $purchasing,
+            'setting' => $setting
         ]);
     }
 }

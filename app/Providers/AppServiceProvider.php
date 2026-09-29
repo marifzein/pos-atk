@@ -51,6 +51,16 @@ class AppServiceProvider extends ServiceProvider
             return in_array($user->role, ['Owner', 'Admin', 'Supervisor', 'Staff Barang','Staff Jasa']);
         });
 
+        // 5. MENU pesanan (Operator, Supervisor, Admin, Owner bisa buka)
+        Gate::define('akses-pesanan-barang', function ($user) {
+            return in_array($user->role, ['Owner', 'Admin', 'Supervisor', 'Staff Barang']);
+        });
+
+        // 6. MENU pesanan (Operator, Supervisor, Admin, Owner bisa buka)
+        Gate::define('akses-pesanan-jasa', function ($user) {
+            return in_array($user->role, ['Owner', 'Admin', 'Supervisor', 'Staff Jasa']);
+        });
+
         // Tambahkan Macro kustom untuk pengecekan Mobile di Request
         Request::macro('isMobile', function () {
             $userAgent = $this->userAgent();

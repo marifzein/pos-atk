@@ -52,15 +52,27 @@
             <tbody>
             @forelse($penerimaan as $row)
                 <tr class="hover:bg-slate-50 transition-colors duration-150">
-                    <x-table-cell class="text-left font-semibold text-slate-700">{{ $row->no_penerimaan }}</x-table-cell>
+                    <x-table-cell class="text-left font-semibold text-slate-700">
+                        {{-- {{ $row->no_penerimaan }} --}}
+                        <div class="font-semibold text-slate-800">
+                            {{ $row->no_penerimaan }}
+                        </div>
+                        <div class="text-xs text-slate-500 font-medium">
+                            {{ $row->branch->name ?? '-' }}
+                        </div>
+                    </x-table-cell>
                     <x-table-cell class="text-left text-slate-600">{{ \Carbon\Carbon::parse($row->tanggal_terima)->format('d M Y') }}</x-table-cell>
-                    <x-table-cell class="text-left text-slate-700 font-medium">{{ $row->supplier_name }}</x-table-cell>
+                    <x-table-cell class="text-left text-slate-700 font-medium">{{ $row->supplier->name ?? '-' }}</x-table-cell>
                     <x-table-cell class="text-left">
-                        <div class="text-xs text-slate-600"><span class="font-semibold text-slate-400">PO:</span> {{ $row->no_po ?? '-' }}</div>
+                        <div class="text-xs text-slate-600">
+                            {{-- <span class="font-semibold text-slate-400">PO:</span> --}}
+                             {{ $row->no_po ?? '-' }}</div>
                         <div class="text-xs text-slate-600 mt-0.5"><span class="font-semibold text-slate-400">Ref:</span> {{ $row->no_dokumen_supplier ?? '-' }}</div>
                     </x-table-cell>
                     <x-table-cell class="text-center"><x-badge color="blue">{{ $row->total_item }} Item</x-badge></x-table-cell>
-                    <x-table-cell class="text-left text-slate-600 font-medium"><i class="ri-user-smile-line text-xs text-slate-400 mr-1"></i>{{ $row->kasir_name }}</x-table-cell>
+                    <x-table-cell class="text-left text-slate-600 font-medium">
+                        {{-- <i class="ri-user-smile-line text-xs text-slate-400 mr-1"></i> --}}
+                        {{ $row->user->name }}</x-table-cell>
                     
                     {{-- KOLOM AKSI TERBARU: HANYA LIHAT DETAIL --}}
                     <x-table-cell class="text-center">

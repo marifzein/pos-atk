@@ -13,7 +13,7 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         //setting komisi otomatis, bila ada perubahan (next_comission)
         $middleware->alias([
-            'check.commission' => \App\Http\Middleware\CheckCommissionScheme::class,
+            // 'check.commission' => \App\Http\Middleware\CheckCommissionScheme::class,
             'role' => \App\Http\Middleware\RoleMiddleware::class,
             // check shift kasir
             'check.shift' => \App\Http\Middleware\CheckOpenShift::class,

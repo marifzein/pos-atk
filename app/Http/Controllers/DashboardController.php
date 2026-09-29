@@ -6,12 +6,24 @@ use App\Models\Product;
 use App\Models\Transaction;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
 
 class DashboardController extends Controller
 {
     public function index(Request $request)
     {
+        $user = Auth::user();
+        // JIKA STAFF JASA -> LEMPAR LANGSUNG KE PESANAN JASA
+        if ($user->role === 'Staff Jasa') {
+            return redirect()->route('pesanan-jasa.index');
+        }
+
+        // JIKA STAFF BARANG -> LEMPAR LANGSUNG KE PESANAN BARANG
+        if ($user->role === 'Staff Barang') {
+            return redirect()->route('pesanan-barang.index');
+        }
+
         // 1. Tentukan Range Tanggal Berdasarkan Request Filter
         $period = $request->get('period', 'today'); // default: today
         $startDate = null;
@@ -69,20 +81,38 @@ class DashboardController extends Controller
             ->whereBetween('transactions.created_at', [$startDate, $endDate])
             ->sum(DB::raw('transaction_details.subtotal - (transaction_details.harga_beli * transaction_details.qty)'));
 
-        // 5. Item Perlu Kulakan (Kondisi Stok Realtime Saat Ini)
-        $emptyStockCount = Product::where('type', 'barang')
-            ->where('is_active', 1)
-            ->where('stock', '<=', 0)
+        // 5. Item Perlu Kulakan
+
+        // A. Hitung total kejadian HABIS TOTAL per cabang (product_stocks.stock <= 0)
+        $emptyStockCount = DB::table('product_stocks')
+            ->join('products', 'product_stocks.product_id', '=', 'products.id')
+            ->where('products.type', 'barang')
+            ->where('products.is_active', 1)
+            ->where('product_stocks.stock', '<=', 0)
             ->count();
 
-        $lowStockCount = Product::where('type', 'barang')
-            ->where('is_active', 1)
-            ->where('stock', '>', 0)
-            ->whereColumn('stock', '<=', 'min_stock')
+        // B. Hitung total kejadian STOK MENIPIS per cabang (stock > 0 DAN stock <= min_stock)
+        $lowStockCount = DB::table('product_stocks')
+            ->join('products', 'product_stocks.product_id', '=', 'products.id')
+            ->where('products.type', 'barang')
+            ->where('products.is_active', 1)
+            ->where('product_stocks.stock', '>', 0)
+            ->whereColumn('product_stocks.stock', '<=', 'product_stocks.min_stock')
             ->count();
 
-        $totalPerluKulakan = $emptyStockCount + $lowStockCount;
+        // C. Hitung JUMLAH PRODUK UNIK yang kena dampak (minimal ada 1 cabang habis ATAU menipis)
+        $totalPerluKulakan = DB::table('product_stocks')
+            ->join('products', 'product_stocks.product_id', '=', 'products.id')
+            ->where('products.type', 'barang')
+            ->where('products.is_active', 1)
+            ->where(function ($query) {
+                $query->where('product_stocks.stock', '<=', 0)
+                    ->orWhereColumn('product_stocks.stock', '<=', 'product_stocks.min_stock');
+            })
+            ->distinct('product_stocks.product_id')
+            ->count('product_stocks.product_id');
 
+        
         // return view('dashboard.index', compact(
         //     'period',
         //     'startDate',

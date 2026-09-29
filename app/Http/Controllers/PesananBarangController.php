@@ -26,7 +26,7 @@ class PesananBarangController extends Controller
 
         try {
             // Generate No Pesanan Barang Otomatis berdasarkan cabang user
-            $nomorWO = DocumentNumber::generate('orders', 'no_pesanan', 'WO');
+            $nomorWO = DocumentNumber::generate('orders', 'no_pesanan', 'SP');
         } catch (\Exception $e) {
             return redirect()->back()->with('error', $e->getMessage());
         }
@@ -66,7 +66,7 @@ class PesananBarangController extends Controller
         DB::beginTransaction();
         try {
             $branchId = $user->branch_id;
-            $no_pesanan = DocumentNumber::generate('orders', 'no_pesanan', 'WO');
+            $no_pesanan = DocumentNumber::generate('orders', 'no_pesanan', 'SP');
 
             // Cari customer berdasarkan kode_pelanggan jika dikirim
             $customer = null;

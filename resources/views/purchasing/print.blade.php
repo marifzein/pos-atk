@@ -82,13 +82,24 @@
         <!-- Header Dokumen -->
         <table class="header-table">
             <tr>
-                <td>
-                    <h2 style="margin:0;">POS MINIMARKET</h2>
-                    <p style="margin:0; font-size:9pt;">Jl. Raya Utama No. 123, Kota Administrasi</p>
+                <td style="vertical-align: top;">
+                    <div style="font-size: 16pt; font-weight: bold; text-transform: uppercase; color: #1e293b;">
+                        {{ $setting->nama_toko  }}
+                    </div>
+                    <div style="font-size: 9pt; color: #475569; margin-top: 2px;">
+                        Cabang: <strong>{{ $po->branch->name  }}</strong>
+                    </div>
+                    @if(isset($setting->alamat))
+                        <div style="font-size: 8.5pt; color: #64748b; max-width: 420px; line-height: 1.3; margin-top: 3px;">
+                            {{ $setting->alamat }} {{ $setting->telepon ? ' | Telp: ' . $setting->telepon : '' }}
+                        </div>
+                    @endif
                 </td>
                 <td style="text-align: right; vertical-align: top;">
-                    <h2 style="margin:0;">PURCHASE ORDER</h2>
-                    <p style="margin:0;"><strong>{{ $po->po_number }}</strong></p>
+                    <h2 style="margin: 0; font-size: 16pt; letter-spacing: 0.5px;">PURCHASE ORDER</h2>
+                    <p style="margin: 3px 0 0 0; font-size: 10pt;">
+                        <strong>{{ $po->po_number }}</strong>
+                    </p>
                 </td>
             </tr>
         </table>
@@ -100,13 +111,15 @@
             <tr>
                 <td>
                     <strong>INFO SUPPLIER:</strong><br>
-                    {{ $po->supplier->nama }}<br>
-                    Telp: {{ $po->supplier->telepon ?? '-' }}
+                    {{-- Menggunakan $po->supplier->name (bukan 'nama') --}}
+                    <strong>{{ $po->supplier->name ?? '-' }}</strong><br>
+                    {{ $po->supplier->address ?? '' }}<br>
+                    Telp: {{ $po->supplier->phone ?? $po->supplier->telepon ?? '-' }}
                 </td>
                 <td>
                     <strong>DETAIL PESANAN:</strong><br>
                     Tanggal PO: {{ \Carbon\Carbon::parse($po->po_date)->format('d-m-Y') }}<br>
-                    Status: {{ $po->status }}
+                    {{-- Status: {{ $po->status }} --}}
                 </td>
             </tr>
         </table>
@@ -155,13 +168,15 @@
                 <td>
                     <p>Disiapkan Oleh,</p>
                     <div style="height: 60px;"></div>
+                    {{ $po->user->name ?? 'Manager' }}
                     <p>__________________</p>
                     <p style="font-size: 8pt; color: #555;">Purchasing Staff</p>
                 </td>
                 <td>
                     <p>Disetujui Oleh,</p>
                     <div style="height: 60px;"></div>
-                    <p><strong>{{ $po->user->name ?? 'Manager' }}</strong></p>
+                    <p><strong></strong></p>
+                    <p>__________________</p>
                     <p style="font-size: 8pt; color: #555;">Operational Manager</p>
                 </td>
             </tr>

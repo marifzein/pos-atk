@@ -8,6 +8,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
+use Illuminate\Support\Facades\Cookie;
 
 class AuthenticatedSessionController extends Controller
 {
@@ -28,7 +29,20 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerate();
 
-        return redirect()->intended(route('dashboard', absolute: false));
+        // Ambil role user yang baru login
+        $role = strtolower(auth()->user()->role);
+
+        // Tentukan route tujuan berdasarkan role
+        $targetRoute = match ($role) {
+            'staff barang' => 'pesanan-barang.index',
+            'staff jasa'   => 'pesanan-jasa.index',
+            'kasir'        => 'kasir.index',
+            'supervisor'   => 'purchasing.index',
+            default        => 'dashboard',
+        };
+
+        return redirect()->intended(route($targetRoute, absolute: false));
+        // return redirect()->intended(route('dashboard', absolute: false));
     }
 
     /**
@@ -42,6 +56,12 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerateToken();
 
-        return redirect('/');
+        // 2. Paksa hapus cookie laravel_session dari browser
+        $cookie = Cookie::forget(config('session.cookie'));
+
+        // 3. Redirect ke login dengan membawa instruksi hapus cookie
+        return redirect()->route('login')->withCookie($cookie);
+
+        // return redirect('/');
     }
 }

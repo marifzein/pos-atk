@@ -11,6 +11,8 @@ class StockAdjustmentDetail extends Model
 
     protected $table = 'stock_adjustment_details';
 
+    // protected $guarded = [];
+
     protected $fillable = [
         'stock_adjustment_id',
         'product_id',

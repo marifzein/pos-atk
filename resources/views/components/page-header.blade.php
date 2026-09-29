@@ -1,9 +1,7 @@
 @props([
-
     'title',
-
-    'subtitle' => ''
-
+    'subtitle' => '',
+    'subtitleColor' => 'text-slate-500' // default tetap abu-abu jika tidak diisi
 ])
 
 <div class="flex items-start justify-between mb-6">
@@ -20,12 +18,8 @@
 
         @if($subtitle)
 
-            <p
-                class="text-slate-500 mt-1"
-            >
-
+            <p class="{{ $subtitleColor }} mt-1 font-medium">
                 {{ $subtitle }}
-
             </p>
 
         @endif

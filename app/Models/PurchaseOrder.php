@@ -13,6 +13,7 @@ class PurchaseOrder extends Model
     protected $table = 'purchase_orders';
 
     protected $fillable = [
+        'branch_id',
         'po_number',
         'supplier_id',
         'po_date',
@@ -40,4 +41,10 @@ class PurchaseOrder extends Model
     {
         return $this->hasMany(PurchaseOrderItem::class, 'purchase_order_id');
     }
+
+    // Relasi ke Cabang (Branch)
+    // public function branch(): BelongsTo
+    // {
+    //     return $this->belongsTo(Branch::class);
+    // }
 }

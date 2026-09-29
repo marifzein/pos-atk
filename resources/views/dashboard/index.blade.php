@@ -94,7 +94,7 @@
     </div>
 
     <!-- KPI 5: Item Perlu Kulakan (Klik -> products.index?stock=low) -->
-    <a href="{{ route('products.index', ['stock' => 'low']) }}" class="bg-white rounded-2xl shadow-sm p-5 border border-slate-100 flex flex-col justify-between transition hover:border-amber-300 hover:shadow-md group">
+    <a href="{{ route('products.index', ['stock' => 'low','type' => 'barang',]) }}" class="bg-white rounded-2xl shadow-sm p-5 border border-slate-100 flex flex-col justify-between transition hover:border-amber-300 hover:shadow-md group">
         <div>
             <div class="flex items-center justify-between mb-2">
                 <span class="text-xs font-bold uppercase tracking-wider text-slate-400 group-hover:text-amber-600">Stok Habis</span>

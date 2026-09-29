@@ -4,7 +4,7 @@
 
 @section('content')
 
-<x-page-header title="Rincian Penerimaan Barang" :subtitle="'No. Bukti: ' . $penerimaan->no_penerimaan">
+<x-page-header title="Rincian Penerimaan Barang" :subtitle="'No. Bukti: ' . $penerimaan->no_penerimaan . ($penerimaan->branch ? ' - ' . $penerimaan->branch->name : '')">
     <x-slot:action>
         <div class="flex gap-2">
             <a href="{{ route('penerimaan.index') }}">
@@ -108,7 +108,7 @@
 
         <tbody>
             @php $grandTotal = 0; @endphp
-            @foreach($items as $index => $item)
+            @foreach($penerimaan->items as $index => $item)
                 @php 
                     $subtotal = $item->qty_terima * $item->harga_beli; 
                     $grandTotal += $subtotal;
@@ -116,8 +116,8 @@
                 <tr class="hover:bg-slate-50 border-b">
                     <td class="p-3 text-sm text-slate-500 font-semibold">{{ $index + 1 }}</td>
                     <td class="p-3 text-sm">
-                        <div class="font-bold text-slate-800">{{ $item->name }}</div>
-                        <div class="text-xs text-slate-400 font-medium">{{ $item->sku }}</div>
+                        <div class="font-bold text-slate-800">{{ $item->product->name ?? '-' }}</div>
+                        <div class="text-xs text-slate-400 font-medium">{{ $item->product->sku ?? '-' }}</div>
                         @if($item->qty_po == 0)
                             <x-badge color="purple" class="mt-1 text-[10px] px-1.5 py-0.5">Item Luar PO</x-badge>
                         @endif

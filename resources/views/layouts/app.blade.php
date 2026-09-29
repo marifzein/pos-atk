@@ -8,6 +8,15 @@
     <link rel="shortcut icon" href="{{ asset('favicon.ico') }}" type="image/x-icon">
     <link rel="icon" href="{{ asset('favicon.ico') }}" type="image/x-icon">
 
+    <!-- PWA Meta Assets -->
+    <link rel="manifest" href="{{ asset('manifest.json') }}">
+    <meta name="theme-color" content="#ffffff">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="TataKas">
+    <link rel="apple-touch-icon" href="{{ asset('images/icons/icon-192x192.png') }}">
+    <!-- PWA Meta Assets end-->
+
     <link rel="stylesheet" href="{{ asset('css/fonts.css') }}">
 
 
@@ -62,7 +71,7 @@
 
     
     <script>
-    const menus = ['kasir', 'master', 'inventory', 'laporan', 'system', 'akunting', 'transaksi'];
+    const menus = ['kasir', 'layanan', 'master', 'inventory', 'laporan', 'system', 'akunting', 'transaksi'];
 
     function toggleMenu(name){
         menus.forEach(function(item){
@@ -115,6 +124,18 @@
         }
     });
     </script>
+
+    <!-- Registrasi Service Worker PWA -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js')
+                    .then((reg) => console.log('PWA Service Worker Aktif:', reg.scope))
+                    .catch((err) => console.error('PWA Gagal:', err));
+            });
+        }
+    </script>
+
     @stack('scripts')
 </body>
 </html>

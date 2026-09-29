@@ -4,29 +4,61 @@ namespace App\Http\Controllers;
 
 use App\Models\Product;
 use App\Models\Transaction;
-use App\Models\TransactionDetail;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
+use Carbon\Carbon;
 
 class DashboardController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $today = today();
+        $user = Auth::user();
+        // JIKA STAFF JASA -> LEMPAR LANGSUNG KE PESANAN JASA
+        if ($user->role === 'Staff Jasa') {
+            return redirect()->route('pesanan-jasa.index');
+        }
 
-        // 1. Total Cash Inflow & Total Jumlah Transaksi Lunas Hari Ini
+        // JIKA STAFF BARANG -> LEMPAR LANGSUNG KE PESANAN BARANG
+        if ($user->role === 'Staff Barang') {
+            return redirect()->route('pesanan-barang.index');
+        }
+
+        // 1. Tentukan Range Tanggal Berdasarkan Request Filter
+        $period = $request->get('period', 'today'); // default: today
+        $startDate = null;
+        $endDate = null;
+
+        if ($period === 'today') {
+            $startDate = Carbon::today()->startOfDay();
+            $endDate = Carbon::today()->endOfDay();
+        } elseif ($period === 'this_week') {
+            $startDate = Carbon::now()->startOfWeek();
+            $endDate = Carbon::now()->endOfWeek();
+        } elseif ($period === 'this_month') {
+            $startDate = Carbon::now()->startOfMonth();
+            $endDate = Carbon::now()->endOfMonth();
+        } elseif ($period === 'custom') {
+            $startDate = $request->start_date ? Carbon::parse($request->start_date)->startOfDay() : Carbon::today()->startOfDay();
+            $endDate = $request->end_date ? Carbon::parse($request->end_date)->endOfDay() : Carbon::today()->endOfDay();
+        } else {
+            $startDate = Carbon::today()->startOfDay();
+            $endDate = Carbon::today()->endOfDay();
+        }
+
+        // 2. Total Cash Inflow & Total Jumlah Transaksi Lunas
         $transaksiLunasQuery = Transaction::where('status', 'LUNAS')
-            ->whereDate('created_at', $today);
+            ->whereBetween('created_at', [$startDate, $endDate]);
 
         $totalCashInflow = (clone $transaksiLunasQuery)->sum('grand_total');
         $totalCountInflow = (clone $transaksiLunasQuery)->count();
 
-        // 2 & 3. Omset + Jumlah Transaksi Unik per Tipe (Barang & Jasa)
+        // 3. Omset & Jumlah Transaksi Unik per Tipe (Barang & Jasa)
         $omsetPerType = DB::table('transaction_details')
             ->join('transactions', 'transaction_details.transaction_id', '=', 'transactions.id')
             ->join('products', 'transaction_details.product_id', '=', 'products.id')
             ->where('transactions.status', 'LUNAS')
-            ->whereDate('transactions.created_at', $today)
+            ->whereBetween('transactions.created_at', [$startDate, $endDate])
             ->select(
                 'products.type', 
                 DB::raw('SUM(transaction_details.subtotal) as total_omset'),
@@ -42,14 +74,14 @@ class DashboardController extends Controller
         $omsetJasa = $omsetPerType->get('jasa')->total_omset ?? 0;
         $countTrxJasa = $omsetPerType->get('jasa')->total_trx ?? 0;
 
-        // 4. Laba Kotor Hari Ini
+        // 4. Laba Kotor
         $labaKotor = DB::table('transaction_details')
             ->join('transactions', 'transaction_details.transaction_id', '=', 'transactions.id')
             ->where('transactions.status', 'LUNAS')
-            ->whereDate('transactions.created_at', $today)
+            ->whereBetween('transactions.created_at', [$startDate, $endDate])
             ->sum(DB::raw('transaction_details.subtotal - (transaction_details.harga_beli * transaction_details.qty)'));
 
-        // 5. Item Perlu Kulakan
+        // 5. Item Perlu Kulakan (Kondisi Stok Realtime Saat Ini)
         $emptyStockCount = Product::where('type', 'barang')
             ->where('is_active', 1)
             ->where('stock', '<=', 0)
@@ -63,70 +95,71 @@ class DashboardController extends Controller
 
         $totalPerluKulakan = $emptyStockCount + $lowStockCount;
 
-        return view('dashboard.index', compact(
-            'totalCashInflow',
-            'totalCountInflow',
-            'omsetBarang',
-            'countTrxBarang',
-            'omsetJasa',
-            'countTrxJasa',
-            'labaKotor',
-            'totalPerluKulakan',
-            'emptyStockCount',
-            'lowStockCount'
-        ));
-    }
-    public function index2()
-    {
-        $today = today();
+        // return view('dashboard.index', compact(
+        //     'period',
+        //     'startDate',
+        //     'endDate',
+        //     'totalCashInflow',
+        //     'totalCountInflow',
+        //     'omsetBarang',
+        //     'countTrxBarang',
+        //     'omsetJasa',
+        //     'countTrxJasa',
+        //     'labaKotor',
+        //     'totalPerluKulakan',
+        //     'emptyStockCount',
+        //     'lowStockCount'
+        // ));
 
-        // 1. Total Cash Inflow (Arus Kas Masuk Hari Ini Dari Transaksi Lunas)
-        $totalCashInflow = Transaction::where('status', 'LUNAS')
-            ->whereDate('created_at', $today)
-            ->sum('grand_total');
+        // --- DATA CHART ---
 
-        // 2 & 3. Omset Barang & Jasa Hari Ini
-        $omsetPerType = DB::table('transaction_details')
-            ->join('transactions', 'transaction_details.transaction_id', '=', 'transactions.id')
-            ->join('products', 'transaction_details.product_id', '=', 'products.id')
-            ->where('transactions.status', 'LUNAS')
-            ->whereDate('transactions.created_at', $today)
-            ->select('products.type', DB::raw('SUM(transaction_details.subtotal) as total_omset'))
-            ->groupBy('products.type')
-            ->pluck('total_omset', 'type');
+        // CHART 1: Tren Penjualan
+        $dateFormat = $period === 'today' ? '%H:00' : '%Y-%m-%d';
+        $salesTrend = Transaction::where('status', 'LUNAS')
+            ->whereBetween('created_at', [$startDate, $endDate])
+            ->select(
+                DB::raw("DATE_FORMAT(created_at, '{$dateFormat}') as label"),
+                DB::raw('SUM(grand_total) as total')
+            )
+            ->groupBy('label')
+            ->orderBy('label', 'ASC')
+            ->pluck('total', 'label');
 
-        $omsetBarang = $omsetPerType->get('barang', 0);
-        $omsetJasa   = $omsetPerType->get('jasa', 0);
-
-        // 4. Laba Kotor Hari Ini (Total Subtotal Detail - Total HPP Detail)
-        $labaKotor = DB::table('transaction_details')
+        // CHART 2: Top 5 Produk Terlaris
+        $topProducts = DB::table('transaction_details')
             ->join('transactions', 'transaction_details.transaction_id', '=', 'transactions.id')
             ->where('transactions.status', 'LUNAS')
-            ->whereDate('transactions.created_at', $today)
-            ->sum(DB::raw('transaction_details.subtotal - (transaction_details.harga_beli * transaction_details.qty)'));
+            ->whereBetween('transactions.created_at', [$startDate, $endDate])
+            ->select('transaction_details.nama_barang', DB::raw('SUM(transaction_details.qty) as total_qty'))
+            ->groupBy('transaction_details.nama_barang')
+            ->orderBy('total_qty', 'DESC')
+            ->limit(5)
+            ->get();
 
-        // 5. Item Perlu Kulakan (Barang aktif dengan stok <= min_stock)
-        $emptyStockCount = Product::where('type', 'barang')
-            ->where('is_active', 1)
-            ->where('stock', '<=', 0)
-            ->count();
+        // CHART 3: Metode Pembayaran
+        $paymentMethods = Transaction::where('status', 'LUNAS')
+            ->whereBetween('created_at', [$startDate, $endDate])
+            ->select(
+                DB::raw('SUM(cash) as Tunai'),
+                DB::raw('SUM(card) as Non_Tunai'),
+                DB::raw('SUM(voucher) as Voucher')
+            )
+            ->first();
 
-        $lowStockCount = Product::where('type', 'barang')
-            ->where('is_active', 1)
-            ->where('stock', '>', 0)
-            ->whereColumn('stock', '<=', 'min_stock')
-            ->count();
-
-        $totalPerluKulakan = $emptyStockCount + $lowStockCount;
+        $paymentData = [
+            'Tunai' => (float) ($paymentMethods->Tunai ?? 0),
+            'Non-Tunai / Card' => (float) ($paymentMethods->Non_Tunai ?? 0),
+            'Voucher' => (float) ($paymentMethods->Voucher ?? 0),
+        ];
 
         return view('dashboard.index', compact(
-            'totalCashInflow',
-            'omsetBarang',
-            'omsetJasa',
-            'labaKotor',
-            'totalPerluKulakan',
-            'emptyStockCount',
-            'lowStockCount'
+            'period', 'startDate', 'endDate',
+            'totalCashInflow', 'totalCountInflow',
+            'omsetBarang', 'countTrxBarang',
+            'omsetJasa', 'countTrxJasa',
+            'labaKotor', 'totalPerluKulakan',
+            'emptyStockCount', 'lowStockCount',
+            'salesTrend', 'topProducts', 'paymentData'
         ));
     }
 }

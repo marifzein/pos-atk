@@ -186,31 +186,25 @@
                     <td class="p-3 text-right font-bold text-slate-900 font-mono">
                         Rp {{ number_format($order->orderItems?->sum('subtotal') ?? 0, 0, ',', '.') }}
                     </td>
-<td class="p-3 text-center">
-    <div class="flex items-center justify-center gap-1.5">
-        <!-- Tombol Detail (Ukuran Dikecilkan: py-1 px-2.5 text-xs) -->
-        <a href="{{ route('pesanan-jasa.show', $order->id) }}" 
-           class="inline-flex items-center justify-center gap-1 bg-emerald-600 hover:bg-emerald-700 text-white font-medium text-xs px-2.5 py-1 rounded-md transition shadow-sm">
-            <i class="ri-file-text-line"></i> Detail
-        </a>
+                    <td class="p-3 text-center">
+                        <div class="flex items-center justify-center gap-1.5">
+                            <!-- Tombol Detail (Ukuran Dikecilkan: py-1 px-2.5 text-xs) -->
+                            <a href="{{ route('pesanan-jasa.show', $order->id) }}" 
+                            class="inline-flex items-center justify-center gap-1 bg-emerald-600 hover:bg-emerald-700 text-white font-medium text-xs px-2.5 py-1 rounded-md transition shadow-sm">
+                                <i class="ri-file-text-line"></i> Detail
+                            </a>
 
-        @if(strtolower($order->status) == 'order')
-            <!-- Tombol Batal -->
-            <button type="button" @click="openModal('{{ $order->id }}', '{{ $order->no_pesanan }}')" class="inline-flex items-center px-2.5 py-1.5 bg-red-600 hover:bg-red-700 text-white text-xs font-medium rounded-md shadow-sm transition">
-                                    <i class="ri-close-circle-line mr-1"></i> Batal
+                            {{-- @if(strtolower($order->status) == 'order')
+                                <!-- Tombol Batal -->
+                                <button type="button" @click="openModal('{{ $order->id }}', '{{ $order->no_pesanan }}')" class="inline-flex items-center px-2.5 py-1.5 bg-red-600 hover:bg-red-700 text-white text-xs font-medium rounded-md shadow-sm transition">
+                                                        <i class="ri-close-circle-line mr-1"></i> Batal
                                 </button>
-        @else
-            <!-- Spacer Transparan untuk Menjaga Alignment Sejajar -->
-            <span class="w-[62px] inline-block pointer-events-none opacity-0" aria-hidden="true"></span>
-        @endif
-    </div>
-</td>
-
-
-
-
-
-                    
+                            @else
+                                <!-- Spacer Transparan untuk Menjaga Alignment Sejajar -->
+                                <span class="w-[62px] inline-block pointer-events-none opacity-0" aria-hidden="true"></span>
+                            @endif --}}
+                        </div>
+                    </td>
                 </tr>
             @empty
                 <tr>
@@ -247,7 +241,7 @@
             No. WO: <span class="font-bold text-slate-800" x-text="selectedNoWO"></span>
         </p>
 
-        <form @submit.prevent="submitBatal()">
+        <form @submit.prevent="submitBatal_jangan()">
             <div class="space-y-4">
                 <div>
                     <label class="block text-xs font-bold text-slate-600 mb-1">Alasan Pembatalan :</label>

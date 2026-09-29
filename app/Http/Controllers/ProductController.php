@@ -14,7 +14,7 @@ use Illuminate\Support\Facades\Auth;
 
 class ProductController extends Controller
 {
-    public function index(Request $request)
+    public function index2(Request $request)
     {
         $user = Auth::user();
         $branches = Branch::where('is_active', 1)->get();
@@ -69,7 +69,7 @@ class ProductController extends Controller
 
         // 4. Filter Stok
         if ($request->filled('stock')) {
-            $stockStatus = $request->stock;
+            $stockStatus = $request->stock; 
 
             $query->where(function ($q) use ($stockStatus, $selectedBranchId) {
                 $q->where('type', 'barang')->whereHas('stocks', function ($q2) use ($stockStatus, $selectedBranchId) {
@@ -93,6 +93,95 @@ class ProductController extends Controller
         return view('products.index', compact('products', 'branches', 'selectedBranchId', 'user'));
     }
 
+    public function index(Request $request)
+    {
+        $user = Auth::user();
+        $branches = Branch::where('is_active', 1)->get();
+
+        // Query utama berbasis Product
+        $query = Product::with(['supplier']);
+
+        // 1. Handling Filter Cabang & Hak Akses Role
+        $selectedBranchId = $request->branch_id;
+
+        if (!in_array(strtolower($user->role), ['owner', 'admin', 'developer']) && $user->branch_id) {
+            $selectedBranchId = $user->branch_id;
+        }
+
+        $stockStatus = $request->stock;
+
+        // 2. Eager Load Relasi 'stocks' DENGAN Filter Cabang & Kondisi Stok
+        // Ini memastikan Blade hanya menerima cabang yang sesuai kriteria filter
+        $query->with(['stocks' => function ($q) use ($selectedBranchId, $stockStatus) {
+            $q->with('branch');
+
+            if ($selectedBranchId) {
+                $q->where('branch_id', $selectedBranchId);
+            }
+
+            if ($stockStatus) {
+                if ($stockStatus === 'available') {
+                    $q->whereColumn('stock', '>', 'min_stock');
+                } elseif ($stockStatus === 'low') {
+                    $q->where('stock', '>', 0)->whereColumn('stock', '<=', 'min_stock');
+                } elseif ($stockStatus === 'empty') {
+                    $q->where('stock', '<=', 0);
+                }
+            }
+        }]);
+
+        // 3. Filter Cabang pada Query Utama
+        if ($selectedBranchId) {
+            $query->where(function ($q) use ($selectedBranchId) {
+                $q->whereHas('stocks', function ($q2) use ($selectedBranchId) {
+                    $q2->where('branch_id', $selectedBranchId);
+                });
+
+                if (!request()->filled('type') || request('type') === 'jasa') {
+                    $q->orWhere('type', 'jasa');
+                }
+            });
+        }
+
+        // 4. Filter Pencarian Teks
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                ->orWhere('barcode', 'like', "%{$search}%")
+                ->orWhere('sku', 'like', "%{$search}%")
+                ->orWhere('brand', 'like', "%{$search}%");
+            });
+        }
+
+        // 5. Filter Tipe (Barang / Jasa)
+        if ($request->filled('type')) {
+            $query->where('type', $request->type);
+        }
+
+        // 6. Filter Stok pada Query Utama (whereHas)
+        if ($stockStatus) {
+            $query->where(function ($q) use ($stockStatus, $selectedBranchId) {
+                $q->where('type', 'barang')->whereHas('stocks', function ($q2) use ($stockStatus, $selectedBranchId) {
+                    if ($selectedBranchId) {
+                        $q2->where('branch_id', $selectedBranchId);
+                    }
+
+                    if ($stockStatus === 'available') {
+                        $q2->whereColumn('stock', '>', 'min_stock');
+                    } elseif ($stockStatus === 'low') {
+                        $q2->where('stock', '>', 0)->whereColumn('stock', '<=', 'min_stock');
+                    } elseif ($stockStatus === 'empty') {
+                        $q2->where('stock', '<=', 0);
+                    }
+                });
+            });
+        }
+
+        $products = $query->latest()->paginate(15)->withQueryString();
+
+        return view('products.index', compact('products', 'branches', 'selectedBranchId', 'user'));
+    }
     // pencarian ploduk2 
     public function search(Request $request)
     {
@@ -102,7 +191,13 @@ class ProductController extends Controller
             return response()->json([]);
         }
 
+        $branchId = Auth::user()->branch_id;
+
         $products = Product::query()
+        ->leftJoin('product_stocks', function ($join) use ($branchId) {
+            $join->on('products.id', '=', 'product_stocks.product_id')
+                 ->where('product_stocks.branch_id', '=', $branchId);
+        })
         ->where(function ($query) use ($q) {
             $query->where('products.name', 'like', "%{$q}%")
                   ->orWhere('products.sku', 'like', "%{$q}%")
@@ -118,7 +213,8 @@ class ProductController extends Controller
             'products.price',
             'products.satuan',
             'products.type',
-            'products.stock'
+            // Jika jasa, stok tampilkan '-' atau 0, jika barang ambil stok cabang (default 0 jika null)
+            DB::raw("IF(products.type = 'jasa', '-', COALESCE(product_stocks.stock, 0)) as stock")
             ]);
 
         return response()->json($products);
@@ -132,25 +228,38 @@ class ProductController extends Controller
             return response()->json([]);
         }
 
+        // Ambil branch_id dari parameter query request
+        $branchId = $request->branch_id;
+
         $products = Product::query()
-        ->where(function ($query) use ($q) {
-            $query->where('products.name', 'like', "%{$q}%")
-                  ->orWhere('products.sku', 'like', "%{$q}%")
-                  ->orWhere('products.barcode', 'like', "%{$q}%");
-        })
-        ->where('products.type', 'barang')    // Filter hanya tipe barang
-        ->where('products.is_active', 1) // Filter hanya produk aktif
-        ->limit(10)
-        ->get([
-            'products.id',
-            'products.sku',
-            'products.barcode',
-            'products.name',
-            'products.purchase_price',
-            'products.price',
-            'products.satuan',
-            'products.type',
-            'products.stock'
+            // Join hanya jika branch_id dikirimkan
+            ->when($branchId, function ($joinQuery) use ($branchId) {
+                $joinQuery->leftJoin('product_stocks', function ($join) use ($branchId) {
+                    $join->on('products.id', '=', 'product_stocks.product_id')
+                         ->where('product_stocks.branch_id', '=', $branchId);
+                });
+            })
+            ->where(function ($query) use ($q) {
+                $query->where('products.name', 'like', "%{$q}%")
+                      ->orWhere('products.sku', 'like', "%{$q}%")
+                      ->orWhere('products.barcode', 'like', "%{$q}%");
+            })
+            ->where('products.type', 'barang')
+            ->where('products.is_active', 1)
+            ->limit(10)
+            ->get([
+                'products.id',
+                'products.sku',
+                'products.barcode',
+                'products.name',
+                'products.purchase_price',
+                'products.price',
+                'products.satuan',
+                'products.type',
+                // Jika branch_id dikirim, ambil stok cabang real. Jika tidak, default 0
+                $branchId 
+                    ? DB::raw('COALESCE(product_stocks.stock, 0) as stock') 
+                    : DB::raw('0 as stock')
             ]);
 
         return response()->json($products);

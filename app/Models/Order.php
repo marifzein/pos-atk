@@ -69,4 +69,9 @@ class Order extends Model
     {
         return $this->hasOne(PembatalanOrder::class, 'order_id');
     }
+
+    public function payments()
+    {
+        return $this->hasMany(OrderPayment::class, 'order_id');
+    }
 }

@@ -14,6 +14,9 @@
     <!-- Tombol Navigasi Header -->
     
     <div class="flex gap-2 mb-4 justify-end items-center">
+
+        
+
     {{-- <a href="/kasir/history"> --}}
     <a href="{{ url('/kasir/history') }}">
          <x-button color="secondary" class="w-full sm:w-auto justify-center">
@@ -22,18 +25,36 @@
     </a>
 
     @if(strtolower($transaction->status) !== 'batal')
-        <a href="{{ route('kasir.print',$transaction->id) }}" target="_blank">
+        @php
+            $hasDp = $transaction->order && $transaction->order->payments()->exists();
+            $printUrl = $hasDp 
+                ? url('/kasir/pelunasan/' . $transaction->id . '/print') 
+                : route('kasir.print', $transaction->id);
+        @endphp
+
+        <a href="{{ $printUrl }}" target="_blank">
             <x-button color="green" class="w-full sm:w-auto justify-center">
                 <i class="ri-printer-line"></i> Cetak
             </x-button>
         </a>
     @endif
+    
+    {{-- @if(strtolower($transaction->status) !== 'batal')
+        <a href="{{ route('kasir.print',$transaction->id) }}" target="_blank">
+            <x-button color="green" class="w-full sm:w-auto justify-center">
+                <i class="ri-printer-line"></i> Cetak
+            </x-button>
+        </a>
+    @endif --}}
 </div>
 
     <div class="bg-white rounded-2xl shadow-sm p-4 sm:p-6 border border-slate-100">
 
         <h1 class="text-xl sm:text-2xl font-bold text-slate-800 mb-4 sm:mb-6">
             Detail Nota
+            <span class="text-orange-600 font-semibold text-sm sm:text-lg">
+                - {{ $transaction->branch?->name ?? '-' }}
+            </span>
         </h1>
 
         <!-- Info Transaksi & Pelanggan -->
@@ -138,7 +159,81 @@
         </div>
 
         <!-- RINCIAN PEMBAYARAN -->
+        <!-- RINCIAN PEMBAYARAN -->
         <div class="flex justify-end pt-2 border-t border-slate-100">
+            <div class="w-full sm:w-80 space-y-2 text-sm bg-slate-50 sm:bg-transparent p-4 sm:p-0 rounded-xl">
+                <div class="flex justify-between text-slate-600">
+                    <span>Subtotal</span>
+                    <span class="font-medium text-slate-800">Rp {{ number_format($transaction->subtotal, 0, ',', '.') }}</span>
+                </div>
+
+                @if(($transaction->diskon ?? 0) > 0)
+                <div class="flex justify-between text-red-600 font-medium">
+                    <span>Diskon / Potongan</span>
+                    <span>- Rp {{ number_format($transaction->diskon, 0, ',', '.') }}</span>
+                </div>
+                @endif
+                
+                <div class="flex justify-between font-extrabold text-base text-slate-900 bg-slate-100 p-2 rounded-lg">
+                    <span>Total Tagihan</span>
+                    <span>Rp {{ number_format($transaction->grand_total, 0, ',', '.') }}</span>
+                </div>
+
+                {{-- TAMPILKAN HISTORI DP / UANG MUKA JIKA BERASAL DARI SP --}}
+                @if($transaction->order && $transaction->order->payments->where('no_bukti_bayar', '!=', $transaction->no_nota)->count() > 0)
+                    @php
+                        $dpPayments = $transaction->order->payments->where('no_bukti_bayar', '!=', $transaction->no_nota);
+                        $totalDp = $dpPayments->sum('nominal');
+                    @endphp
+                    <div class="bg-indigo-50/70 p-2.5 rounded-lg border border-indigo-100 space-y-1 text-xs text-indigo-900 my-1">
+                        <div class="font-bold uppercase tracking-wider text-[10px] text-indigo-700">Uang Muka (DP) Terdahulu:</div>
+                        @foreach($dpPayments as $dp)
+                            <div class="flex justify-between font-mono">
+                                <span>• {{ strtoupper($dp->metode_pembayaran) }} ({{ \Carbon\Carbon::parse($dp->created_at)->format('d/m H:i') }})</span>
+                                <span class="font-semibold">- Rp {{ number_format($dp->nominal, 0, ',', '.') }}</span>
+                            </div>
+                        @endforeach
+                        <div class="flex justify-between font-bold border-t border-indigo-200/80 pt-1 text-slate-800">
+                            <span>Total DP Masuk</span>
+                            <span>- Rp {{ number_format($totalDp, 0, ',', '.') }}</span>
+                        </div>
+                    </div>
+                @endif
+
+                {{-- PEMBAYARAN SAAT PELUNASAN / NOTA INI --}}
+                <div class="flex justify-between text-slate-600">
+                    <span>Bayar Saat Ambil (Cash)</span>
+                    <span class="font-medium text-slate-800">Rp {{ number_format($transaction->cash, 0, ',', '.') }}</span>
+                </div>
+                @if(($transaction->card ?? 0) > 0)
+                <div class="flex justify-between text-slate-600">
+                    <span>Bayar Saat Ambil (Non-Cash)</span>
+                    <span class="font-medium text-slate-800">Rp {{ number_format($transaction->card, 0, ',', '.') }}</span>
+                </div>
+                @endif
+                @if(($transaction->voucher ?? 0) > 0)
+                <div class="flex justify-between text-slate-600">
+                    <span>Voucher</span>
+                    <span class="font-medium text-slate-800">Rp {{ number_format($transaction->voucher, 0, ',', '.') }}</span>
+                </div>
+                @endif
+
+                @if(($transaction->hutang ?? 0) > 0)
+                <div class="flex justify-between text-amber-700 font-semibold bg-amber-50 py-1 rounded px-2">
+                    <span>Kasbon / Kurang</span>
+                    <span>Rp {{ number_format($transaction->hutang, 0, ',', '.') }}</span>
+                </div>
+                @endif
+
+                <hr class="border-slate-200 my-2">
+                
+                <div class="flex justify-between text-emerald-600 font-bold text-base">
+                    <span>Kembalian</span>
+                    <span>Rp {{ number_format($transaction->kembalian, 0, ',', '.') }}</span>
+                </div>
+            </div>
+        </div>
+        {{-- <div class="flex justify-end pt-2 border-t border-slate-100">
             <div class="w-full sm:w-80 space-y-2 text-sm bg-slate-50 sm:bg-transparent p-4 sm:p-0 rounded-xl">
                 <div class="flex justify-between text-slate-600">
                     <span>Subtotal</span>
@@ -188,7 +283,7 @@
                     <span>Rp {{ number_format($transaction->kembalian,0,',','.') }}</span>
                 </div>
             </div>
-        </div>
+        </div> --}}
 
     </div>
 

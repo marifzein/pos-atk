@@ -9,12 +9,28 @@
     subtitle="Kelola penyesuaian stok barang rusak, cacat, atau expired"
 >
     <x-slot:action>
-        <a href="{{ route('stock-adjustments.create') }}">
-            <x-button color="primary" full>
-                <i class="ri-add-line"></i>
-                Buat SA Baru
-            </x-button>
-        </a>
+        <div class="flex items-center gap-3">
+
+            {{-- Dropdown Pilih Cabang --}}
+            <div class="w-56">
+                <select 
+                    id="select-branch-sa" 
+                    class="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 text-sm font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 shadow-sm"
+                >
+                    {{-- <option value="">-- Pilih Cabang --</option> --}}
+                    @foreach($branches as $branch)
+                        <option value="{{ $branch->id }}">{{ $branch->name }}</option>
+                    @endforeach
+                </select>
+            </div>
+
+            {{-- <a href="{{ route('stock-adjustments.create') }}"> --}}
+                <x-button color="primary" full onclick="goToCreateSA()">
+                    <i class="ri-add-line"></i>
+                    Buat SA Baru
+                </x-button>
+            {{-- </a> --}}
+        </div>
     </x-slot:action>
 </x-page-header>
 
@@ -114,5 +130,30 @@
         {{ $adjustments->links() }}
     </div>
 </x-card>
+
+@push('scripts')
+<script>
+function goToCreateSA() {
+    const branchSelect = document.getElementById('select-branch-sa');
+    const branchId = branchSelect.value;
+    const branchName = branchSelect.options[branchSelect.selectedIndex].text.trim();
+
+    Swal.fire({
+        title: 'Konfirmasi Cabang',
+        text: `Apakah anda akan membuat SA di cabang ${branchName}?`,
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#059669',
+        cancelButtonColor: '#64748b',
+        confirmButtonText: 'Ya, Lanjut!',
+        cancelButtonText: 'Batal'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            window.location.href = "{{ route('stock-adjustments.create') }}?branch_id=" + branchId;
+        }
+    });
+}
+</script>
+@endpush
 
 @endsection

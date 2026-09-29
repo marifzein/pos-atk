@@ -14,6 +14,7 @@ class StockOpname extends Model
     protected $table = 'stock_opnames';
 
     protected $fillable = [
+        'branch_id',
         'opname_no',
         'opname_date',
         'user_name',
@@ -22,6 +23,11 @@ class StockOpname extends Model
         'finished_at',
     ];
 
+    public function branch()
+    {
+        return $this->belongsTo(Branch::class, 'branch_id');
+    }
+    
     public function details()
     {
         return $this->hasMany(StockOpnameDetail::class, 'stock_opname_id');

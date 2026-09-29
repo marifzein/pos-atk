@@ -77,7 +77,27 @@ text-align:center;
 
 <body>
 
-<h2>
+{{-- Header / Kop Laporan Toko --}}
+<div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px;">
+    <div>
+        <div style="font-size: 18px; font-weight: bold; text-transform: uppercase; color: #1e293b;">
+            {{ $setting->nama_toko ?? 'TataKas' }}
+        </div>
+        @if(isset($setting->alamat))
+            <div style="font-size: 11px; color: #64748b; max-width: 450px; line-height: 1.4;">
+                {{ $setting->alamat }} {{ $setting->telepon ? ' | Telp: ' . $setting->telepon : '' }}
+            </div>
+        @endif
+    </div>
+    <div style="text-align: right;">
+        <h2 style="margin: 0; font-size: 16px; color: #0f172a;">LAPORAN STOCK OPNAME</h2>
+        <small style="color: #64748b;">Dicetak: {{ now()->format('d-m-Y H:i') }}</small>
+    </div>
+</div>
+
+<hr style="border: 0; border-top: 2px solid #0f172a; margin-bottom: 15px;">
+
+{{-- <h2>
 
 LAPORAN STOCK OPNAME
 
@@ -90,7 +110,7 @@ Dicetak :
 
 </small>
 
-<hr>
+<hr> --}}
 
 <table style="width:40%;">
 
@@ -146,13 +166,13 @@ Operator
 
 <td style="font-weight:bold;">
 
-Status
+Cabang
 
 </td>
 
 <td>
 
-{{ $stockOpname->status }}
+{{ $stockOpname->branch->name }}
 
 </td>
 

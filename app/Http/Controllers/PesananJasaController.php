@@ -25,7 +25,7 @@ class PesananJasaController extends Controller
         }
 
        // Generate No Pesanan Jasa Otomatis via Helper (Format: WO-KODECABANG-YYYYMMDD-0001)
-        // $nomorWO = DocumentNumber::generate('orders', 'no_pesanan', 'WO');
+        // $nomorWO = DocumentNumber::generate('orders', 'no_pesanan', 'SP');
         // 1. Strict Check
         if (!$user || !$user->branch_id) {
             return redirect()->back()->with('error', 'Maaf, cabang tidak terdeteksi. Silahkan login ulang.');
@@ -33,7 +33,7 @@ class PesananJasaController extends Controller
 
         try {
             // Generate No WO otomatis via Helper
-            $nomorWO = DocumentNumber::generate('orders', 'no_pesanan', 'WO');
+            $nomorWO = DocumentNumber::generate('orders', 'no_pesanan', 'SP');
         } catch (\Exception $e) {
             return redirect()->back()->with('error', $e->getMessage());
         }
@@ -75,7 +75,7 @@ class PesananJasaController extends Controller
         try {
             
             $branchId = $user->branch_id;   
-            $no_pesanan = DocumentNumber::generate('orders', 'no_pesanan', 'WO');
+            $no_pesanan = DocumentNumber::generate('orders', 'no_pesanan', 'SP');
 
             // Cari customer berdasarkan kode_pelanggan jika dikirim
             $customer = null;
@@ -208,7 +208,7 @@ class PesananJasaController extends Controller
     }
 
     // Method pembatalan pesanan jasa
-    public function cancelOrder(Request $request, $id)
+    public function cancelOrder_jangan_dulu(Request $request, $id)
     {
         $request->validate([
             'alasan' => 'required|string|max:500',

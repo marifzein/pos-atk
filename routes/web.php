@@ -30,17 +30,26 @@ use App\Http\Controllers\StockCardController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\SettingController;
 use App\Http\Controllers\BranchController;
-
+use App\Http\Controllers\BackupController;
+use App\Http\Controllers\OrderKasirController;
+use App\Http\Controllers\Acc\CashExpenseController;
 
 
 
 Route::get('/', function () {
-    // Jika user sudah login, langsung lempar ke dashboard
     if (auth()->check()) {
-        return redirect()->route('dashboard');
+        $role = strtolower(auth()->user()->role);
+
+        // Mapping role ke route tujuannya
+        return match ($role) {
+            'staff barang' => redirect()->route('pesanan-barang.index'),
+            'staff jasa'   => redirect()->route('pesanan-jasa.index'),
+            'kasir'        => redirect()->route('kasir.index'),
+            'spv'   => redirect()->route('purchasing.index'), // Resource purchasing
+            default        => redirect()->route('dashboard'),
+        };
     }
     
-    // Jika belum login, langsung lempar ke halaman form login kustom kamu
     return redirect()->route('login');
 });
 
@@ -49,12 +58,12 @@ Route::get('/', function () {
 // })->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::get('/dashboard', [DashboardController::class, 'index'])
-    ->middleware(['auth', 'verified'])
+    ->middleware(['auth', 'verified','can:akses-owner-admin'])
     ->name('dashboard');
 
 
 // Route::middleware('auth')->group(function () {
-Route::middleware(['auth', \App\Http\Middleware\CheckCommissionScheme::class])->group(function () {
+Route::middleware(['auth'])->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
@@ -64,33 +73,57 @@ Route::middleware(['auth', \App\Http\Middleware\CheckCommissionScheme::class])->
     Route::put('/password/update', [ProfileController::class, 'updatePassword'])->name('password.password-update');
 
 
-    // Pesanan Jasa
-    Route::get('/pesanan-jasa', [PesananJasaController::class, 'index'])->name('pesanan-jasa.index');
-    Route::post('/api/pesanan-jasa', [PesananJasaController::class, 'store'])->name('pesanan-jasa.store');
-    Route::get('/pesanan-jasa/riwayat', [PesananJasaController::class, 'history'])->name('pesanan-jasa.history');
-    Route::get('/pesanan-jasa/{order}', [PesananJasaController::class, 'show'])->name('pesanan-jasa.show');
-    Route::post('/pesanan-jasa/{id}/batal', [PesananJasaController::class, 'cancelOrder'])->name('pesanan-jasa.batal');
+    //  staf brg dan jasa sama routesnya
+     Route::middleware(['can:akses-pesanan'])->group(function () {
+        Route::get('/pesanan-jasa/riwayat', [PesananJasaController::class, 'history'])->name('pesanan-jasa.history');
+    });
+
+    // Pesanan Jasa // staff jasa, owner, admin
+     Route::middleware(['can:akses-pesanan-jasa'])->group(function () {
+        Route::get('/pesanan-jasa', [PesananJasaController::class, 'index'])->name('pesanan-jasa.index');
+        Route::post('/api/pesanan-jasa', [PesananJasaController::class, 'store'])->name('pesanan-jasa.store');
+        Route::get('/pesanan-jasa/{order}', [PesananJasaController::class, 'show'])->name('pesanan-jasa.show');
+        Route::post('/pesanan-jasa/{id}/batal', [PesananJasaController::class, 'cancelOrder'])->name('pesanan-jasa.batal');
+
+     });
     
-    // Route Web Views Pesanan Barang
-    Route::get('/pesanan-barang', [PesananBarangController::class, 'index'])->name('pesanan-barang.index');
-    Route::post('/api/pesanan-barang', [PesananBarangController::class, 'store'])->name('api.pesanan-barang.store');
-    Route::get('/pesanan-barang/history', [PesananBarangController::class, 'history'])->name('pesanan-barang.history');
-    Route::get('/pesanan-barang/{order}', [PesananBarangController::class, 'show'])->name('pesanan-barang.show');
-    Route::post('/pesanan-barang/{id}/batal', [PesananBarangController::class, 'cancelOrder'])->name('pesanan-barang.cancel');
+    
+    
+    // staff barang , owner, admin
+    Route::middleware(['can:akses-pesanan-barang'])->group(function () {
+        // Route Web Views Pesanan Barang
+        Route::get('/pesanan-barang', [PesananBarangController::class, 'index'])->name('pesanan-barang.index');
+        Route::post('/api/pesanan-barang', [PesananBarangController::class, 'store'])->name('api.pesanan-barang.store');
+        Route::get('/pesanan-barang/history', [PesananBarangController::class, 'history'])->name('pesanan-barang.history');
+        Route::get('/pesanan-barang/{order}', [PesananBarangController::class, 'show'])->name('pesanan-barang.show');
+        Route::post('/pesanan-barang/{id}/batal', [PesananBarangController::class, 'cancelOrder'])->name('pesanan-barang.cancel');
+    });
 
     
-
+    Route::middleware(['can:akses-spv-keatas'])->group(function () {
     // INVENTORY
         // Purchase Order (PO) & Cetak PDF
         Route::resource('purchasing', PurchaseOrderController::class)->except(['destroy']);
         Route::get('purchasing/{purchasing}/print-pdf', [PurchaseOrderController::class, 'printPdf'])->name('purchasing.print-pdf');
 
         // Kartu Stok
+        
         Route::get('stock-cards', [StockCardController::class, 'index'])->name('stock-cards.index');
         Route::get('stock-cards/{product}', [StockCardController::class, 'show'])->name('stock-cards.show');
 
 
+        // Penyesuaian Stok (Stock Adjustment)
+        Route::resource('stock-adjustments', StockAdjustmentController::class)->except(['show', 'destroy']);
+        Route::post('/stock-adjustments/{stockAdjustment}/post', [StockAdjustmentController::class, 'post'])->name('stock-adjustments.post');
+        Route::get('/stock-adjustments/{stockAdjustment}/print-pdf', 
+        [StockAdjustmentController::class, 'printPdf'])->name('stock-adjustments.print-pdf');
+
+    });
+
+
         // Penerimaan Barang
+    Route::middleware(['can:akses-owner-admin' ])->group(function () {
+       
         Route::get('/penerimaan-barang', [PenerimaanBarangController::class, 'index'])->name('penerimaan.index');
         Route::get('/penerimaan-barang/create', [PenerimaanBarangController::class, 'create'])->name('penerimaan.create');
         Route::post('/penerimaan-barang', [PenerimaanBarangController::class, 'store'])->name('penerimaan.store');
@@ -101,6 +134,7 @@ Route::middleware(['auth', \App\Http\Middleware\CheckCommissionScheme::class])->
         // Stok Opname
         Route::get('/stock-opname', [StockOpnameController::class, 'index']);
         Route::post('/stock-opname/start', [StockOpnameController::class, 'start']);
+        Route::get('/stock-opname/check-active', [StockOpnameController::class, 'checkActive'])->name('stock-opname.check-active');
         Route::get('/stock-opname/{stockOpname}', [StockOpnameController::class, 'show']);
         Route::post('/stock-opname/{stockOpname}', [StockOpnameController::class, 'store']);
         Route::post('/stock-opname/{stockOpname}/finish', [StockOpnameController::class, 'finish']);
@@ -113,10 +147,10 @@ Route::middleware(['auth', \App\Http\Middleware\CheckCommissionScheme::class])->
 
         
         // Fitur Reset Stok Harian Resto (Langsung Posted) Stck opname harian otomatis reset 0
-        Route::prefix('inventory/daily-reset')->name('daily-reset.')->group(function () {
-            Route::get('/', [DailyResetStockController::class, 'index'])->name('index');
-            Route::post('/', [DailyResetStockController::class, 'store'])->name('store');
-        }); 
+        // Route::prefix('inventory/daily-reset')->name('daily-reset.')->group(function () {
+        //     Route::get('/', [DailyResetStockController::class, 'index'])->name('index');
+        //     Route::post('/', [DailyResetStockController::class, 'store'])->name('store');
+        // }); 
 
 
         // Penyesuaian Stok (Stock Adjustment)
@@ -125,7 +159,7 @@ Route::middleware(['auth', \App\Http\Middleware\CheckCommissionScheme::class])->
         Route::get('/stock-adjustments/{stockAdjustment}/print-pdf', 
         [StockAdjustmentController::class, 'printPdf'])->name('stock-adjustments.print-pdf');
 
-        
+    });
 
 
 
@@ -135,19 +169,26 @@ Route::middleware(['auth', \App\Http\Middleware\CheckCommissionScheme::class])->
     Route::post('/api/customers', [CustomerController::class, 'storeApi'])->name('api.customers.store');
 
 
-    // supplier
-    Route::resource('suppliers', SupplierController::class);
+    Route::middleware(['can:akses-spv-keatas'])->group(function () {
+        // supplier
+        Route::resource('suppliers', SupplierController::class);
+    });
 
-    // product
-    Route::resource('products', ProductController::class);
-    Route::get('api/products/search', [ProductController::class, 'search']);
-    Route::get('api/products/search-barang', [ProductController::class, 'search_barang']);
-    Route::get('api/products/search_jasa', [ProductController::class, 'search_jasa']);
-    
 
-    //users
-    Route::resource('users', UserController::class);
-    Route::post('users/{user}/reset-password', [UserController::class, 'resetPassword'])->name('users.reset-password');
+    // Route::middleware(['can:akses-owner-admin' ])->group(function () {
+    Route::middleware(['can:akses-spv-keatas' ])->group(function () {
+        // product
+        Route::resource('products', ProductController::class);
+        Route::get('api/products/search', [ProductController::class, 'search']);
+        Route::get('api/products/search-barang', [ProductController::class, 'search_barang']);
+        Route::get('api/products/search_jasa', [ProductController::class, 'search_jasa']);
+        
+
+        //users
+        Route::resource('users', UserController::class);
+        Route::post('users/{user}/reset-password', [UserController::class, 'resetPassword'])->name('users.reset-password');
+    });
+
     
     // kasir/POS
     Route::middleware(['check.shift'])->group(function () {
@@ -155,7 +196,35 @@ Route::middleware(['auth', \App\Http\Middleware\CheckCommissionScheme::class])->
         Route::get('/kasir/create', [KasirController::class, 'create'])->name('kasir.create');
         Route::post('/kasir/store', [KasirController::class, 'storeTransaction']);
 
+        
+
+        // Route Khusus Pelunasan SP (Order Source: Kasir)
+        Route::get('/kasir/pelunasan/{id}', [KasirController::class, 'pelunasan'])->name('kasir.pelunasan');
+        Route::post('/kasir/pelunasan/{id}', [KasirController::class, 'storePelunasan'])->name('kasir.pelunasan.store');
+        Route::get('/kasir/pelunasan/{id}/print', [KasirController::class, 'printPelunasan'])->name('kasir.pelunasan.print');
+
         Route::get('/kasir/api/orders', [KasirController::class, 'apiOrders'])->name('kasir.api.orders');
+
+        // Modul Order Kasir (SP)
+        Route::prefix('order-kasir')->name('order-kasir.')->group(function () {
+            Route::get('/', [OrderKasirController::class, 'index'])->name('index');
+            Route::post('/store', [OrderKasirController::class, 'store'])->name('store');
+            
+            Route::get('/search-products', [OrderKasirController::class, 'searchProducts'])->name('search-products');
+            Route::get('/search-customers', [OrderKasirController::class, 'searchCustomers'])->name('search-customers');
+
+            Route::get('/{id}/print', [OrderKasirController::class, 'print'])->name('print'); // <-- Route cetak SP
+        });
+
+
+        // Modul Kas Keluar Kasir
+        Route::get('/kasir/pengeluaran', [CashExpenseController::class, 'index'])->name('kasir.pengeluaran.index');
+        Route::post('/kasir/pengeluaran', [CashExpenseController::class, 'store'])->name('kasir.pengeluaran.store');
+        Route::delete('/kasir/pengeluaran/{id}', [CashExpenseController::class, 'destroy'])->name('kasir.pengeluaran.destroy');
+        
+        // API internal tarik tagihan barang yang belum lunas
+        Route::get('/kasir/api/unpaid-penerimaan', [CashExpenseController::class, 'getUnpaidPenerimaan'])->name('kasir.api.unpaid_penerimaan');
+        
     });
 
     // 💡 2. RUTE KHUSUS UNTUK PROSES ISI uang MODAL AWAL kasir (DI LUAR PROTEKSI SHIFT)
@@ -165,69 +234,99 @@ Route::middleware(['auth', \App\Http\Middleware\CheckCommissionScheme::class])->
         // 💡 RUTE close sfhift:
         Route::get('/kasir/close-shift', [App\Http\Controllers\ShiftController::class, 'showCloseForm'])->name('kasir.close-shift');
         Route::post('/kasir/close-shift', [App\Http\Controllers\ShiftController::class, 'storeCloseShift'])->name('kasir.store-close');
-
-        // Jalur menu Laporan Toko -> Laporan Shift
-        Route::get('/laporan/shift', [\App\Http\Controllers\ShiftController::class, 'index'])->name('laporan.shift.index');
-        Route::get('/laporan/shift/{id}', [\App\Http\Controllers\ShiftController::class, 'show'])->name('laporan.shift.show');
-
-
-        // Transaksi & Print
-        // Route::get('/transactions', [KasirController::class, 'index'])->name('transactions.index');;
-        Route::get('/kasir/history', [KasirController::class, 'history'])->name('kasir.history');
-        Route::get('/kasir/{id}', [KasirController::class, 'show'])->name('kasir.show');
-        Route::get('/kasir/{id}/print', [KasirController::class, 'print'])->name('kasir.print');
-
-
-        // Laporan Penjualan Kasir
-        Route::get('/laporan/penjualan-kasir', [LaporanPenjualanKasirController::class, 'index'])->name('laporan.penjualan-kasir');
-        
-        // Laporan Penjualan per produk
-        Route::get('/laporan/penjualan-produk', [LaporanPenjualanProdukController::class, 'index']);
-
-        // Laporan Penjualan per pelanggan
-        Route::get('/laporan/penjualan-pelanggan', [LaporanPenjualanPelangganController::class, 'index']);
-        
-        // Laporan shift
-        Route::get('/laporan/shift', [\App\Http\Controllers\ShiftController::class, 'index'])->name('laporan.shift.index');
-        Route::get('/laporan/shift/{id}', [\App\Http\Controllers\ShiftController::class, 'show'])->name('laporan.shift.show');
         
 
-        // Laporan Rugi Laba Kotor
-        Route::get('/laporan/laba-rugi-kotor', [LaporanLabaRugiController::class, 'index'])->name('laporan.laba-rugi');
-        Route::get('/laporan/laba-rugi/excel', [LaporanLabaRugiController::class, 'exportExcel'])->name('laporan.laba-rugi.excel');
-        Route::get('/laporan/laba-rugi/pdf', [LaporanLabaRugiController::class, 'exportPdf'])->name('laporan.laba-rugi.pdf');
-
-        // Laporan nilai asset
-        Route::get('/laporan/nilai-aset-stok', [StockValuationController::class, 'index'])->name('laporan.nilai-aset');
+        // // 'akses-pos'
+        // Route::middleware(['can:akses-owner-admin' ])->group(function () {
+        // // Jalur menu Laporan Toko -> Laporan Shift
+        // Route::get('/laporan/shift', [\App\Http\Controllers\ShiftController::class, 'index'])->name('laporan.shift.index');
+        // Route::get('/laporan/shift/{id}', [\App\Http\Controllers\ShiftController::class, 'show'])->name('laporan.shift.show');
+        // });
         
-    /*
-    |--------------------------------------------------------------------------
-    | 4. GRUP TEKNIS DEVELOPER (Murni Hanya Admin IT)
-    |--------------------------------------------------------------------------
-    */
-    Route::middleware(['can:akses-developer'])->group(function () {
-        // Developer Tool
-        Route::prefix('developer')->name('developer.')->group(function () {
-            Route::get('/', [DeveloperController::class, 'index'])->name('index');
-            Route::post('/reset-transaksi', [DeveloperController::class, 'resetTransaksi'])->name('reset.transaksi');
-            Route::post('/reset-master', [DeveloperController::class, 'resetMaster'])->name('reset.master');
-            Route::post('/reset-footer', [DeveloperController::class, 'resetFooter'])->name('reset.footer');    
-            Route::post('/seed', [DeveloperController::class, 'seedDemo'])->name('seed');
-
-            // MANAGEMEN INTEGRASI AKSES MODUL CLIENT
-            Route::get('/modules', [\App\Http\Controllers\DeveloperController::class, 'modulesIndex'])->name('modules.index');
-            Route::post('/modules/update', [\App\Http\Controllers\DeveloperController::class, 'modulesUpdate'])->name('modules.update');
-
-            
+        Route::middleware(['can:akses-pos' ])->group(function () {
+            // Transaksi & Print
+            // Route::get('/transactions', [KasirController::class, 'index'])->name('transactions.index');;
+            Route::get('/kasir/history', [KasirController::class, 'history'])->name('kasir.history');
+            Route::get('/kasir/{id}', [KasirController::class, 'show'])->name('kasir.show');
+            Route::get('/kasir/{id}/print', [KasirController::class, 'print'])->name('kasir.print');
         });
         
-        // Pengaturan Profil Toko
-        Route::get('/system/setting', [SettingController::class, 'index'])->name('setting.index');
-        Route::put('/system/setting', [SettingController::class, 'update'])->name('setting.update');
-        // Master Branch
-        Route::resource('branches', BranchController::class);    
-        
-    });
+        Route::middleware(['can:akses-owner-admin' ])->group(function () {
+            // Laporan Penjualan Kasir
+            Route::get('/laporan/penjualan-kasir', [LaporanPenjualanKasirController::class, 'index'])->name('laporan.penjualan-kasir');
+            Route::get('/laporan/penjualan-kasir/excel', [LaporanPenjualanKasirController::class, 'exportExcel'])->name('laporan.penjualan-kasir.excel');
+            
+            // Laporan Penjualan per produk
+            Route::get('/laporan/penjualan-produk', [LaporanPenjualanProdukController::class, 'index']);
+
+            // Laporan Penjualan per pelanggan
+            Route::get('/laporan/penjualan-pelanggan', [LaporanPenjualanPelangganController::class, 'index']);
+            
+            // Laporan shift
+            Route::get('/laporan/shift', [\App\Http\Controllers\ShiftController::class, 'index'])->name('laporan.shift.index');
+            Route::get('/laporan/shift/{id}', [\App\Http\Controllers\ShiftController::class, 'show'])->name('laporan.shift.show');
+            
+
+            // Laporan Rugi Laba Kotor
+            Route::get('/laporan/laba-rugi-kotor', [LaporanLabaRugiController::class, 'index'])->name('laporan.laba-rugi');
+            Route::get('/laporan/laba-rugi/excel', [LaporanLabaRugiController::class, 'exportExcel'])->name('laporan.laba-rugi.excel');
+            Route::get('/laporan/laba-rugi/pdf', [LaporanLabaRugiController::class, 'exportPdf'])->name('laporan.laba-rugi.pdf');
+
+            // Laporan nilai asset
+            Route::get('/laporan/nilai-aset-stok', [StockValuationController::class, 'index'])->name('laporan.nilai-aset');
+
+            //Akunting=>rahasia perusahaan    
+            // Master COA Routes
+            Route::resource('coa', \App\Http\Controllers\CoaController::class)->except(['destroy']);
+            Route::patch('coa/{coa}/toggle-status', [\App\Http\Controllers\CoaController::class, 'toggleStatus'])->name('coa.toggle-status');
+
+
+            // Backup Database
+            Route::prefix('backup')->group(function () {
+                Route::get('/', [BackupController::class, 'index'])->name('backup.index');
+                Route::post('/create', [BackupController::class, 'backup'])->name('backup.create');
+                Route::get('/download/{file}', [BackupController::class, 'download'])->name('backup.download');
+                
+                Route::post('/backup/skema-only', [BackupController::class, 'backupSkemaOnly'])->name('backup.skema-only');
+
+                //delete backup
+                Route::delete('/delete/{file}', [BackupController::class, 'destroy'])->name('backup.destroy');
+            });
+
+      });  
+        /*
+        |--------------------------------------------------------------------------
+        | 4. GRUP TEKNIS DEVELOPER (Murni Hanya Admin IT)
+        |--------------------------------------------------------------------------
+        */
+        Route::middleware(['can:akses-developer'])->group(function () {
+            // Developer Tool
+            Route::prefix('developer')->name('developer.')->group(function () {
+                Route::get('/', [DeveloperController::class, 'index'])->name('index');
+                Route::post('/reset-transaksi', [DeveloperController::class, 'resetTransaksi'])->name('reset.transaksi');
+                Route::post('/reset-master', [DeveloperController::class, 'resetMaster'])->name('reset.master');
+                Route::post('/reset-footer', [DeveloperController::class, 'resetFooter'])->name('reset.footer');    
+                Route::post('/seed', [DeveloperController::class, 'seedDemo'])->name('seed');
+
+                // MANAGEMEN INTEGRASI AKSES MODUL CLIENT
+                Route::get('/modules', [\App\Http\Controllers\DeveloperController::class, 'modulesIndex'])->name('modules.index');
+                Route::post('/modules/update', [\App\Http\Controllers\DeveloperController::class, 'modulesUpdate'])->name('modules.update');
+
+                
+            });
+            
+            // Pengaturan Profil Toko
+            Route::get('/system/setting', [SettingController::class, 'index'])->name('setting.index');
+            Route::put('/system/setting', [SettingController::class, 'update'])->name('setting.update');
+            // Master Branch
+            Route::resource('branches', BranchController::class);
+
+                      
+
+            
+            
+            
+        });
 
     });
 

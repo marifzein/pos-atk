@@ -13,6 +13,7 @@ class StockAdjustment extends Model
     protected $table = 'stock_adjustments';
 
     protected $fillable = [
+        'branch_id', 
         'nomor_sa',
         'tgl_sa',
         'user_id',
@@ -26,6 +27,11 @@ class StockAdjustment extends Model
         return $this->belongsTo(User::class);
     }
 
+    public function branch()
+    {
+        return $this->belongsTo(Branch::class);
+    }
+    
     public function details()
     {
         return $this->hasMany(StockAdjustmentDetail::class, 'stock_adjustment_id');

@@ -63,6 +63,18 @@
             <div class="my-auto w-full max-w-[280px] mx-auto">
                 <h2 class="text-2xl font-bold text-slate-800 text-center mb-6">Log in</h2>
 
+                {{-- ALERT PESAN ERROR LOGIN JIKA SALAH PASSWORD / USERNAME TIDAK DITEMUKAN --}}
+                @if ($errors->any())
+                    <div class="mb-4 p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-600 text-xs flex items-start gap-2 shadow-sm">
+                        <i class="ri-error-warning-line text-sm mt-0.5 flex-shrink-0"></i>
+                        <div>
+                            @foreach ($errors->all() as $error)
+                                <p>{{ $error }}</p>
+                            @endforeach
+                        </div>
+                    </div>
+                @endif
+                
                 <form method="POST" action="{{ route('login') }}" class="space-y-3.5">
                     @csrf
                     

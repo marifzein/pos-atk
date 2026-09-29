@@ -36,7 +36,7 @@
                 <i class="ri-money-cny-circle-line text-emerald-600 text-lg"></i> Form Pengeluaran
             </h2>
 
-            <form action="{{ route('kasir.pengeluaran.store') }}" method="POST" class="space-y-4">
+            <form id="form-pengeluaran" action="{{ route('kasir.pengeluaran.store') }}" method="POST" class="space-y-4">
                 @csrf
 
                 <!-- Kategori -->
@@ -65,7 +65,7 @@
                 <!-- Penerima -->
                 <div>
                     <label class="block text-xs font-semibold text-slate-600 mb-1">Nama Penerima Uang</label>
-                    <input type="text" name="penerima" id="penerima-input" required placeholder="Misal: Kurir J&T COD / Pak Wagiman Listrik"
+                    <input type="text" name="penerima" id="penerima-input" required placeholder="Isi nama penerima uang"
                         class="w-full text-xs rounded-lg border-slate-200 bg-slate-50 focus:bg-white focus:border-emerald-500 focus:ring-emerald-500">
                 </div>
 
@@ -106,7 +106,8 @@
                                 <th class="pb-2">Waktu</th>
                                 <th class="pb-2">Kategori</th>
                                 <th class="pb-2">Penerima</th>
-                                <th class="pb-2 text-center">Aksi</th>
+                                <th class="pb-2 text-center">Cetak</th>
+                                {{-- <th class="pb-2 text-center">Aksi</th> --}}
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-slate-100">
@@ -133,6 +134,12 @@
                                         @if($item->catatan)<div class="text-[10px] text-slate-400 truncate max-w-[150px]">{{ $item->catatan }}</div>@endif
                                     </td>
                                     <td class="py-2.5 text-center">
+                                        <a href="{{ route('kasir.pengeluaran.print', $item->id) }}" target="_blank" 
+                                        class="text-slate-400 hover:text-emerald-600 transition" title="Cetak Struk">
+                                            <i class="ri-printer-line text-sm"></i>
+                                        </a>
+                                    </td>
+                                    {{-- <td class="py-2.5 text-center">
                                         <form action="{{ route('kasir.pengeluaran.destroy', $item->id) }}" method="POST" onsubmit="return confirm('Hapus catatan pengeluaran ini?')">
                                             @csrf
                                             @method('DELETE')
@@ -140,7 +147,7 @@
                                                 <i class="ri-delete-bin-line text-sm"></i>
                                             </button>
                                         </form>
-                                    </td>
+                                    </td> --}}
                                 </tr>
                                 @endforeach
                             @else
@@ -161,6 +168,7 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function () {
+    const form = document.getElementById('form-pengeluaran');
     const kategoriSelect = document.getElementById('kategori-select');
     const wrapperPenerimaan = document.getElementById('wrapper-penerimaan');
     const penerimaanSelect = document.getElementById('penerimaan-select');
@@ -206,6 +214,56 @@ document.addEventListener('DOMContentLoaded', function () {
             nominalInput.value = selected.sisa_tagihan;
         }
     });
+
+    // SUBMIT FORM DENGAN BYPASS POPUP BLOCKER
+    form.addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        // 1. Buka window kosong langsung pada respon klik user agar tidak diblokir browser
+        const printWindow = window.open('', '_blank');
+        if (printWindow) {
+            printWindow.document.write('<div style="font-family:sans-serif;text-align:center;padding-top:40px;color:#666;">Menyiapkan struk bukti kas keluar...</div>');
+        }
+
+        const formData = new FormData(form);
+
+        fetch(form.action, {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'Accept': 'application/json'
+            }
+        })
+        .then(async (response) => {
+            const data = await response.json();
+            if (!response.ok) {
+                throw new Error(data.message || 'Terjadi kesalahan saat menyimpan.');
+            }
+            return data;
+        })
+        .then((data) => {
+            // 2. Arahkan tab kosong ke URL cetak yang valid
+            if (printWindow) {
+                printWindow.location.href = data.print_url;
+            }
+            // 3. Reload halaman kasir untuk memperbarui tabel histori
+            window.location.reload();
+        })
+        .catch((error) => {
+            if (printWindow) {
+                printWindow.close(); // Tutup kembali tab jika validasi/koneksi gagal
+            }
+            alert(error.message);
+        });
+    });
 });
 </script>
+
+{{-- @if(session('print_expense_id'))
+<script>
+    window.open("{{ route('kasir.pengeluaran.print', session('print_expense_id')) }}", "_blank");
+</script>
+@endif --}}
+
 @endsection

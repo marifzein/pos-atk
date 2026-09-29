@@ -220,8 +220,9 @@ Route::middleware(['auth'])->group(function () {
         // Modul Kas Keluar Kasir
         Route::get('/kasir/pengeluaran', [CashExpenseController::class, 'index'])->name('kasir.pengeluaran.index');
         Route::post('/kasir/pengeluaran', [CashExpenseController::class, 'store'])->name('kasir.pengeluaran.store');
-        Route::delete('/kasir/pengeluaran/{id}', [CashExpenseController::class, 'destroy'])->name('kasir.pengeluaran.destroy');
-        
+        // Route::delete('/kasir/pengeluaran/{id}', [CashExpenseController::class, 'destroy'])->name('kasir.pengeluaran.destroy');
+        Route::get('/kasir/pengeluaran/{id}/print', [CashExpenseController::class, 'print'])->name('kasir.pengeluaran.print');
+
         // API internal tarik tagihan barang yang belum lunas
         Route::get('/kasir/api/unpaid-penerimaan', [CashExpenseController::class, 'getUnpaidPenerimaan'])->name('kasir.api.unpaid_penerimaan');
         

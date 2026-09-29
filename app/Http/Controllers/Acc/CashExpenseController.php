@@ -33,7 +33,7 @@ class CashExpenseController extends Controller
         return view('kasir.pengeluaran.index', compact('activeShift', 'expenses'));
     }
 
-    public function store(Request $request)
+    public function storelawas(Request $request)
     {
         $request->validate([
             'kategori' => 'required|in:operasional,teknisi_subkon,barang_supplier,tarik_owner,lain_lain',
@@ -77,12 +77,12 @@ class CashExpenseController extends Controller
         return back()->with('success', 'Pengeluaran kas berhasil dicatat!');
     }
 
-    public function destroy($id)
-    {
-        $expense = CashExpense::findOrFail($id);
-        $expense->delete();
-        return back()->with('success', 'Catatan pengeluaran berhasil dihapus!');
-    }
+    // public function destroy($id)
+    // {
+    //     $expense = CashExpense::findOrFail($id);
+    //     $expense->delete();
+    //     return back()->with('success', 'Catatan pengeluaran berhasil dihapus!');
+    // }
 
     // Endpoint JSON untuk modal/dropdown pencarian dokumen penerimaan barang belum lunas
     public function getUnpaidPenerimaan()
@@ -113,5 +113,70 @@ class CashExpenseController extends Controller
             ->values();
 
         return response()->json($unpaid);
+    }
+
+    public function store(Request $request)
+    {
+        $request->validate([
+            'kategori' => 'required|in:operasional,teknisi_subkon,barang_supplier,tarik_owner,lain_lain',
+            'penerima' => 'required|string|max:100',
+            'nominal'  => 'required|numeric|min:1',
+            'catatan'  => 'nullable|string',
+            'penerimaan_barang_id' => 'nullable|required_if:kategori,barang_supplier|exists:penerimaan_barang,id',
+        ]);
+
+        $user = auth()->user();
+        $activeShift = Shift::where('user_id', $user->id)
+            ->where('status', 'open')
+            ->latest()
+            ->first();
+
+        if (!$activeShift) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Shift kasir belum dibuka! Buka shift terlebih dahulu.'
+            ], 422);
+        }
+
+        $branchCode = $user->branch->kode_cabang ?? 'CB';
+        $todayCode = date('ymd');
+        $countToday = CashExpense::whereDate('created_at', today())->count() + 1;
+        $noBukti = sprintf('KK-%s-%s-%04d', $branchCode, $todayCode, $countToday);
+
+        $expense = DB::transaction(function () use ($request, $user, $activeShift, $noBukti) {
+            return CashExpense::create([
+                'branch_id'      => $user->branch_id ?? 1,
+                'shift_id'       => $activeShift->id,
+                'user_id'        => $user->id,
+                'no_bukti'       => $noBukti,
+                'kategori'       => $request->kategori,
+                'penerima'       => $request->penerima,
+                'nominal'        => $request->nominal,
+                'reference_type' => $request->kategori === 'barang_supplier' ? 'penerimaan_barang' : null,
+                'reference_id'   => $request->kategori === 'barang_supplier' ? $request->penerimaan_barang_id : null,
+                'catatan'        => $request->catatan,
+            ]);
+        });
+
+        return response()->json([
+            'success'   => true,
+            'message'   => 'Pengeluaran kas berhasil dicatat!',
+            'print_url' => route('kasir.pengeluaran.print', $expense->id)
+        ]);
+    }
+
+    // Tampilan Cetak Struk 58mm Kas Keluar
+    public function print($id)
+    {
+        $expense = CashExpense::with(['branch', 'user', 'shift'])->findOrFail($id);
+
+        $shopSetting = \App\Models\Setting::first() ?? new \App\Models\Setting([
+            'nama_toko'   => 'CAHAYA BUSUR GROUP',
+            'alamat'      => 'Jl. Teuku Umar No. 67, Kadipaten - Bojonegoro',
+            'telepon'     => '087627125',
+            'footer_nota' => 'Harap simpan struk ini sebagai bukti kas keluar yang sah'
+        ]);
+
+        return view('kasir.pengeluaran.print', compact('expense', 'shopSetting'));
     }
 }

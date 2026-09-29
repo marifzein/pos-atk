@@ -1,27 +1,3 @@
-{{-- <header class="h-20 bg-white border-b border-slate-200 flex items-center justify-between px-6 sticky top-0 z-20">
-    <div>
-        <button @click="sidebarOpen = !sidebarOpen" class="w-10 h-10 flex items-center justify-center text-slate-500 hover:text-emerald-500 rounded-xl hover:bg-slate-100 transition">
-            <i class="ri-menu-2-line text-xl"></i>
-        </button>
-    </div>
-
-
-        <div class="flex items-center gap-4">
-            <div class="flex items-center gap-3 p-1.5 rounded-xl">
-                <div class="w-9 h-9 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center font-semibold">
-                    <i class="ri-user-3-line"></i>
-                </div>
-                <div>
-                    <div class="font-semibold text-xs text-slate-800">{{ Auth::user()->name ?? 'Developer' }}</div>
-                    <div class="text-[10px] text-slate-400 font-medium capitalize">{{ Auth::user()->role ?? 'Admin' }}</div>
-                </div>
-            </div>
-        </div>
-    
-   
-
-</header> --}}
-
 <header class="h-20 bg-white border-b border-slate-200 flex items-center justify-between px-6 sticky top-0 z-20">
     <!-- Tombol Hamburger (Sisi Kiri) -->
     <div>
@@ -30,17 +6,38 @@
         </button>
     </div>
 
+            @if(config('app.env') === 'local')
+                <!-- TAMPILAN DI LOCALHOST / LAPTOP -->
+                <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-50 border border-amber-300 text-amber-700 text-xs font-bold tracking-wide">
+                    <span class="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span>
+                    <span>LOKAL LAPTOP ({{ strtoupper(config('app.env')) }})</span>
+                </div>
+            @elseif(config('app.env') !== 'production')
+                <!-- TAMPILAN DI VPS STAGING (TEST APLIKASI) -->
+                <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-rose-50 border border-rose-200 text-rose-600 text-xs font-bold tracking-wide animate-pulse">
+                    <span class="w-2 h-2 rounded-full bg-rose-500"></span>
+                    <span>TEST APLIKASI ({{ strtoupper(config('app.env')) }})</span>
+                </div>
+            @endif
+
     <!-- Area Profil & Notifikasi (Sisi Kanan) -->
     <div class="flex items-center gap-4">
+
+        
+
         
         <!-- Ikon Lonceng Notifikasi -->
         <button class="w-9 h-9 flex items-center justify-center text-slate-400 hover:text-emerald-600 rounded-lg hover:bg-slate-50 transition">
             <i class="ri-notification-3-line text-xl"></i>
         </button>
 
+        
+
         <!-- Dropdown Menu Profil -->
         <div class="relative" x-data="{ open: false }" @click.away="open = false">
             
+            
+
             <!-- Tombol Trigger Profil -->
             <button @click="open = !open" class="flex items-center gap-3 p-1.5 rounded-xl hover:bg-slate-50 transition group focus:outline-none">
                 <div class="w-9 h-9 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center font-semibold">

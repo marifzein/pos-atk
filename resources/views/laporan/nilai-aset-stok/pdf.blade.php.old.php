@@ -34,7 +34,7 @@
         }
         .table-report { 
             width: 100%; 
-            border-collapse: collapse; 
+            border-collapse: collapse; /* 💡 FIX: Sekarang sudah normal & menyatu */
             margin-top: 10px; 
         }
         .table-report th, .table-report td { 
@@ -47,7 +47,7 @@
             color: #334155;
         }
         .table-report tr:nth-child(even) {
-            background-color: #f8fafc;
+            background-color: #f8fafc; /* Efek zebra halus biar mata tidak pusing baca data banyak */
         }
         .text-right { text-align: right; }
         .text-center { text-align: center; }
@@ -61,14 +61,13 @@
 <body onload="window.print()">
 
     <div class="header">
-        <h2>LAPORAN NILAI ASET STOK PERSEDIAAN FISIK</h2>
+        <h2>LAPORAN NILAI ASET STOK PERSEDIAAN</h2>
         <p>Dicetak pada: {{ now()->format('d F Y H:i') }}</p>
     </div>
 
     <div class="summary-box">
         <strong>RINGKASAN ASET TOKO:</strong><br>
-        Total Unit Barang Fisik : <strong>{{ number_format($totalAsetToko->grand_total_qty ?? 0, 0, ',', '.') }} Pcs</strong><br>
-        Total Modal Fisik Barang (HPP) : <strong>Rp {{ number_format($totalAsetToko->grand_total_aset ?? 0, 0, ',', '.') }}</strong><br>
+        Total Investasi Modal Barang (HPP) : <strong>Rp {{ number_format($totalAsetToko->grand_total_aset ?? 0, 0, ',', '.') }}</strong><br>
         Total Potensi Nilai Penjualan (Omset) : <strong>Rp {{ number_format($totalAsetToko->grand_total_jual ?? 0, 0, ',', '.') }}</strong>
     </div>
 
@@ -76,21 +75,19 @@
         <thead>
             <tr>
                 <th width="5%" class="text-center">No</th>
-                <th width="15%">Cabang</th>
                 <th width="15%">Kode</th>
-                <th width="25%">Nama Barang</th>
+                <th width="35%">Nama Barang</th>
                 <th width="10%" class="text-center">Stok</th>
                 <th width="10%" class="text-right">HPP Avg</th>
                 <th width="10%" class="text-right">Harga Jual</th>
-                <th width="10%" class="text-right bg-indigo">Nilai Aset</th>
+                <th width="15%" class="text-right bg-indigo">Nilai Aset</th>
             </tr>
         </thead>
         <tbody>
             @foreach($reportData as $index => $row)
             <tr>
                 <td class="text-center">{{ $index + 1 }}</td>
-                <td>{{ $row->nama_cabang ?? 'Pusat' }}</td>
-                <td>{{ $row->sku ?? $row->barcode }}</td>
+                <td>{{ $row->sku }}</td>
                 <td>{{ $row->name }}</td>
                 <td class="text-center">{{ number_format($row->stock, 0, ',', '.') }}</td>
                 <td class="text-right">Rp {{ number_format($row->hpp_average, 0, ',', '.') }}</td>

@@ -6,7 +6,7 @@
     <thead>
         <tr style="background-color: #f1f5f9; font-weight: bold;">
             <th>No</th>
-            <th>Cabang</th>
+            <th>Kode Pelanggan</th>
             <th>Nama Pelanggan</th>
             <th>Jumlah Transaksi</th>
             <th>Total Kontribusi Omset (Rp)</th>
@@ -16,7 +16,7 @@
         @foreach($reportData as $index => $row)
             <tr>
                 <td>{{ $index + 1 }}</td>
-                <td>{{ $row->nama_cabang ?? 'Pusat' }}</td>
+                <td>{{ $row->kode_pelanggan ? "'".$row->kode_pelanggan : '-' }}</td>
                 <td>{{ $row->nama_pelanggan }}</td>
                 <td>{{ $row->total_transaksi }}</td>
                 <td>{{ $row->total_belanja }}</td>

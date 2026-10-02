@@ -6,38 +6,30 @@
     <thead>
         <tr style="background-color: #f1f5f9; font-weight: bold;">
             <th>No</th>
-            <th>Cabang</th>
             <th>Kode Barang</th>
             <th>Nama Barang</th>
             <th>Harga Jual (Rp)</th>
             <th>Terjual</th>
             <th>Total Pendapatan (Rp)</th>
-            <th>Total HPP (Rp)</th>
-            <th>Laba Kotor (Rp)</th>
         </tr>
     </thead>
     <tbody>
         @foreach($reportData as $index => $row)
             <tr>
                 <td>{{ $index + 1 }}</td>
-                <td>{{ $row->nama_cabang ?? 'Pusat' }}</td>
-                <td>'{{ $row->kode_barang }}</td>
+                <td>'{{ $row->kode_barang }}</td> <!-- Tanda kutip satu mencegah Excel memotong angka nol di depan -->
                 <td>{{ $row->nama_barang }}</td>
                 <td>{{ $row->harga }}</td>
                 <td>{{ $row->total_terjual }}</td>
                 <td>{{ $row->total_pendapatan }}</td>
-                <td>{{ $row->total_hpp }}</td>
-                <td>{{ $row->laba_kotor }}</td>
             </tr>
         @endforeach
     </tbody>
     <tfoot>
         <tr style="font-weight: bold; background-color: #f8fafc;">
-            <td colspan="5" align="right">TOTAL KESELURUHAN:</td>
+            <td colspan="4" align="right">TOTAL KESELURUHAN:</td>
             <td align="center">{{ $totals->grand_qty ?? 0 }}</td>
             <td align="right">{{ $totals->grand_revenue ?? 0 }}</td>
-            <td align="right">{{ $totals->grand_hpp ?? 0 }}</td>
-            <td align="right">{{ $totals->grand_laba_kotor ?? 0 }}</td>
         </tr>
     </tfoot>
 </table>

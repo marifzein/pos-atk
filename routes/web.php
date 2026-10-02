@@ -33,6 +33,7 @@ use App\Http\Controllers\BranchController;
 use App\Http\Controllers\BackupController;
 use App\Http\Controllers\OrderKasirController;
 use App\Http\Controllers\Acc\CashExpenseController;
+use App\Http\Controllers\Acc\CashExpenseReportController;
 
 
 
@@ -217,7 +218,7 @@ Route::middleware(['auth'])->group(function () {
         });
 
 
-        // Modul Kas Keluar Kasir
+        // Modul Kas Keluar Kasir 
         Route::get('/kasir/pengeluaran', [CashExpenseController::class, 'index'])->name('kasir.pengeluaran.index');
         Route::post('/kasir/pengeluaran', [CashExpenseController::class, 'store'])->name('kasir.pengeluaran.store');
         // Route::delete('/kasir/pengeluaran/{id}', [CashExpenseController::class, 'destroy'])->name('kasir.pengeluaran.destroy');
@@ -253,6 +254,14 @@ Route::middleware(['auth'])->group(function () {
         });
         
         Route::middleware(['can:akses-owner-admin' ])->group(function () {
+            // Riwayat/history Pengeluaran Kasir
+            Route::get('/laporan/pengeluaran-kas', [CashExpenseReportController::class, 'index'])->name('laporan.pengeluaran.index');
+            Route::get('/laporan/pengeluaran-kas/export-excel', [CashExpenseReportController::class, 'exportExcel'])->name('laporan.pengeluaran.excel');
+            Route::get('/laporan/pengeluaran-kas/export-pdf', [CashExpenseReportController::class, 'exportPdf'])->name('laporan.pengeluaran.pdf');
+            
+            // API Ajax mengambil kasir berdasarkan cabang yang dipilih
+            Route::get('/api/cashiers-by-branch/{branchId}', [CashExpenseReportController::class, 'getCashiersByBranch'])->name('api.cashiers_by_branch');
+            
             // Laporan Penjualan Kasir
             Route::get('/laporan/penjualan-kasir', [LaporanPenjualanKasirController::class, 'index'])->name('laporan.penjualan-kasir');
             Route::get('/laporan/penjualan-kasir/excel', [LaporanPenjualanKasirController::class, 'exportExcel'])->name('laporan.penjualan-kasir.excel');

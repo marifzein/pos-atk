@@ -4,65 +4,43 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
-use App\Models\Branch;
 
 class LaporanPenjualanPelangganController extends Controller
 {
     public function index(Request $request)
     {
-        $user = Auth::user();
-
         // 1. Filter Tanggal
         $startDate = $request->get('start_date', Carbon::now()->startOfMonth()->toDateString());
         $endDate = $request->get('end_date', Carbon::now()->toDateString());
 
-        // 2. Filter Cabang & Penguncian Role Kasir
-        $selectedBranchId = $request->get('branch_id');
-        if ($user && strtolower($user->role) === 'kasir' && $user->branch_id) {
-            $selectedBranchId = $user->branch_id;
-        }
-
-        $branches = Branch::where('is_active', 1)->get();
-
-        // 3. Parameter Sorting Dinamis
+        // 2. Tangkap Parameter Sorting Dinamis (Default: total_belanja terbesar)
         $sortBy = $request->get('sort_by', 'total_belanja'); 
         $sortDir = $request->get('sort_dir', 'desc');
 
-        $allowedSorts = ['nama_cabang', 'kode_pelanggan', 'nama_pelanggan', 'total_transaksi', 'total_belanja'];
+        // Validasi kolom sorting demi keamanan
+        $allowedSorts = ['kode_pelanggan', 'nama_pelanggan', 'total_transaksi', 'total_belanja'];
         if (!in_array($sortBy, $allowedSorts)) $sortBy = 'total_belanja';
         if (!in_array($sortDir, ['asc', 'desc'])) $sortDir = 'desc';
 
-        // 4. Query Base (Join ke branches dan customers)
+        // 3. Query Base (Gunakan Alias agar select DB::raw bisa di-sorting dengan mudah)
         $query = DB::table('transactions')  
+            // ->leftJoin('customers', 'transactions.customer_id ', '=', 'customers.id')
             ->leftJoin('customers', 'transactions.customer_id', '=', 'customers.id')
-            ->leftJoin('branches', 'transactions.branch_id', '=', 'branches.id')
             ->select(
-                'transactions.branch_id',
-                'branches.name as nama_cabang',
-                'transactions.customer_id as kode_pelanggan',
+                'transactions.customer_id  as kode_pelanggan',
                 DB::raw('COALESCE(customers.nama, "Umum") as nama_pelanggan'),
                 DB::raw('COUNT(transactions.id) as total_transaksi'),
                 DB::raw('SUM(transactions.grand_total) as total_belanja')
             )
-            ->where('transactions.status', '!=', 'Batal')
-            ->whereBetween(DB::raw('DATE(transactions.created_at)'), [$startDate, $endDate]);
+            ->where('transactions.status', '!=', 'Batal') // 👈 Filter mengabaikan transaksi batal
+            ->whereBetween(DB::raw('DATE(transactions.created_at)'), [$startDate, $endDate])
+            ->groupBy('transactions.customer_id',
+                    'customers.id',
+                    'customers.nama');
+            // ->groupBy('transactions.customer_id ', 'customers.nama');
 
-        // Filter Cabang
-        if (!empty($selectedBranchId)) {
-            $query->where('transactions.branch_id', $selectedBranchId);
-        }
-
-        $query->groupBy(
-            'transactions.branch_id',
-            'branches.name',
-            'transactions.customer_id',
-            'customers.id',
-            'customers.nama'
-        );
-
-        // 5. Hitung Grand Total Keseluruhan
+        // 4. Hitung Total Akumulasi Keseluruhan (Grand Total) Lintas Halaman
         $totals = DB::table(DB::raw("({$query->toSql()}) as sub"))
             ->mergeBindings($query)
             ->select(
@@ -70,7 +48,7 @@ class LaporanPenjualanPelangganController extends Controller
                 DB::raw('SUM(total_belanja) as grand_omset')
             )->first();
 
-        // 6. Cek Aksi Export
+        // 5. Cek Aksi Export
         $exportType = $request->get('export');
 
         if ($exportType === 'excel') {
@@ -88,12 +66,12 @@ class LaporanPenjualanPelangganController extends Controller
             return view('laporan.penjualan-pelanggan.pdf', compact('reportData', 'startDate', 'endDate', 'totals'));
         }
 
-        // Tampilan Web
+        
+        // Tampilan Standar Web dengan Paging (25 Baris)
         $reportData = $query->orderBy($sortBy, $sortDir)->paginate(25)->withQueryString();
 
         return view('laporan.penjualan-pelanggan.index', compact(
-            'reportData', 'startDate', 'endDate', 'sortBy', 'sortDir', 'totals',
-            'branches', 'selectedBranchId'
+            'reportData', 'startDate', 'endDate', 'sortBy', 'sortDir', 'totals'
         ));
     }
 }

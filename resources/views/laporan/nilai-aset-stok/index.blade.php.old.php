@@ -9,50 +9,33 @@
         <div class="bg-white rounded-xl shadow p-6 border-l-4 border-indigo-600">
             <div class="text-sm font-medium text-gray-500 uppercase tracking-wider">Total Modal Aset Toko (HPP)</div>
             <div class="mt-2 text-3xl font-bold text-gray-900">Rp {{ number_format($totalAsetToko->grand_total_aset ?? 0, 0, ',', '.') }}</div>
-            <p class="text-xs text-gray-400 mt-1">*Nilai real uang modal fisik barang di gudang/etalase cabang.</p>
+            <p class="text-xs text-gray-400 mt-1">*Nilai real uang modal dalam bentuk barang.</p>
         </div>
         <div class="bg-white rounded-xl shadow p-6 border-l-4 border-emerald-600">
             <div class="text-sm font-medium text-gray-500 uppercase tracking-wider">Potensi Nilai Jual (Omset)</div>
             <div class="mt-2 text-3xl font-bold text-emerald-600">Rp {{ number_format($totalAsetToko->grand_total_jual ?? 0, 0, ',', '.') }}</div>
-            <p class="text-xs text-gray-400 mt-1">*Estimasi omset kotor jika seluruh stok fisik barang ini lunas terjual.</p>
+            <p class="text-xs text-gray-400 mt-1">*Estimasi omset kotor jika semua barang saat ini lunas terjual.</p>
         </div>
     </div>
 
     <div class="bg-white rounded-xl shadow p-6">
-        <h1 class="text-2xl font-bold mb-6 text-slate-800">Laporan Nilai Aset Stok</h1>
+        <h1 class="text-2xl font-bold mb-6">Laporan Nilai Aset Stok</h1>
 
         <!-- Form Filter & Aksi -->
-        <form method="GET" action="/laporan/nilai-aset-stok" class="flex flex-wrap gap-4 items-end mb-6 bg-slate-50 p-4 rounded-xl border border-gray-100">
+        <form method="GET" action="/laporan/nilai-aset-stok" class="flex flex-wrap gap-4 items-end mb-6">
+            <!-- 💡 Hidden input agar sorting tidak hilang saat melakukan pencarian kata -->
             <input type="hidden" name="sort_by" value="{{ $sortBy }}">
             <input type="hidden" name="sort_dir" value="{{ $sortDir }}">
 
-            <!-- Filter Cabang -->
-            <div class="min-w-[200px]">
-                <label class="block text-sm font-medium text-gray-700">Cabang</label>
-                <select name="branch_id" class="mt-1 block w-full rounded-xl border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
-                    <option value="">Semua Cabang</option>
-                    @foreach($branches as $b)
-                        <option value="{{ $b->id }}" {{ ($selectedBranchId == $b->id) ? 'selected' : '' }}>
-                            {{ $b->name }}
-                        </option>
-                    @endforeach
-                </select>
-            </div>
-
-            <!-- Filter Pencarian Produk -->
-            <div class="flex-1 min-w-[250px]">
+            <div class="flex-1 min-w-[300px]">
                 <label class="block text-sm font-medium text-gray-700">Cari Produk</label>
-                <input type="text" name="search" value="{{ $search }}" placeholder="Nama barang, SKU, atau barcode..." class="mt-1 block w-full rounded-xl border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                <input type="text" name="search" value="{{ $search }}" placeholder="Nama barang atau kode barcode..." class="mt-1 block w-full rounded-xl border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
             </div>
 
             <div class="flex gap-2 items-center">
                 <x-button type="submit" color="blue" size="sm" class="items-center">
-                    <i class="ri-filter-3-line"></i> Filter Data
+                    Cari Data
                 </x-button>
-
-                <a href="/laporan/nilai-aset-stok" class="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-xl text-gray-700 bg-white hover:bg-gray-50">
-                    Reset
-                </a>
                 
                 <a href="{{ request()->fullUrlWithQuery(['export' => 'excel']) }}">
                     <x-button type="button" color="green" size="sm" class="items-center">
@@ -68,15 +51,15 @@
             </div>
         </form>
 
+        <!-- 💡 Helper Generator Link Sort Dinamis (Sama Seperti Menu Sales Produk) -->
         @php
-            $getSortLink = function($column) use ($sortBy, $sortDir, $search, $selectedBranchId) {
+            $getSortLink = function($column) use ($sortBy, $sortDir, $search) {
                 $nextDir = ($sortBy === $column && $sortDir === 'asc') ? 'desc' : 'asc';
                 return request()->fullUrlWithQuery([
-                    'sort_by'   => $column,
-                    'sort_dir'  => $nextDir,
-                    'search'    => $search,
-                    'branch_id' => $selectedBranchId,
-                    'page'      => 1
+                    'sort_by' => $column,
+                    'sort_dir' => $nextDir,
+                    'search'  => $search,
+                    'page'    => 1
                 ]);
             };
             
@@ -86,30 +69,25 @@
             };
         @endphp
 
-        <!-- Tabel Laporan -->
+        <!-- Tabel Laporan dengan Link Sorting -->
         <table class="w-full border-collapse border border-gray-200">
             <thead>
                 <tr class="bg-slate-100 border-b border-gray-200 text-gray-700 text-sm select-none">
-                    <th class="p-3 text-center border border-gray-200 w-12 font-bold">No</th>
+                    <th class="p-3 text-left border border-gray-200 w-12 font-bold">No</th>
                     
                     <th class="p-0 border border-gray-200 hover:bg-slate-200 transition">
-                        <a href="{{ $getSortLink('nama_cabang') }}" class="block p-3 text-left w-full h-full font-bold">
-                            Cabang<span class="text-blue-600 text-xs">{{ $renderArrow('nama_cabang') }}</span>
+                        <a href="{{ $getSortLink('kode_barang') }}" class="block p-3 text-left w-full h-full font-bold">
+                            Kode Barang<span class="text-blue-600 text-xs">{{ $renderArrow('kode_barang') }}</span>
                         </a>
                     </th>
                     <th class="p-0 border border-gray-200 hover:bg-slate-200 transition">
-                        <a href="{{ $getSortLink('sku') }}" class="block p-3 text-left w-full h-full font-bold">
-                            Kode Barang<span class="text-blue-600 text-xs">{{ $renderArrow('sku') }}</span>
+                        <a href="{{ $getSortLink('nama_barang') }}" class="block p-3 text-left w-full h-full font-bold">
+                            Nama Barang<span class="text-blue-600 text-xs">{{ $renderArrow('nama_barang') }}</span>
                         </a>
                     </th>
                     <th class="p-0 border border-gray-200 hover:bg-slate-200 transition">
-                        <a href="{{ $getSortLink('name') }}" class="block p-3 text-left w-full h-full font-bold">
-                            Nama Barang<span class="text-blue-600 text-xs">{{ $renderArrow('name') }}</span>
-                        </a>
-                    </th>
-                    <th class="p-0 border border-gray-200 hover:bg-slate-200 transition">
-                        <a href="{{ $getSortLink('stock') }}" class="block p-3 text-center w-full h-full font-bold">
-                            Stok Aktif<span class="text-blue-600 text-xs">{{ $renderArrow('stock') }}</span>
+                        <a href="{{ $getSortLink('stok') }}" class="block p-3 text-center w-full h-full font-bold">
+                            Stok Aktif<span class="text-blue-600 text-xs">{{ $renderArrow('stok') }}</span>
                         </a>
                     </th>
                     <th class="p-0 border border-gray-200 hover:bg-slate-200 transition">
@@ -140,10 +118,7 @@
                         <td class="p-3 border border-gray-200 text-center">
                             {{ $reportData->firstItem() + $index }}
                         </td>
-                        <td class="p-3 border border-gray-200 font-semibold text-slate-800">
-                            {{ $row->nama_cabang ?? 'Pusat' }}
-                        </td>
-                        <td class="p-3 border border-gray-200 font-mono text-xs">{{ $row->sku ?? $row->barcode }}</td>
+                        <td class="p-3 border border-gray-200 font-mono text-xs">{{ $row->sku }}</td>
                         <td class="p-3 border border-gray-200 font-medium text-gray-900">{{ $row->name }}</td>
                         <td class="p-3 border border-gray-200 text-center font-bold text-slate-800">{{ number_format($row->stock, 0, ',', '.') }}</td>
                         <td class="p-3 border border-gray-200 text-right">Rp {{ number_format($row->hpp_average, 0, ',', '.') }}</td>
@@ -153,7 +128,7 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="9" class="p-6 text-center text-gray-500 italic">Tidak ada persediaan barang fisik terdeteksi di cabang yang dipilih.</td>
+                        <td colspan="8" class="p-4 text-center text-gray-500">Tidak ada persediaan barang terdeteksi.</td>
                     </tr>
                 @endforelse
             </tbody>
@@ -161,11 +136,7 @@
             @if($reportData->count() > 0)
             <tfoot class="bg-slate-50 font-bold text-sm text-gray-800">
                 <tr>
-                    <td colspan="4" class="p-3 border border-gray-200 text-right">TOTAL KESELURUHAN STOK TOKO:</td>
-                    <td class="p-3 border border-gray-200 text-center text-blue-600 font-bold">
-                        {{ number_format($totalAsetToko->grand_total_qty ?? 0, 0, ',', '.') }}
-                    </td>
-                    <td colspan="2" class="p-3 border border-gray-200"></td>
+                    <td colspan="6" class="p-3 border border-gray-200 text-right">TOTAL KESELURUHAN STOK TOKO:</td>
                     <td class="p-3 border border-gray-200 text-right text-indigo-700 text-base bg-indigo-50">
                         Rp {{ number_format($totalAsetToko->grand_total_aset ?? 0, 0, ',', '.') }}
                     </td>

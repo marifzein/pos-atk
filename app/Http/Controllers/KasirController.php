@@ -668,7 +668,23 @@ class KasirController extends Controller
         }
 
         $branchId = $user->branch_id;
-        $activeShiftId = session('active_shift_id', 1);
+        
+        // CARI SHIFT AKTIF LANGSUNG DARI DATABASE (JANGAN PAKAI SESSION DEFAULT 1)
+        $activeShift = DB::table('shifts')
+            ->where('user_id', $user->id)
+            ->where('branch_id', $branchId)
+            ->where('status', 'open')
+            ->first();
+
+        // Validasi wajib buka shift sebelum bisa melayani pelunasan
+        if (!$activeShift) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Akses ditolak! Anda belum membuka shift kasir atau shift Anda sudah ditutup.'
+            ], 403);
+        }
+
+        $activeShiftId = $activeShift->id;
 
         DB::beginTransaction();
         try {

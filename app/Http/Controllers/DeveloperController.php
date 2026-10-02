@@ -66,6 +66,8 @@ class DeveloperController extends Controller
         
         DB::table('transaction_details')->truncate();
         DB::table('transactions')->truncate();
+
+        DB::table('cash_expenses')->truncate();
         
         
 

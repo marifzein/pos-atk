@@ -1,7 +1,6 @@
 @extends('layouts.app')
 
 @section('content')
-
 <div class="p-4 sm:p-6 space-y-6">
 
     <!-- Header Bersih (Tanpa Informasi Total Saldo) -->
@@ -17,6 +16,17 @@
             </span>
         </div>
     </div>
+
+    @if(session('success'))
+        <div class="p-3 bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs rounded-xl">
+            {{ session('success') }}
+        </div>
+    @endif
+    @if(session('error'))
+        <div class="p-3 bg-rose-50 border border-rose-200 text-rose-700 text-xs rounded-xl">
+            {{ session('error') }}
+        </div>
+    @endif
 
     <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
 
@@ -59,7 +69,7 @@
                         class="w-full text-xs rounded-lg border-slate-200 bg-slate-50 focus:bg-white focus:border-emerald-500 focus:ring-emerald-500">
                 </div>
 
-                <!-- Nominal -->
+                <!-- Nominal (Input uang yang dikeluarkan saat itu saja) -->
                 <div>
                     <label class="block text-xs font-semibold text-slate-600 mb-1">Nominal Diserahkan (Rp)</label>
                     <input type="number" name="nominal" id="nominal-input" required min="1" placeholder="0"
@@ -73,9 +83,9 @@
                         class="w-full text-xs rounded-lg border-slate-200 bg-slate-50 focus:bg-white focus:border-emerald-500 focus:ring-emerald-500"></textarea>
                 </div>
 
-                <button type="submit" id="btn-submit"
-                    class="w-full py-2.5 bg-rose-600 hover:bg-rose-700 active:scale-[0.99] text-white font-semibold text-xs rounded-xl shadow-md shadow-rose-500/20 transition flex items-center justify-center gap-2">
-                    <i class="ri-arrow-up-circle-line text-base"></i> <span id="btn-text">Simpan Bukti Pengeluaran</span>
+                <button type="submit" 
+                    class="w-full py-2.5 bg-rose-600 hover:bg-rose-700 text-white font-semibold text-xs rounded-xl shadow-md shadow-rose-500/20 transition flex items-center justify-center gap-2">
+                    <i class="ri-arrow-up-circle-line text-base"></i> Simpan Bukti Pengeluaran
                 </button>
             </form>
         </div>
@@ -97,6 +107,7 @@
                                 <th class="pb-2">Kategori</th>
                                 <th class="pb-2">Penerima</th>
                                 <th class="pb-2 text-center">Cetak</th>
+                                {{-- <th class="pb-2 text-center">Aksi</th> --}}
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-slate-100">
@@ -128,6 +139,15 @@
                                             <i class="ri-printer-line text-sm"></i>
                                         </a>
                                     </td>
+                                    {{-- <td class="py-2.5 text-center">
+                                        <form action="{{ route('kasir.pengeluaran.destroy', $item->id) }}" method="POST" onsubmit="return confirm('Hapus catatan pengeluaran ini?')">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" class="text-slate-400 hover:text-rose-600 transition" title="Hapus jika salah input">
+                                                <i class="ri-delete-bin-line text-sm"></i>
+                                            </button>
+                                        </form>
+                                    </td> --}}
                                 </tr>
                                 @endforeach
                             @else
@@ -154,8 +174,6 @@ document.addEventListener('DOMContentLoaded', function () {
     const penerimaanSelect = document.getElementById('penerimaan-select');
     const penerimaInput = document.getElementById('penerima-input');
     const nominalInput = document.getElementById('nominal-input');
-    const btnSubmit = document.getElementById('btn-submit');
-    const btnText = document.getElementById('btn-text');
 
     let listUnpaid = [];
 
@@ -186,9 +204,6 @@ document.addEventListener('DOMContentLoaded', function () {
                     opt.textContent = `${item.no_penerimaan} | ${item.supplier_name}`;
                     penerimaanSelect.appendChild(opt);
                 });
-            })
-            .catch(() => {
-                penerimaanSelect.innerHTML = '<option value="">(Gagal memuat tagihan)</option>';
             });
     }
 
@@ -200,13 +215,15 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 
-    // SUBMIT FORM DENGAN SWEETALERT2 & TANPA PINDAH WINDOW SEBELUM VALIDASI
+    // SUBMIT FORM DENGAN BYPASS POPUP BLOCKER
     form.addEventListener('submit', function (e) {
         e.preventDefault();
 
-        // Kunci tombol & ubah teks status
-        btnSubmit.disabled = true;
-        btnText.innerText = 'Memverifikasi...';
+        // 1. Buka window kosong langsung pada respon klik user agar tidak diblokir browser
+        const printWindow = window.open('', '_blank');
+        if (printWindow) {
+            printWindow.document.write('<div style="font-family:sans-serif;text-align:center;padding-top:40px;color:#666;">Menyiapkan struk bukti kas keluar...</div>');
+        }
 
         const formData = new FormData(form);
 
@@ -221,46 +238,32 @@ document.addEventListener('DOMContentLoaded', function () {
         .then(async (response) => {
             const data = await response.json();
             if (!response.ok) {
-                throw new Error(data.message || 'Saldo kas tidak mencukupi atau terjadi kesalahan.');
+                throw new Error(data.message || 'Terjadi kesalahan saat menyimpan.');
             }
             return data;
         })
         .then((data) => {
-            // Sukses: Buka cetak struk jika URL tersedia
-            if (data.print_url) {
-                window.open(data.print_url, '_blank');
+            // 2. Arahkan tab kosong ke URL cetak yang valid
+            if (printWindow) {
+                printWindow.location.href = data.print_url;
             }
-
-            Swal.fire({
-                icon: 'success',
-                title: 'Berhasil',
-                text: data.message || 'Bukti pengeluaran kas berhasil disimpan.',
-                confirmButtonColor: '#059669',
-                confirmButtonText: 'Selesai'
-            }).then(() => {
-                window.location.reload();
-            });
+            // 3. Reload halaman kasir untuk memperbarui tabel histori
+            window.location.reload();
         })
         .catch((error) => {
-            // Gagal / Saldo Kurang: Tetap di PWA, tampilkan SweetAlert2
-            Swal.fire({
-                icon: 'warning',
-                title: 'Pengeluaran Ditolak',
-                text: error.message,
-                confirmButtonColor: '#e11d48',
-                confirmButtonText: 'Mengerti',
-                customClass: {
-                    popup: 'rounded-2xl',
-                    confirmButton: 'rounded-xl text-xs font-semibold px-5 py-2.5'
-                }
-            });
-        })
-        .finally(() => {
-            // Kembalikan tombol ke kondisi aktif
-            btnSubmit.disabled = false;
-            btnText.innerText = 'Simpan Bukti Pengeluaran';
+            if (printWindow) {
+                printWindow.close(); // Tutup kembali tab jika validasi/koneksi gagal
+            }
+            alert(error.message);
         });
     });
 });
 </script>
+
+{{-- @if(session('print_expense_id'))
+<script>
+    window.open("{{ route('kasir.pengeluaran.print', session('print_expense_id')) }}", "_blank");
+</script>
+@endif --}}
+
 @endsection

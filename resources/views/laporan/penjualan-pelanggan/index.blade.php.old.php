@@ -5,10 +5,11 @@
 @section('content')
 <div class="max-w-7xl mx-auto p-6">
     <div class="bg-white rounded-xl shadow p-6">
-        <h1 class="text-2xl font-bold mb-6 text-slate-800">Laporan Penjualan Per Pelanggan</h1>
+        <h1 class="text-2xl font-bold mb-6">Laporan Penjualan Per Pelanggan</h1>
 
-        <!-- Form Filter Tanggal & Cabang -->
-        <form method="GET" action="{{ url('/laporan/penjualan-pelanggan') }}" class="flex flex-wrap gap-4 items-end mb-6 bg-slate-50 p-4 rounded-xl border border-gray-100">
+        <!-- Form Filter Tanggal -->
+        {{-- <form method="GET" action="{{ route('laporan.penjualan-pelanggan') }}" class="flex flex-wrap gap-4 items-end mb-6"> --}}
+        <form method="GET" action="{{ url('/laporan/penjualan-pelanggan') }}" class="flex flex-wrap gap-4 items-end mb-6">
             <input type="hidden" name="sort_by" value="{{ $sortBy }}">
             <input type="hidden" name="sort_dir" value="{{ $sortDir }}">
             
@@ -22,35 +23,21 @@
                 <input type="date" name="end_date" value="{{ $endDate }}" class="mt-1 block w-full rounded-xl border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
             </div>
 
-            <!-- Filter Cabang -->
-            <div class="min-w-[180px]">
-                <label class="block text-sm font-medium text-gray-700">Cabang</label>
-                <select name="branch_id" class="mt-1 block w-full rounded-xl border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
-                    <option value="">Semua Cabang</option>
-                    @foreach($branches as $b)
-                        <option value="{{ $b->id }}" {{ ($selectedBranchId == $b->id) ? 'selected' : '' }}>
-                            {{ $b->name }}
-                        </option>
-                    @endforeach
-                </select>
-            </div>
-
-            <!-- Tombol Aksi -->
+            <!-- Tombol Aksi Sejajar & Menggunakan Component (Ukuran sm/md pas input) -->
             <div class="flex gap-2 items-center">
+                <!-- Filter Data menggunakan Component Button -->
                 <x-button type="submit" color="blue" size="sm" class="items-center">
-                    <i class="ri-filter-3-line"></i> Filter Data
+                    Filter Data
                 </x-button>
-
-                <a href="{{ url('/laporan/penjualan-pelanggan') }}" class="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-xl text-gray-700 bg-white hover:bg-gray-50">
-                    Reset
-                </a>
                 
+                <!-- Export XLS menggunakan Component (Dibalut <a> agar tetap link bertingkah button) -->
                 <a href="{{ request()->fullUrlWithQuery(['export' => 'excel']) }}">
                     <x-button type="button" color="green" size="sm" class="items-center">
                         <i class="ri-file-excel-2-line"></i> Export XLS
                     </x-button>
                 </a>
                 
+                <!-- Cetak PDF menggunakan Component -->
                 <a href="{{ request()->fullUrlWithQuery(['export' => 'pdf']) }}" target="_blank">
                     <x-button type="button" color="red" size="sm" class="items-center">
                         <i class="ri-file-pdf-line"></i> Cetak PDF
@@ -59,15 +46,16 @@
             </div>
         </form>
 
+        
+
         @php
-            $getSortLink = function($column) use ($sortBy, $sortDir, $startDate, $endDate, $selectedBranchId) {
+            $getSortLink = function($column) use ($sortBy, $sortDir, $startDate, $endDate) {
                 $nextDir = ($sortBy === $column && $sortDir === 'asc') ? 'desc' : 'asc';
                 return request()->fullUrlWithQuery([
                     'sort_by' => $column,
                     'sort_dir' => $nextDir,
                     'start_date' => $startDate,
                     'end_date' => $endDate,
-                    'branch_id' => $selectedBranchId,
                     'page' => 1
                 ]);
             };
@@ -78,16 +66,16 @@
             };
         @endphp
 
-        <!-- Tabel Laporan Pelanggan -->
+        <!-- Tabel Laporan -->
         <table class="w-full border-collapse border border-gray-200">
             <thead>
                 <tr class="bg-slate-100 border-b border-gray-200 text-gray-700 text-sm select-none">
-                    <th class="p-3 text-center border border-gray-200 w-12">No</th>
-                    <th class="p-0 border border-gray-200 hover:bg-slate-200 transition">
-                        <a href="{{ $getSortLink('nama_cabang') }}" class="block p-3 text-left w-full h-full font-bold">
-                            Cabang<span class="text-blue-600 text-xs">{{ $renderArrow('nama_cabang') }}</span>
+                    <th class="p-3 text-left border border-gray-200 w-12">No</th>
+                    {{-- <th class="p-0 border border-gray-200 hover:bg-slate-200 transition">
+                        <a href="{{ $getSortLink('kode_pelanggan') }}" class="block p-3 text-left w-full h-full font-bold">
+                            Kode Pelanggan<span class="text-blue-600 text-xs">{{ $renderArrow('kode_pelanggan') }}</span>
                         </a>
-                    </th>
+                    </th> --}}
                     <th class="p-0 border border-gray-200 hover:bg-slate-200 transition">
                         <a href="{{ $getSortLink('nama_pelanggan') }}" class="block p-3 text-left w-full h-full font-bold">
                             Nama Pelanggan<span class="text-blue-600 text-xs">{{ $renderArrow('nama_pelanggan') }}</span>
@@ -111,22 +99,14 @@
                         <td class="p-3 border border-gray-200 text-center">
                             {{ $reportData->firstItem() + $index }}
                         </td>
-                        <td class="p-3 border border-gray-200 font-semibold text-slate-800">
-                            {{ $row->nama_cabang ?? 'Pusat' }}
-                        </td>
-                        <td class="p-3 border border-gray-200 font-medium text-gray-900">
-                            {{ $row->nama_pelanggan }}
-                        </td>
-                        <td class="p-3 border border-gray-200 text-center font-semibold">
-                            {{ $row->total_transaksi }}
-                        </td>
-                        <td class="p-3 border border-gray-200 text-right font-bold text-emerald-600">
-                            Rp {{ number_format($row->total_belanja, 0, ',', '.') }}
-                        </td>
+                        {{-- <td class="p-3 border border-gray-200 font-mono text-gray-500">{{ $row->kode_pelanggan ?? '-' }}</td> --}}
+                        <td class="p-3 border border-gray-200 font-medium text-gray-900">{{ $row->nama_pelanggan }}</td>
+                        <td class="p-3 border border-gray-200 text-center font-semibold">{{ $row->total_transaksi }}</td>
+                        <td class="p-3 border border-gray-200 text-right font-bold text-emerald-600">Rp {{ number_format($row->total_belanja, 0, ',', '.') }}</td>
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="5" class="p-4 text-center text-gray-500 italic">Tidak ada data transaksi pelanggan pada rentang tanggal ini.</td>
+                        <td colspan="5" class="p-4 text-center text-gray-500">Tidak ada data transaksi pelanggan pada rentang tanggal ini.</td>
                     </tr>
                 @endforelse
             </tbody>
@@ -134,7 +114,7 @@
             @if($reportData->count() > 0)
             <tfoot class="bg-slate-50 font-bold text-sm text-gray-800">
                 <tr>
-                    <td colspan="3" class="p-3 border border-gray-200 text-right">TOTAL KESELURUHAN (SEMUA HALAMAN):</td>
+                    <td colspan="2" class="p-3 border border-gray-200 text-right">TOTAL KESELURUHAN (SEMUA HALAMAN):</td>
                     <td class="p-3 border border-gray-200 text-center text-blue-600 text-base">
                         {{ $totals->grand_qty_transaksi ?? 0 }}
                     </td>

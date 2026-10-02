@@ -43,7 +43,8 @@ class ClientModuleSeeder extends Seeder
             'BranchController',
             'BackupController',
             'OrderKasirController',
-            'CashExpenseController'
+            'CashExpenseController',
+            'CashExpenseReportController'
         ];
 
         // Looping untuk memasukkan atau mengupdate data ke database

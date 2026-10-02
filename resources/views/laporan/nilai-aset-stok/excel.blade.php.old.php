@@ -1,18 +1,16 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <title>Laporan Nilai Aset Stok</title>
 </head>
 <body>
-    <h2>LAPORAN NILAI ASET STOK BARANG FISIK</h2>
+    <h2>LAPORAN NILAI ASET STOK BARANG</h2>
     <p>Tanggal Cetak: {{ now()->format('d-m-Y H:i') }}</p>
 
     <table border="1">
         <thead>
             <tr style="background-color: #f2f2f2; font-weight: bold;">
                 <th>No</th>
-                <th>Cabang</th>
                 <th>Kode Barang</th>
                 <th>Nama Barang</th>
                 <th>Stok Aktif</th>
@@ -26,8 +24,7 @@
             @foreach($reportData as $index => $row)
             <tr>
                 <td>{{ $index + 1 }}</td>
-                <td>{{ $row->nama_cabang ?? 'Pusat' }}</td>
-                <td>'{{ $row->sku ?? $row->barcode }}</td>
+                <td>'{{ $row->sku }}</td> <!-- Tanda kutip tunggal mencegah Excel memotong zero-leading barcode -->
                 <td>{{ $row->name }}</td>
                 <td align="center">{{ $row->stock }}</td>
                 <td align="right">{{ $row->hpp_average }}</td>
@@ -39,9 +36,7 @@
         </tbody>
         <tfoot>
             <tr style="font-weight: bold; background-color: #f9f9f9;">
-                <td colspan="4" align="right">TOTAL KESELURUHAN:</td>
-                <td align="center">{{ $totalAsetToko->grand_total_qty ?? 0 }}</td>
-                <td colspan="2"></td>
+                <td colspan="6" align="right">TOTAL KESELURUHAN:</td>
                 <td align="right" style="background-color: #eef2ff;">{{ $totalAsetToko->grand_total_aset ?? 0 }}</td>
                 <td align="right">{{ $totalAsetToko->grand_total_jual ?? 0 }}</td>
             </tr>

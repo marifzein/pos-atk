@@ -17,17 +17,16 @@
         <x-table class="border-collapse">
             <x-table-header>
                 <tr class="border-b border-slate-200">
-                    <x-table-head class="text-center w-12 text-sm font-bold bg-slate-100 text-slate-700 border-r border-slate-200">No</x-table-head>
-                    <x-table-head class="text-center text-sm font-bold bg-slate-100 text-slate-700 border-r border-slate-200 w-20">ID Shift</x-table-head>
-                    <x-table-head class="text-left text-sm font-bold bg-slate-100 text-slate-700 border-r border-slate-200">Nama Kasir</x-table-head>
-                    <x-table-head class="text-center text-sm font-bold bg-slate-100 text-slate-700 border-r border-slate-200">Waktu Buka</x-table-head>
-                    <x-table-head class="text-center text-sm font-bold bg-slate-100 text-slate-700 border-r border-slate-200">Waktu Tutup</x-table-head>
-                    <x-table-head class="text-right text-sm font-bold bg-slate-100 text-slate-700 border-r border-slate-200 w-36">Modal Awal</x-table-head>
-                    <x-table-head class="text-right text-sm font-bold bg-slate-100 text-slate-700 border-r border-slate-200 w-36">Uang Sistem</x-table-head>
-                    <x-table-head class="text-right text-sm font-bold bg-slate-100 text-slate-700 border-r border-slate-200 w-36">Uang Fisik</x-table-head>
-                    <x-table-head class="text-right text-sm font-bold bg-slate-100 text-slate-700 border-r border-slate-200 w-36">Selisih</x-table-head>
-                    <x-table-head class="text-center text-sm font-bold bg-slate-100 text-slate-700 border-r border-slate-200 w-28">Status</x-table-head>
-                    <x-table-head class="text-center text-sm font-bold bg-slate-100 text-slate-700 w-36">Aksi</x-table-head>
+                    <x-table-head class="text-center w-12 font-bold bg-slate-100 text-slate-700 border-r border-slate-200">No</x-table-head>
+                    <x-table-head class="text-center font-bold bg-slate-100 text-slate-700 border-r border-slate-200 w-20">ID Shift</x-table-head>
+                    <x-table-head class="text-left font-bold bg-slate-100 text-slate-700 border-r border-slate-200">Nama Kasir</x-table-head>
+                    <x-table-head class="text-center font-bold bg-slate-100 text-slate-700 border-r border-slate-200">Waktu Buka</x-table-head>
+                    <x-table-head class="text-center font-bold bg-slate-100 text-slate-700 border-r border-slate-200">Waktu Tutup</x-table-head>
+                    <x-table-head class="text-right font-bold bg-slate-100 text-slate-700 border-r border-slate-200 w-36">Modal Awal</x-table-head>
+                    <x-table-head class="text-right font-bold bg-slate-100 text-slate-700 border-r border-slate-200 w-36">Uang Fisik</x-table-head>
+                    <x-table-head class="text-right font-bold bg-slate-100 text-slate-700 border-r border-slate-200 w-36">Selisih</x-table-head>
+                    <x-table-head class="text-center font-bold bg-slate-100 text-slate-700 border-r border-slate-200 w-28">Status</x-table-head>
+                    <x-table-head class="text-center font-bold bg-slate-100 text-slate-700 w-36">Aksi</x-table-head>
                 </tr>
             </x-table-header>
             
@@ -63,30 +62,15 @@
                         <x-table-cell class="text-right border-r border-slate-200">
                             Rp {{ number_format($item->starting_cash, 0, ',', '.') }}
                         </x-table-cell>
-
-                        <!-- Uang Sistem (Expected Cash) -->
-                        <x-table-cell class="text-right border-r border-slate-200 font-semibold text-indigo-700 bg-indigo-50/40">
-                            Rp {{ number_format($item->expected_cash ?? 0, 0, ',', '.') }}
-                        </x-table-cell>
                         
-                        <!-- Uang Fisik (Tampilkan '-' jika belum closing) -->
+                        <!-- Uang Fisik -->
                         <x-table-cell class="text-right border-r border-slate-200">
-                            @if($item->status === 'open')
-                                <span class="text-slate-400 italic text-xs">Belum Closing</span>
-                            @else
-                                Rp {{ number_format($item->ending_cash_actual ?? 0, 0, ',', '.') }}
-                            @endif
+                            Rp {{ number_format($item->ending_cash_actual ?? 0, 0, ',', '.') }}
                         </x-table-cell>
                         
                         <!-- Selisih (Variance) -->
-                        <x-table-cell class="text-right border-r border-slate-200 font-bold">
-                            @if($item->status === 'open')
-                                <span class="text-slate-400 text-xs">-</span>
-                            @else
-                                <span class="{{ $item->variance < 0 ? 'text-rose-600' : ($item->variance > 0 ? 'text-emerald-600' : 'text-slate-500') }}">
-                                    Rp {{ number_format($item->variance, 0, ',', '.') }}
-                                </span>
-                            @endif
+                        <x-table-cell class="text-right border-r border-slate-200 font-bold {{ $item->variance < 0 ? 'text-rose-600' : ($item->variance > 0 ? 'text-emerald-600' : 'text-slate-500') }}">
+                            Rp {{ number_format($item->variance, 0, ',', '.') }}
                         </x-table-cell>
                         
                         <!-- Status Badge -->

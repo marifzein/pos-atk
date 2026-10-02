@@ -4,47 +4,35 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
-use App\Models\Branch;
 
 class LaporanPenjualanProdukController extends Controller
 {
     public function index(Request $request)
     {
-        $user = Auth::user();
-
         $startDate = $request->get('start_date', Carbon::now()->startOfMonth()->toDateString());
         $endDate = $request->get('end_date', Carbon::now()->toDateString());
         $sortBy = $request->get('sort_by', 'laba_kotor');
         $sortDir = $request->get('sort_dir', 'desc');
 
-        // Filter parameters
-        $searchItem = $request->get('q') ?? $request->get('search_item');
+        // Ambil input filter baru
+        $searchItem = $request->get('search_item');
+        $categoryId = $request->get('category_id');
         $supplierId = $request->get('supplier_id');
-        $selectedBranchId = $request->get('branch_id');
 
-        // Kunci branch jika kasir biasa
-        if ($user && strtolower($user->role) === 'kasir' && $user->branch_id) {
-            $selectedBranchId = $user->branch_id;
-        }
-
-        $allowedSorts = ['nama_cabang', 'kode_barang', 'nama_barang', 'harga', 'total_terjual', 'total_pendapatan', 'total_hpp', 'laba_kotor'];
+        $allowedSorts = ['kode_barang', 'nama_barang', 'harga', 'total_terjual', 'total_pendapatan', 'total_hpp', 'laba_kotor'];
         if (!in_array($sortBy, $allowedSorts)) $sortBy = 'laba_kotor';
         if (!in_array($sortDir, ['asc', 'desc'])) $sortDir = 'desc';
 
-        // Master Data untuk Dropdown
-        $branches = Branch::where('is_active', 1)->get();
-        $suppliers = DB::table('suppliers')->select('id', 'name')->get();
+        // MASTER DATA (Disesuaikan dengan nama kolom asli database kamu)
+        // $categories = DB::table('categories')->select('id', 'name')->get(); 
+        $suppliers = DB::table('suppliers')->select('id', 'name')->get();   
 
-        // Base Query
+        // Query Base (Join ke tabel products)
         $query = DB::table('transaction_details')
             ->join('transactions', 'transaction_details.transaction_id', '=', 'transactions.id')
             ->join('products', 'transaction_details.product_id', '=', 'products.id')
-            ->leftJoin('branches', 'transactions.branch_id', '=', 'branches.id')
             ->select(
-                'transactions.branch_id',
-                'branches.name as nama_cabang',
                 'transaction_details.kode_barang',
                 'transaction_details.nama_barang',
                 'transaction_details.harga',
@@ -53,53 +41,47 @@ class LaporanPenjualanProdukController extends Controller
                 DB::raw('SUM(transaction_details.qty * transaction_details.harga_beli) as total_hpp'),
                 DB::raw('SUM(transaction_details.subtotal) - SUM(transaction_details.qty * transaction_details.harga_beli) as laba_kotor')
             )
-            ->whereRaw('transactions.status != ?', ['BATAL'])
+            ->whereRaw('transactions.status != ?', ['Batal']) // 👈 FILTER TIDAK BATAL
             ->whereBetween(DB::raw('DATE(transactions.created_at)'), [$startDate, $endDate]);
 
-        // Filter Cabang
-        if (!empty($selectedBranchId)) {
-            $query->where('transactions.branch_id', $selectedBranchId);
-        }
-
-        // Filter Cari Item (Nama / Barcode / SKU)
+        // Logika Pemicu Filter Kondisional
         if (!empty($searchItem)) {
             $query->where(function($q) use ($searchItem) {
                 $q->where('transaction_details.nama_barang', 'like', "%{$searchItem}%")
                   ->orWhere('transaction_details.kode_barang', 'like', "%{$searchItem}%");
             });
         }
-
-        // Filter Supplier
+        // if (!empty($categoryId)) {
+        //     $query->where('products.category_id', $categoryId);
+        // }
         if (!empty($supplierId)) {
             $query->where('products.supplier_id', $supplierId);
         }
 
-        // Grouping per Cabang, Produk, dan Harga Jual
+        // Group By
         $query->groupBy(
-            'transactions.branch_id',
-            'branches.name',
             'transaction_details.product_id', 
             'transaction_details.kode_barang', 
             'transaction_details.nama_barang',
             'transaction_details.harga'
         );
 
-        // Query Perhitungan Grand Total (Footer)
+        // Hitung Grand Total Keseluruhan (Footer) menggunakan kondisi filter yang sama
         $totalsQuery = DB::table('transaction_details')
             ->join('transactions', 'transaction_details.transaction_id', '=', 'transactions.id')
             ->join('products', 'transaction_details.product_id', '=', 'products.id')
-            ->whereRaw('transactions.status != ?', ['BATAL'])
+            ->whereRaw('transactions.status != ?', ['Batal']) // 👈 FILTER TIDAK BATAL
             ->whereBetween(DB::raw('DATE(transactions.created_at)'), [$startDate, $endDate]);
 
-        if (!empty($selectedBranchId)) {
-            $totalsQuery->where('transactions.branch_id', $selectedBranchId);
-        }
         if (!empty($searchItem)) {
             $totalsQuery->where(function($q) use ($searchItem) {
                 $q->where('transaction_details.nama_barang', 'like', "%{$searchItem}%")
                   ->orWhere('transaction_details.kode_barang', 'like', "%{$searchItem}%");
             });
         }
+        // if (!empty($categoryId)) {
+        //     $totalsQuery->where('products.category_id', $categoryId);
+        // }
         if (!empty($supplierId)) {
             $totalsQuery->where('products.supplier_id', $supplierId);
         }
@@ -111,28 +93,31 @@ class LaporanPenjualanProdukController extends Controller
             DB::raw('SUM(transaction_details.subtotal) - SUM(transaction_details.qty * transaction_details.harga_beli) as grand_laba_kotor')
         )->first();
 
-        // Export Excel
+        // Handle Export
         $exportType = $request->get('export');
         if ($exportType === 'excel') {
             $reportData = $query->orderBy($sortBy, $sortDir)->get();
-            $filename = "Laporan_Penjualan_Produk_{$startDate}_sd_{$endDate}.xls";
+            $filename = "Laporan_Penjualan_Produk_{$startDate}_to_{$endDate}.xls";
             return response()->view('laporan.penjualan-produk.excel', compact('reportData', 'startDate', 'endDate', 'totals'))
                 ->header('Content-Type', 'application/vnd.ms-excel')
                 ->header('Content-Disposition', "attachment; filename={$filename}");
         }
 
-        // Export PDF
         if ($exportType === 'pdf') {
             $reportData = $query->orderBy($sortBy, $sortDir)->get();
             return view('laporan.penjualan-produk.pdf', compact('reportData', 'startDate', 'endDate', 'totals'));
         }
 
-        // Tampilan Web
+        // Tampilan Standar Web dengan Pagination
         $reportData = $query->orderBy($sortBy, $sortDir)->paginate(15)->withQueryString();
 
         return view('laporan.penjualan-produk.index', compact(
             'reportData', 'startDate', 'endDate', 'sortBy', 'sortDir', 'totals',
-            'branches', 'selectedBranchId', 'suppliers', 'searchItem', 'supplierId'
+            'suppliers', 'searchItem', 'supplierId'
         ));
+        // return view('laporan.penjualan-produk.index', compact(
+        //     'reportData', 'startDate', 'endDate', 'sortBy', 'sortDir', 'totals',
+        //     'categories', 'suppliers', 'searchItem', 'categoryId', 'supplierId'
+        // ));
     }
 }

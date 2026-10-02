@@ -13,48 +13,34 @@
             </h2>
         </div>
 
-        <!-- Filter Tanggal & Cabang -->
+        <!-- Filter Tanggal -->
         <form method="GET" action="{{ route('laporan.laba-rugi') }}" class="bg-slate-50 border border-slate-100 rounded-xl p-5 mb-6">
             <div class="flex flex-wrap items-end gap-5">
                 <div class="w-full sm:w-auto">
                     <label class="block text-sm font-semibold text-slate-700 mb-2">Dari Tanggal</label>
                     <input type="date" name="dari_tanggal" value="{{ $dari_tanggal }}" 
-                        class="rounded-xl border border-slate-300 px-4 py-2.5 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100 w-full sm:w-52">
+                        class="rounded-xl border border-slate-300 px-4 py-2.5 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100 w-full sm:w-56">
                 </div>
                 <div class="w-full sm:w-auto">
                     <label class="block text-sm font-semibold text-slate-700 mb-2">Sampai Tanggal</label>
                     <input type="date" name="sampai_tanggal" value="{{ $sampai_tanggal }}" 
-                        class="rounded-xl border border-slate-300 px-4 py-2.5 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100 w-full sm:w-52">
+                        class="rounded-xl border border-slate-300 px-4 py-2.5 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100 w-full sm:w-56">
                 </div>
-
-                <!-- Dropdown Cabang -->
-                <div class="w-full sm:w-auto min-w-[200px]">
-                    <label class="block text-sm font-semibold text-slate-700 mb-2">Cabang</label>
-                    <select name="branch_id" class="rounded-xl border border-slate-300 px-4 py-2.5 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100 w-full">
-                        <option value="">Semua Cabang</option>
-                        @foreach($branches as $b)
-                            <option value="{{ $b->id }}" {{ ($selectedBranchId == $b->id) ? 'selected' : '' }}>
-                                {{ $b->name }}
-                            </option>
-                        @endforeach
-                    </select>
-                </div>
-
                 <div class="flex items-center gap-3">
                     <button type="submit" class="px-6 py-2.5 bg-indigo-600 text-white font-semibold rounded-xl hover:bg-indigo-700 transition duration-150">
                         Tampilkan
                     </button>
                     
                     <!-- Tombol Export Excel -->
-                    <a href="{{ route('laporan.laba-rugi.excel', ['dari_tanggal' => $dari_tanggal, 'sampai_tanggal' => $sampai_tanggal, 'branch_id' => $selectedBranchId]) }}" 
-                       class="px-5 py-2.5 bg-emerald-600 text-white font-semibold rounded-xl hover:bg-emerald-700 transition duration-150 flex items-center gap-1">
-                        <i class="ri-file-excel-2-line"></i> Excel
+                    <a href="{{ route('laporan.laba-rugi.excel', ['dari_tanggal' => $dari_tanggal, 'sampai_tanggal' => $sampai_tanggal]) }}" 
+                    class="px-5 py-2.5 bg-emerald-600 text-white font-semibold rounded-xl hover:bg-emerald-700 transition duration-150 flex items-center gap-1">
+                    <i class="ri-file-excel-2-line"></i> Excel
                     </a>
 
                     <!-- Tombol Cetak PDF -->
-                    <a href="{{ route('laporan.laba-rugi.pdf', ['dari_tanggal' => $dari_tanggal, 'sampai_tanggal' => $sampai_tanggal, 'branch_id' => $selectedBranchId]) }}" target="_blank" 
-                       class="px-5 py-2.5 bg-rose-600 text-white font-semibold rounded-xl hover:bg-rose-700 transition duration-150 flex items-center gap-1">
-                        <i class="ri-file-pdf-line"></i> PDF / Cetak
+                    <a href="{{ route('laporan.laba-rugi.pdf', ['dari_tanggal' => $dari_tanggal, 'sampai_tanggal' => $sampai_tanggal]) }}" target="_blank" 
+                    class="px-5 py-2.5 bg-rose-600 text-white font-semibold rounded-xl hover:bg-rose-700 transition duration-150 flex items-center gap-1">
+                    <i class="ri-file-pdf-line"></i> PDF / Cetak
                     </a>
                 </div>
             </div>
@@ -65,23 +51,22 @@
             <x-table-header>
                 <tr class="border-b border-slate-200">
                     <x-table-head class="text-center w-12 font-bold bg-slate-100 text-slate-700 border-r border-slate-200">No</x-table-head>
-                    <x-table-head class="text-left font-bold bg-slate-100 text-slate-700 border-r border-slate-200">Cabang</x-table-head>
                     <x-table-head class="text-left font-bold bg-slate-100 text-slate-700 border-r border-slate-200">Tanggal</x-table-head>
-                    <x-table-head class="text-right font-bold bg-slate-100 text-slate-700 border-r border-slate-200 w-44">Pendapatan Penjualan</x-table-head>
-                    <x-table-head class="text-right font-bold bg-slate-100 text-slate-700 border-r border-slate-200 w-44">HPP (Harga Pokok)</x-table-head>
-                    <x-table-head class="text-right font-bold bg-slate-100 text-slate-700 border-r border-slate-200 w-44">Laba Kotor</x-table-head>
-                    <x-table-head class="text-center font-bold bg-slate-100 text-slate-700 w-28">Margin</x-table-head>
+                    <x-table-head class="text-right font-bold bg-slate-100 text-slate-700 border-r border-slate-200 w-48">Pendapatan Penjualan</x-table-head>
+                    <x-table-head class="text-right font-bold bg-slate-100 text-slate-700 border-r border-slate-200 w-48">HPP (Harga Pokok)</x-table-head>
+                    <x-table-head class="text-right font-bold bg-slate-100 text-slate-700 border-r border-slate-200 w-48">Laba Kotor</x-table-head>
+                    <x-table-head class="text-center font-bold bg-slate-100 text-slate-700 w-32">Margin</x-table-head>
                 </tr>
             </x-table-header>
             
             <x-table-body>
                 @forelse ($reports as $report)
                     @php
+                        // Hitung Margin Persentase Per Hari: (Laba Kotor / Pendapatan) * 100
                         $margin = $report->total_pendapatan > 0 ? ($report->laba_kotor / $report->total_pendapatan) * 100 : 0;
                     @endphp
                     <x-table-row>
                         <x-table-cell class="text-center border-r border-slate-200">{{ ($reports->currentPage() - 1) * $reports->perPage() + $loop->iteration }}</x-table-cell>
-                        <x-table-cell class="border-r border-slate-200 font-semibold text-slate-800">{{ $report->nama_cabang ?? 'Pusat' }}</x-table-cell>
                         <x-table-cell class="border-r border-slate-200">{{ \Carbon\Carbon::parse($report->tanggal)->translatedFormat('d F Y') }}</x-table-cell>
                         <x-table-cell class="text-right border-r border-slate-200">Rp {{ number_format($report->total_pendapatan, 0, ',', '.') }}</x-table-cell>
                         <x-table-cell class="text-right border-r border-slate-200">Rp {{ number_format($report->total_hpp, 0, ',', '.') }}</x-table-cell>
@@ -90,8 +75,8 @@
                     </x-table-row>
                 @empty
                     <x-table-row>
-                        <x-table-cell colspan="7" class="text-center py-8 text-slate-400 italic">
-                            Tidak ada data transaksi pada rentang tanggal atau cabang ini.
+                        <x-table-cell colspan="6" class="text-center py-8 text-slate-400 italic">
+                            Tidak ada data transaksi pada rentang tanggal ini.
                         </x-table-cell>
                     </x-table-row>
                 @endforelse
@@ -100,14 +85,14 @@
             <!-- Bagian Total Akumulasi Periode -->
             @if($reports->count() > 0)
                 @php
-                    $total_margin = ($totals->total_pendapatan ?? 0) > 0 ? ($totals->laba_kotor / $totals->total_pendapatan) * 100 : 0;
+                    $total_margin = $totals->total_pendapatan > 0 ? ($totals->laba_kotor / $totals->total_pendapatan) * 100 : 0;
                 @endphp
                 <tfoot class="bg-slate-100 border-t-2 border-slate-300 font-bold text-slate-800 text-sm">
                     <tr>
-                        <td class="px-3 py-4 text-center border-r border-b border-slate-200" colspan="3">TOTAL PERIODE INI</td>
-                        <td class="px-2 py-4 text-right text-indigo-700 border-r border-b border-slate-200">Rp {{ number_format($totals->total_pendapatan ?? 0, 0, ',', '.') }}</td>
-                        <td class="px-2 py-4 text-right text-amber-700 border-r border-b border-slate-200">Rp {{ number_format($totals->total_hpp ?? 0, 0, ',', '.') }}</td>
-                        <td class="px-2 py-4 text-right text-emerald-700 text-base border-r border-b border-slate-200">Rp {{ number_format($totals->laba_kotor ?? 0, 0, ',', '.') }}</td>
+                        <td class="px-3 py-4 text-center border-r border-b border-slate-200" colspan="2">TOTAL PERIODE INI</td>
+                        <td class="px-2 py-4 text-right text-indigo-700 border-r border-b border-slate-200">Rp {{ number_format($totals->total_pendapatan, 0, ',', '.') }}</td>
+                        <td class="px-2 py-4 text-right text-amber-700 border-r border-b border-slate-200">Rp {{ number_format($totals->total_hpp, 0, ',', '.') }}</td>
+                        <td class="px-2 py-4 text-right text-emerald-700 text-base border-r border-b border-slate-200">Rp {{ number_format($totals->laba_kotor, 0, ',', '.') }}</td>
                         <td class="px-2 py-4 text-center text-slate-900 border-b border-slate-200">{{ number_format($total_margin, 2, ',', '.') }}%</td>
                     </tr>
                 </tfoot>

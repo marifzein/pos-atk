@@ -77,22 +77,23 @@
         </form>
 
         <!-- Tabel Laporan Desktop -->
-        <div class="hidden md:block">
-            <x-table class="border-collapse">
+        <!-- Tabel Laporan Desktop -->
+        <div class="hidden md:block overflow-x-auto">
+            <x-table class="border-collapse w-full">
                 <x-table-header>
-                    <tr class="border-b border-slate-200">
-                        <x-table-head class="text-center w-12 font-bold bg-slate-100 text-slate-700 border-r border-slate-200" rowspan="2">No</x-table-head>
-                        <x-table-head class="text-left font-bold bg-slate-100 text-slate-700 border-r border-slate-200" rowspan="2">Tanggal</x-table-head>
-                        <x-table-head class="text-left font-bold bg-slate-100 text-slate-700 border-r border-slate-200" rowspan="2">Cabang</x-table-head>
-                        <x-table-head class="text-left font-bold bg-slate-100 text-slate-700 border-r border-slate-200" rowspan="2">Nama Kasir</x-table-head>
-                        <x-table-head class="text-center font-bold bg-slate-100 text-slate-700 border-r border-slate-200" rowspan="2">Jml Trx</x-table-head>
-                        <x-table-head class="text-center font-bold bg-slate-100 text-slate-700 border-b border-slate-200" colspan="4">Penerimaan Uang (Kas Masuk)</x-table-head>
-                    </tr>
-                    <tr class="border-b border-slate-200">
-                        <x-table-head class="text-right font-bold bg-slate-50 text-slate-700 w-44 border-r border-slate-200">Uang Cash</x-table-head>
-                        <x-table-head class="text-right font-bold bg-slate-50 text-slate-700 w-44 border-r border-slate-200">Card / QRIS / TF</x-table-head>
-                        <x-table-head class="text-right font-bold bg-slate-50 text-slate-700 w-44 border-r border-slate-200">Voucher</x-table-head>
-                        <x-table-head class="text-right font-bold bg-slate-50 text-slate-700 w-44">Total Masuk</x-table-head>
+                    <tr class="border-b border-slate-200 bg-slate-50 text-slate-700 text-xs">
+                        <th class="py-3 px-3 text-center w-12 border-r border-slate-200">No</th>
+                        <th class="py-3 px-3 text-left border-r border-slate-200">Tanggal</th>
+                        <th class="py-3 px-3 text-left border-r border-slate-200">Cabang</th>
+                        <th class="py-3 px-3 text-left border-r border-slate-200">Nama Kasir</th>
+                        <th class="py-3 px-3 text-center border-r border-slate-200">Jml Trx</th>
+                        <th class="py-3 px-3 text-right text-indigo-700 border-r border-slate-200">Modal Awal</th>
+                        <th class="py-3 px-3 text-right border-r border-slate-200">Cash Masuk</th>
+                        <th class="py-3 px-3 text-right text-rose-600 border-r border-slate-200">Pengeluaran Kas</th>
+                        <th class="py-3 px-3 text-right font-bold text-slate-800 bg-slate-100 border-r border-slate-200">Saldo Kasir</th>
+                        <th class="py-3 px-3 text-right border-r border-slate-200">Card / QRIS / TF</th>
+                        <th class="py-3 px-3 text-right text-amber-600 border-r border-slate-200">Voucher</th>
+                        <th class="py-3 px-3 text-right font-bold text-emerald-600">Total Setoran</th>
                     </tr>
                 </x-table-header>
                 
@@ -104,16 +105,19 @@
                             <x-table-cell class="font-medium text-slate-700 border-r border-slate-200">{{ $report->nama_cabang ?? '-' }}</x-table-cell>
                             <x-table-cell class="font-medium text-slate-900 border-r border-slate-200">{{ $report->nama_kasir }}</x-table-cell>
                             <x-table-cell class="text-center font-semibold text-indigo-600 border-r border-slate-200">
-                                {{ $report->jumlah_transaksi ?? $report->jumlah_nota ?? 0 }}
+                                {{ $report->jumlah_transaksi ?? 0 }}
                             </x-table-cell>
-                            <x-table-cell class="text-right border-r border-slate-200">Rp {{ number_format($report->total_cash, 0, ',', '.') }}</x-table-cell>
+                            <x-table-cell class="text-right text-indigo-700 border-r border-slate-200">Rp {{ number_format($report->total_modal_awal, 0, ',', '.') }}</x-table-cell>
+                            <x-table-cell class="text-right border-r border-slate-200">Rp {{ number_format($report->total_cash_masuk, 0, ',', '.') }}</x-table-cell>
+                            <x-table-cell class="text-right text-rose-600 border-r border-slate-200">Rp {{ number_format($report->total_expense, 0, ',', '.') }}</x-table-cell>
+                            <x-table-cell class="text-right font-bold text-slate-800 bg-slate-50 border-r border-slate-200">Rp {{ number_format($report->saldo_kasir, 0, ',', '.') }}</x-table-cell>
                             <x-table-cell class="text-right border-r border-slate-200">Rp {{ number_format($report->total_card, 0, ',', '.') }}</x-table-cell>
-                            <x-table-cell class="text-right border-r border-slate-200">Rp {{ number_format($report->total_voucher, 0, ',', '.') }}</x-table-cell>
-                            <x-table-cell class="text-right font-semibold text-slate-900">Rp {{ number_format($report->total_grand, 0, ',', '.') }}</x-table-cell>
+                            <x-table-cell class="text-right text-amber-600 border-r border-slate-200">Rp {{ number_format($report->total_voucher, 0, ',', '.') }}</x-table-cell>
+                            <x-table-cell class="text-right font-bold text-emerald-600">Rp {{ number_format($report->total_grand, 0, ',', '.') }}</x-table-cell>
                         </x-table-row>
                     @empty
                         <x-table-row>
-                            <x-table-cell colspan="9" class="text-center py-8 text-slate-400 italic">
+                            <x-table-cell colspan="12" class="text-center py-8 text-slate-400 italic">
                                 Tidak ada data penerimaan kas pada rentang tanggal ini.
                             </x-table-cell>
                         </x-table-row>
@@ -122,16 +126,19 @@
 
                 <!-- Bagian Total Footer -->
                 @if($reports->count() > 0)
-                    <tfoot class="bg-slate-100 border-t-2 border-slate-300 font-bold text-slate-800 text-sm">
+                    <tfoot class="bg-slate-100 border-t-2 border-slate-300 font-bold text-slate-800 text-xs">
                         <tr>
                             <td class="px-3 py-4 text-center border-r border-b border-slate-200" colspan="4">TOTAL PERIODE INI</td>
                             <td class="px-3 py-4 text-center text-indigo-700 border-r border-b border-slate-200">
-                                {{ $totals->total_transaksi ?? $totals->total_nota ?? 0 }}
+                                {{ $totals->total_transaksi ?? 0 }}
                             </td>
-                            <td class="px-2 py-4 text-right text-indigo-700 border-r border-b border-slate-200">Rp {{ number_format($totals->total_cash ?? 0, 0, ',', '.') }}</td>
+                            <td class="px-2 py-4 text-right text-indigo-700 border-r border-b border-slate-200">Rp {{ number_format($totals->total_modal_awal ?? 0, 0, ',', '.') }}</td>
+                            <td class="px-2 py-4 text-right text-indigo-700 border-r border-b border-slate-200">Rp {{ number_format($totals->total_cash_masuk ?? 0, 0, ',', '.') }}</td>
+                            <td class="px-2 py-4 text-right text-rose-600 border-r border-b border-slate-200">Rp {{ number_format($totals->total_expense ?? 0, 0, ',', '.') }}</td>
+                            <td class="px-2 py-4 text-right text-slate-900 bg-slate-200 border-r border-b border-slate-200">Rp {{ number_format($totals->total_saldo_kasir ?? 0, 0, ',', '.') }}</td>
                             <td class="px-2 py-4 text-right text-indigo-700 border-r border-b border-slate-200">Rp {{ number_format($totals->total_card ?? 0, 0, ',', '.') }}</td>
-                            <td class="px-2 py-4 text-right text-indigo-700 border-r border-b border-slate-200">Rp {{ number_format($totals->total_voucher ?? 0, 0, ',', '.') }}</td>
-                            <td class="px-2 py-4 text-right text-green-700 text-base border-b border-slate-200">Rp {{ number_format($totals->total_grand ?? 0, 0, ',', '.') }}</td>
+                            <td class="px-2 py-4 text-right text-amber-600 border-r border-slate-200">Rp {{ number_format($totals->total_voucher ?? 0, 0, ',', '.') }}</td>
+                            <td class="px-2 py-4 text-right text-emerald-700 text-sm border-b border-slate-200">Rp {{ number_format($totals->total_grand ?? 0, 0, ',', '.') }}</td>
                         </tr>
                     </tfoot>
                 @endif
@@ -139,68 +146,25 @@
         </div>
 
         <!-- TAMPILAN MOBILE & TABLET (CARD LIST) -->
-        <div class="block md:hidden space-y-4">
-            @if($reports->count() > 0)
-                <div class="bg-slate-700 text-white p-4 rounded-2xl shadow-sm space-y-2">
-                    <span class="text-xs font-medium uppercase tracking-wider text-indigo-200">TOTAL PERIODE INI</span>
-                    <div class="text-2xl font-bold text-green-400">
-                        Rp {{ number_format($totals->total_grand ?? 0, 0, ',', '.') }}
-                    </div>
-                    <div class="grid grid-cols-3 gap-2 pt-2 border-t border-slate-500 text-xs">
+        {{-- <div class="grid grid-cols-4 gap-2 bg-white p-2.5 rounded-xl border border-slate-100 text-xs">
                         <div>
-                            <span class="text-indigo-200 block">Cash</span>
-                            <span class="font-semibold">Rp {{ number_format($totals->total_cash ?? 0, 0, ',', '.') }}</span>
+                            <span class="text-slate-400 block">Modal Awal</span>
+                            <span class="font-semibold text-indigo-600">Rp {{ number_format($report->total_modal_awal, 0, ',', '.') }}</span>
                         </div>
                         <div>
-                            <span class="text-indigo-200 block">Card/QRIS</span>
-                            <span class="font-semibold">Rp {{ number_format($totals->total_card ?? 0, 0, ',', '.') }}</span>
+                            <span class="text-slate-400 block">Cash Masuk</span>
+                            <span class="font-semibold text-slate-700">Rp {{ number_format($report->total_cash_masuk, 0, ',', '.') }}</span>
                         </div>
                         <div>
-                            <span class="text-indigo-200 block">Voucher</span>
-                            <span class="font-semibold">Rp {{ number_format($totals->total_voucher ?? 0, 0, ',', '.') }}</span>
+                            <span class="text-slate-400 block">Kas Keluar</span>
+                            <span class="font-semibold text-rose-600">Rp {{ number_format($report->total_expense, 0, ',', '.') }}</span>
+                        </div>
+                        <div>
+                            <span class="text-slate-400 block font-bold text-slate-700">Saldo Kasir</span>
+                            <span class="font-bold text-slate-900">Rp {{ number_format($report->saldo_kasir, 0, ',', '.') }}</span>
                         </div>
                     </div>
-                </div>
-            @endif
-
-            @forelse ($reports as $report)
-                <div class="bg-slate-50 border border-slate-200/80 rounded-2xl p-4 shadow-3xs space-y-3">
-                    <div class="flex justify-between items-start">
-                        <div>
-                            <span class="text-xs font-semibold text-slate-500 block"><i class="ri-calendar-line"></i> {{ \Carbon\Carbon::parse($report->tanggal)->translatedFormat('d F Y') }}</span>
-                            <h4 class="font-bold text-slate-800 text-base mt-0.5"><i class="ri-user-3-line text-indigo-600"></i> {{ $report->nama_kasir }}</h4>
-                            <span class="text-xs text-slate-600 font-medium block mt-0.5"><i class="ri-store-2-line"></i> {{ $report->nama_cabang ?? '-' }}</span>
-                            <span class="inline-block mt-1 px-2 py-0.5 text-xs bg-indigo-50 text-indigo-700 rounded-md font-semibold">
-                                {{ $report->jumlah_transaksi ?? $report->jumlah_nota ?? 0 }} Transaksi
-                            </span>
-                        </div>
-                        <div class="text-right">
-                            <span class="text-xs text-slate-400 block">Total Masuk</span>
-                            <span class="font-bold text-green-600 text-base">Rp {{ number_format($report->total_grand, 0, ',', '.') }}</span>
-                        </div>
-                    </div>
-
-                    <div class="grid grid-cols-3 gap-2 bg-white p-2.5 rounded-xl border border-slate-100 text-xs">
-                        <div>
-                            <span class="text-slate-400 block">Cash</span>
-                            <span class="font-semibold text-slate-700">Rp {{ number_format($report->total_cash, 0, ',', '.') }}</span>
-                        </div>
-                        <div>
-                            <span class="text-slate-400 block">Card/QRIS</span>
-                            <span class="font-semibold text-slate-700">Rp {{ number_format($report->total_card, 0, ',', '.') }}</span>
-                        </div>
-                        <div>
-                            <span class="text-slate-400 block">Voucher</span>
-                            <span class="font-semibold text-slate-700">Rp {{ number_format($report->total_voucher, 0, ',', '.') }}</span>
-                        </div>
-                    </div>
-                </div>
-            @empty
-                <div class="text-center py-8 text-slate-400 italic bg-slate-50 rounded-2xl border border-slate-200/80">
-                    Tidak ada data penerimaan kas pada rentang tanggal ini.
-                </div>
-            @endforelse
-        </div>
+        </div> --}}
 
         <!-- Pagination Links -->
         <div class="mt-5 no-print">
@@ -210,7 +174,6 @@
     </x-card>
 </div>
 
-{{-- CSS KHUSUS PRINT CETAK / PDF --}}
 <style>
 @media print {
     .no-print, aside, header, footer, nav {
@@ -218,7 +181,7 @@
     }
     body {
         background: white !important;
-        font-size: 12px !important;
+        font-size: 11px !important;
     }
     .max-w-7xl {
         max-width: 100% !important;
@@ -230,7 +193,7 @@
     }
     th, td {
         border: 1px solid #000 !important;
-        padding: 4px 8px !important;
+        padding: 4px 6px !important;
     }
 }
 </style>

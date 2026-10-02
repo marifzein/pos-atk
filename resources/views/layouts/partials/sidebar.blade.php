@@ -109,20 +109,27 @@
             </a>
 
             @can('akses-owner-admin')
-            <a href="{{ url('/kasir/history') }}" class="submenu {{ request()->is('kasir/history*') ? 'submenu-active':'' }}"><i class="ri-file-list-3-line text-sm mr-2.5 opacity-90"></i> Riwayat Nota</a>
+                <a href="{{ url('/kasir/history') }}" class="submenu {{ request()->is('kasir/history*') ? 'submenu-active':'' }}"><i class="ri-file-list-3-line text-sm mr-2.5 opacity-90"></i> Riwayat Nota</a>
+
+                <a href="{{ route('laporan.pengeluaran.index') }}" 
+                class="submenu {{ request()->routeIs('laporan.pengeluaran.*') ? 'submenu-active' : '' }}">
+                    <i class="ri-money-cny-box-line text-sm mr-2.5 opacity-90"></i> Riwayat Kas Keluar
+                </a>
             @endcan
 
             <a href="{{ url('/kasir/close-shift') }}" class="submenu {{ request()->is('kasir/close-shift*') ? 'submenu-active':'' }}"><i class="ri-shut-down-line text-sm mr-2.5 opacity-90"></i> Tutup Shift</a>
             
+           
         </div>
 
         {{-- Floating Flyout Dropdown (Sidebar Tutup) --}}
         <div x-show="!sidebarOpen && hovered" x-transition:enter="transition ease-out duration-150" class="absolute left-24 top-0 bg-[#0b2428] border border-emerald-900/40 rounded-xl shadow-2xl z-50 w-56 overflow-hidden py-1.5 pointer-events-auto">
-            <div class="px-4 py-2 text-sm font-bold uppercase tracking-wider text-slate-400 border-b border-slate-800/60 mb-1 select-none">Transaksi</div> 
+            <div class="px-4 py-2 text-sm font-bold uppercase tracking-wider text-slate-400 border-b border-slate-800/60 mb-1 select-none">Kasir</div> 
                      
 
-            
-            <a href="{{ url('/kasir') }} " class="flex items-center gap-3 px-4 py-2 text-sm text-slate-400 hover:bg-emerald-500/10 hover:text-emerald-400 transition"><i class="ri-file-text-line opacity-90"></i> Nota</a>
+            <a href="{{ url('/order-kasir') }} " class="flex items-center gap-3 px-4 py-2 text-sm text-slate-400 hover:bg-emerald-500/10 hover:text-emerald-400 transition"><i class="ri-file-text-line opacity-90"></i> Pesanan Kasir</a>
+
+            <a href="{{ url('/kasir') }} " class="flex items-center gap-3 px-4 py-2 text-sm text-slate-400 hover:bg-emerald-500/10 hover:text-emerald-400 transition"><i class="ri-file-text-line opacity-90"></i> Nota Penjualan</a>
 
             <a href="{{ route('kasir.pengeluaran.index') }}" class="flex items-center gap-3 px-4 py-2 text-sm text-slate-400 hover:bg-emerald-500/10 hover:text-emerald-400 transition">
                 <i class="ri-money-cny-circle-line opacity-90"></i> Kas Keluar
@@ -130,6 +137,9 @@
             
             @can('akses-owner-admin')
             <a href="{{ url('/kasir/history') }}" class="flex items-center gap-3 px-4 py-2 text-sm text-slate-400 hover:bg-emerald-500/10 hover:text-emerald-400 transition"><i class="ri-file-list-3-line opacity-90"></i> Riwayat Nota</a>
+
+            <a href="{{ route('laporan.pengeluaran.index') }}" class="flex items-center gap-3 px-4 py-2 text-sm text-slate-400 hover:bg-emerald-500/10 hover:text-emerald-400 transition"><i class="ri-file-list-3-line opacity-90"></i> Riwayat Kas Keluar</a>
+
             @endcan
             
             <a href="{{ url('/tutup-shift') }}" class="flex items-center gap-3 px-4 py-2 text-sm text-slate-400 hover:bg-emerald-500/10 hover:text-emerald-400 transition"><i class="ri-shut-down-line opacity-90"></i> Tutup Shift</a>
@@ -246,7 +256,7 @@
         </button>
 
         <div id="menu-laporan" class="menu-content" x-show="sidebarOpen">
-            <a href="{{ url('/laporan/penjualan-kasir') }}" class="submenu {{ request()->is('laporan/penjualan-kasir*') ? 'submenu-active':'' }}"><i class="ri-user-star-line mr-2.5 text-sm opacity-90"></i> Penjualan Kasir</a>
+            <a href="{{ url('/laporan/penjualan-kasir') }}" class="submenu {{ request()->is('laporan/penjualan-kasir*') ? 'submenu-active':'' }}"><i class="ri-user-star-line mr-2.5 text-sm opacity-90"></i> Penerimaan Kas Kasir</a>
            
            
             <a href="{{ url('/laporan/shift') }}" class="submenu {{ request()->is('laporan/shift*') ? 'submenu-active':'' }}"><i class="ri-time-line mr-2.5 text-sm opacity-90"></i> Laporan Shift</a>
@@ -263,7 +273,7 @@
         <div x-show="!sidebarOpen && hovered" x-transition:enter="transition ease-out duration-150" class="absolute left-24 top-0 bg-[#0b2428] border border-emerald-900/40 rounded-xl shadow-2xl z-50 w-56 overflow-hidden py-1.5 pointer-events-auto">
             <div class="px-4 py-2 text-xs font-bold uppercase tracking-wider text-slate-400 border-b border-slate-800/60 mb-1 select-none">Laporan</div>
             
-            <a href="{{ url('/laporan/penjualan-kasir') }}" class="flex items-center gap-3 px-4 py-2 text-sm text-slate-400 hover:bg-emerald-500/10 hover:text-emerald-400 transition"><i class="ri-user-star-line opacity-90"></i> Penjualan Kasir</a>
+            <a href="{{ url('/laporan/penjualan-kasir') }}" class="flex items-center gap-3 px-4 py-2 text-sm text-slate-400 hover:bg-emerald-500/10 hover:text-emerald-400 transition"><i class="ri-user-star-line opacity-90"></i> Penerimaan Kas Kasir</a>
             
             <a href="{{ url('/laporan/shift') }}" class="flex items-center gap-3 px-4 py-2 text-sm text-slate-400 hover:bg-emerald-500/10 hover:text-emerald-400 transition"><i class="ri-time-line opacity-90"></i> Laporan Shift</a>
             <a href="{{ url('/laporan/laba-rugi-kotor') }}" class="flex items-center gap-3 px-4 py-2 text-sm text-slate-400 hover:bg-emerald-500/10 hover:text-emerald-400 transition"><i class="ri-line-chart-line opacity-90"></i> Laba rugi kotor</a>
